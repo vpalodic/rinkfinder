@@ -9,5 +9,7 @@
 <IfModule mod_rewrite.c>
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule . /test_www/rinkfinder/www/index.php
+	RewriteRule . /rinkfinder/index.php
 </IfModule>
+
+AddHandler application/x-httpd-php54 .php .php5 .php4 .php3
