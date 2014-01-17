@@ -11,5 +11,3 @@
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteRule . /rinkfinder/index.php
 </IfModule>
-
-AddHandler application/x-httpd-php54 .php .php5 .php4 .php3

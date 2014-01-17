@@ -18,6 +18,7 @@
  * @property string $phone
  * @property string $ext
  * @property string $birthday
+ * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
  * @property integer $updated_by_id
@@ -28,7 +29,7 @@
  * @property User $createdBy
  * @property User $updatedBy
  */
-class Profile extends CActiveRecord
+class Profile extends RinkfinderActiveRecord
 {
 	/**
 	 * @return string the associated database table name
@@ -47,7 +48,7 @@ class Profile extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('user_id, first_name, last_name, address_line1, city, state, zip, created_on, updated_on', 'required'),
-			array('user_id, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+			array('user_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
 			array('lat, lng', 'numerical'),
 			array('first_name, last_name', 'length', 'max'=>80),
 			array('address_line1, address_line2, city', 'length', 'max'=>128),
@@ -57,7 +58,7 @@ class Profile extends CActiveRecord
 			array('birthday', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, birthday, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, birthday, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -95,6 +96,7 @@ class Profile extends CActiveRecord
 			'phone' => 'Phone',
 			'ext' => 'Ext',
 			'birthday' => 'Birthday',
+			'lock_version' => 'Lock Version',
 			'created_by_id' => 'Created By',
 			'created_on' => 'Created On',
 			'updated_by_id' => 'Updated By',
@@ -134,6 +136,7 @@ class Profile extends CActiveRecord
 		$criteria->compare('phone',$this->phone,true);
 		$criteria->compare('ext',$this->ext,true);
 		$criteria->compare('birthday',$this->birthday,true);
+		$criteria->compare('lock_version',$this->lock_version);
 		$criteria->compare('created_by_id',$this->created_by_id);
 		$criteria->compare('created_on',$this->created_on,true);
 		$criteria->compare('updated_by_id',$this->updated_by_id);

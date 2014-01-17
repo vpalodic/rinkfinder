@@ -29,6 +29,8 @@
 
                     <?php echo $form->textFieldControlGroup($model,'activated_on',array('span'=>5)); ?>
 
+                    <?php echo $form->textFieldControlGroup($model,'lock_version',array('span'=>5)); ?>
+
                     <?php echo $form->textFieldControlGroup($model,'created_by_id',array('span'=>5)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'created_on',array('span'=>5)); ?>

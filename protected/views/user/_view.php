@@ -46,6 +46,10 @@
 	<?php echo CHtml::encode($data->activated_on); ?>
 	<br />
 
+	<b><?php echo CHtml::encode($data->getAttributeLabel('lock_version')); ?>:</b>
+	<?php echo CHtml::encode($data->lock_version); ?>
+	<br />
+
 	<b><?php echo CHtml::encode($data->getAttributeLabel('created_by_id')); ?>:</b>
 	<?php echo CHtml::encode($data->created_by_id); ?>
 	<br />

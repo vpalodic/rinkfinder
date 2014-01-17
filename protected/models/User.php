@@ -14,22 +14,18 @@
  * @property string $last_visited_from
  * @property string $activation_key
  * @property string $activated_on
+ * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
  * @property integer $updated_by_id
  * @property string $updated_on
  *
  * The followings are the available model relations:
- * @property AuthItem[] $authItems
- * @property Profile[] $profiles
- * @property Profile[] $profiles1
- * @property Profile[] $profiles2
+ * @property Profile $profile
  * @property User $updatedBy
- * @property User[] $users
  * @property User $createdBy
- * @property User[] $users1
  */
-class User extends CActiveRecord
+class User extends RinkfinderActiveRecord
 {
 	/**
 	 * @return string the associated database table name
@@ -48,14 +44,14 @@ class User extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('username, email, password, activation_key, created_on, updated_on', 'required'),
-			array('status, failed_logins, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+			array('status, failed_logins, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
 			array('username, last_visited_from', 'length', 'max'=>32),
 			array('email', 'length', 'max'=>128),
 			array('password, activation_key', 'length', 'max'=>64),
 			array('last_visited_on, activated_on', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, username, email, password, status, failed_logins, last_visited_on, last_visited_from, activation_key, activated_on, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, username, email, password, status, failed_logins, last_visited_on, last_visited_from, activation_key, activated_on, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -67,14 +63,9 @@ class User extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'authItems' => array(self::MANY_MANY, 'AuthItem', 'auth_assignment(userid, itemname)'),
-			'profiles' => array(self::HAS_MANY, 'Profile', 'user_id'),
-			'profiles1' => array(self::HAS_MANY, 'Profile', 'created_by_id'),
-			'profiles2' => array(self::HAS_MANY, 'Profile', 'updated_by_id'),
+			'profile' => array(self::HAS_ONE, 'Profile', 'user_id'),
 			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-			'users' => array(self::HAS_MANY, 'User', 'updated_by_id'),
 			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
-			'users1' => array(self::HAS_MANY, 'User', 'created_by_id'),
 		);
 	}
 
@@ -94,6 +85,7 @@ class User extends CActiveRecord
 			'last_visited_from' => 'Last Visited From',
 			'activation_key' => 'Activation Key',
 			'activated_on' => 'Activated On',
+			'lock_version' => 'Lock Version',
 			'created_by_id' => 'Created By',
 			'created_on' => 'Created On',
 			'updated_by_id' => 'Updated By',
@@ -129,6 +121,7 @@ class User extends CActiveRecord
 		$criteria->compare('last_visited_from',$this->last_visited_from,true);
 		$criteria->compare('activation_key',$this->activation_key,true);
 		$criteria->compare('activated_on',$this->activated_on,true);
+		$criteria->compare('lock_version',$this->lock_version);
 		$criteria->compare('created_by_id',$this->created_by_id);
 		$criteria->compare('created_on',$this->created_on,true);
 		$criteria->compare('updated_by_id',$this->updated_by_id);

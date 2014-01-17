@@ -40,6 +40,7 @@ $this->menu=array(
 		'phone',
 		'ext',
 		'birthday',
+		'lock_version',
 		'created_by_id',
 		'created_on',
 		'updated_by_id',
