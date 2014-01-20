@@ -64,8 +64,8 @@ class User extends RinkfinderActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'profile' => array(self::HAS_ONE, 'Profile', 'user_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
+			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id', 'select' => array('id', 'username', 'status')),
+			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id', 'select' => array('id', 'username', 'status')),
 		);
 	}
 
