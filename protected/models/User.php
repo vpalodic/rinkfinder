@@ -8,7 +8,7 @@
  * @property string $username
  * @property string $email
  * @property string $password
- * @property integer $status
+ * @property integer $status_id
  * @property integer $failed_logins
  * @property string $last_visited_on
  * @property string $last_visited_from
@@ -44,14 +44,14 @@ class User extends RinkfinderActiveRecord
 		// will receive user inputs.
 		return array(
 			array('username, email, password, activation_key, created_on, updated_on', 'required'),
-			array('status, failed_logins, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+			array('status_id, failed_logins, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
 			array('username, last_visited_from', 'length', 'max'=>32),
 			array('email', 'length', 'max'=>128),
 			array('password, activation_key', 'length', 'max'=>64),
 			array('last_visited_on, activated_on', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, username, email, password, status, failed_logins, last_visited_on, last_visited_from, activation_key, activated_on, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, username, email, password, status_id, failed_logins, last_visited_on, last_visited_from, activation_key, activated_on, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,8 +64,8 @@ class User extends RinkfinderActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'profile' => array(self::HAS_ONE, 'Profile', 'user_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id', 'select' => array('id', 'username', 'status')),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id', 'select' => array('id', 'username', 'status')),
+			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id', 'select' => array('id', 'username', 'status_id')),
+			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id', 'select' => array('id', 'username', 'status_id')),
 		);
 	}
 
@@ -79,7 +79,7 @@ class User extends RinkfinderActiveRecord
 			'username' => 'Username',
 			'email' => 'Email',
 			'password' => 'Password',
-			'status' => 'Status',
+			'status_id' => 'Status',
 			'failed_logins' => 'Failed Logins',
 			'last_visited_on' => 'Last Visited On',
 			'last_visited_from' => 'Last Visited From',
@@ -115,7 +115,7 @@ class User extends RinkfinderActiveRecord
 		$criteria->compare('username',$this->username,true);
 		$criteria->compare('email',$this->email,true);
 		$criteria->compare('password',$this->password,true);
-		$criteria->compare('status',$this->status);
+		$criteria->compare('status_id',$this->status_id);
 		$criteria->compare('failed_logins',$this->failed_logins);
 		$criteria->compare('last_visited_on',$this->last_visited_on,true);
 		$criteria->compare('last_visited_from',$this->last_visited_from,true);

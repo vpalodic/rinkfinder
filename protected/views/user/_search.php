@@ -17,7 +17,7 @@
 
                     <?php echo $form->textFieldControlGroup($model,'email',array('span'=>5,'maxlength'=>128)); ?>
 
-                            <?php echo $form->textFieldControlGroup($model,'status',array('span'=>5)); ?>
+                            <?php echo $form->textFieldControlGroup($model,'status_id',array('span'=>5)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'failed_logins',array('span'=>5)); ?>
 

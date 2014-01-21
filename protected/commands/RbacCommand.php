@@ -46,13 +46,32 @@ class RbacCommand extends CConsoleCommand
             $this->_authManager->createOperation("updateUser", "update a users information");
             $this->_authManager->createOperation("deleteUser", "remove a user from a project");
 
-            // create the lowest level operations for projects
-            $this->_authManager->createOperation("createProject", "create a new project");
-            $this->_authManager->createOperation("readProject", "read project information");
-            $this->_authManager->createOperation("updateProject", "update project information");
-            $this->_authManager->createOperation("deleteProject", "delete a project");
+            // create the lowest level operations for arenas
+            $this->_authManager->createOperation("createArena", "create a new arena");
+            $this->_authManager->createOperation("uploadArena", "create new arena(s) from bulk import");
+            $this->_authManager->createOperation("readArena", "read arena information");
+            $this->_authManager->createOperation("updateArena", "update arena information");
+            $this->_authManager->createOperation("deleteArena", "delete an arena");
 
-            // create the lowest level operations for issues
+            // create the lowest level operations for ice sheets
+            $this->_authManager->createOperation("createIceSheet", "create a new issue");
+            $this->_authManager->createOperation("readIceSheet", "read issue information");
+            $this->_authManager->createOperation("updateIceSheet", "update issue information");
+            $this->_authManager->createOperation("deleteIceSheet", "delete an issue from a project");
+
+            // create the lowest level operations for events
+            $this->_authManager->createOperation("createIssue", "create a new issue");
+            $this->_authManager->createOperation("readIssue", "read issue information");
+            $this->_authManager->createOperation("updateIssue", "update issue information");
+            $this->_authManager->createOperation("deleteIssue", "delete an issue from a project");
+
+            // create the lowest level operations for reservations
+            $this->_authManager->createOperation("createIssue", "create a new issue");
+            $this->_authManager->createOperation("readIssue", "read issue information");
+            $this->_authManager->createOperation("updateIssue", "update issue information");
+            $this->_authManager->createOperation("deleteIssue", "delete an issue from a project");
+
+            // create the lowest level operations for lookups and tags
             $this->_authManager->createOperation("createIssue", "create a new issue");
             $this->_authManager->createOperation("readIssue", "read issue information");
             $this->_authManager->createOperation("updateIssue", "update issue information");

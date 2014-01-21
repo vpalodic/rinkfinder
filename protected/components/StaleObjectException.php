@@ -6,7 +6,7 @@
  * @author vj.palodichuk@gmail.com
  * @package application.components
  */
-class StaleObjectError extends CDbException
+class StaleObjectException extends CDbException
 {
     
 }

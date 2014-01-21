@@ -39,7 +39,7 @@ abstract class RinkfinderActiveRecord extends CActiveRecord
      */
     protected function beforeSave()
     {
-        if(null !== Yii::app()->user) {
+        if(null !== Yii::app()->user && Yii::app()->user->id != 0) {
             $id = Yii::app()->user->id;
         } else {
             $id = 1;
@@ -95,10 +95,11 @@ abstract class RinkfinderActiveRecord extends CActiveRecord
      * @param mixed $condition query condition or criteria.
      * @param array $params parameters to be bound to an SQL statement.
      * @return integer the number of rows being updated
+     * @throws StaleObjectException
      */
     public function updateByPk($pk, $attributes, $condition = '', $params = array())
     {
-        $this->applyLockingCondition($condition);
+        $this->applyLockingCondition($condition, $params);
 
         //increment object version
         $lockingAttribute = $this->getLockingAttribute();
@@ -122,10 +123,11 @@ abstract class RinkfinderActiveRecord extends CActiveRecord
      * @param mixed $condition query condition or criteria.
      * @param array $params parameters to be bound to an SQL statement.
      * @return integer the number of rows deleted
+     * @throws StaleObjectException
      */
     public function deleteByPk($pk, $condition = '', $params = array())
     {
-        $this->applyLockingCondition($condition);
+        $this->applyLockingCondition($condition, $params);
         
         $affectedRows = parent::deleteByPk($pk, $condition, $params);
         
@@ -137,17 +139,27 @@ abstract class RinkfinderActiveRecord extends CActiveRecord
     }
 
     /**
-     * Adds check for object version to the specified condition and increments version
-     * @param string $condition initial condition
+     * Adds check for object version to the specified condition
+     * @param mixed $condition initial condition
+     * @params array $params the parameters array for the query
      */
-    private function applyLockingCondition(&$condition) {
+    private function applyLockingCondition(&$condition, &$params)
+    {
         $lockingAttribute = $this->getLockingAttribute();
         $lockingAttributeValue = $this->$lockingAttribute;
 
-        if(!empty($condition)) {
-            $condition .= ' and ';
-        }
+        if(is_string($condition)) {
+            if(!empty($condition)) {
+                $condition .= ' and ';
+            }
         
-        $condition .= "$lockingAttribute = $lockingAttributeValue";
+            $paramName = ':' . $lockingAttribute;
+            $condition .= "$lockingAttribute = $paramName";
+            $params[$paramName] = $lockingAttributeValue;
+        } elseif($condition instanceof CDbCriteria) {
+            $paramName = ':' . $lockingAttribute;
+            $condition->addCondition("$lockingAttribute = $paramName");
+            $params[$paramName] = $lockingAttributeValue;
+        }
     }
 }

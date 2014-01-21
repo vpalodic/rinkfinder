@@ -25,7 +25,7 @@
                 array('label'=>'Home', 'url'=>array('/site/index')),
                 array('label'=>'About', 'url'=>array('/site/page', 'view' => 'about')),
                 array('label'=>'Contact', 'url'=>array('/site/contact')),
-                array('label'=>'Projects', 'url'=>array('/project'), 'visible' => !Yii::app()->user->isGuest),
+                array('label'=>'Arenas', 'url'=>array('/arena'), 'visible' => !Yii::app()->user->isGuest),
 //                array('label'=>'Admin', 'url'=>array('/admin'), 'visible' => Yii::app()->user->checkAccess('admin')),
                 array('label'=>'Login', 'url'=>array('/site/login'), 'visible' => Yii::app()->user->isGuest),
                 array('label'=>'Logout ('.Yii::app()->user->name.')', 'url' => array('/site/logout'), 'visible' => !Yii::app()->user->isGuest)
@@ -38,7 +38,7 @@
 
 	<?php if(isset($this->breadcrumbs)):?>
 		<?php $this->widget('bootstrap.widgets.TbBreadcrumb', array(
-			'links'=>$this->breadcrumbs,
+			'links' => $this->breadcrumbs,
 		)); ?><!-- breadcrumbs -->
 	<?php endif?>
 
@@ -47,7 +47,7 @@
 	<div class="clear"></div>
 
 	<div id="footer">
-		Copyright &copy; <?php echo date('Y'); ?> by Vincent J. Palodichuk.<br/>
+		Copyright &copy; <?php echo date('Y'); ?> Rinkfinder.com.<br/>
 		All Rights Reserved.<br/>
 		<?php echo Yii::powered(); ?>
 	</div><!-- footer -->
