@@ -35,7 +35,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'display_name' => 'VARCHAR(32) NOT NULL',
                 'display_order' => 'INT(3) NOT NULL',
                 'description' => 'TEXT NOT NULL',
-                'active' => 'BIT(1) NOT NULL DEFAULT 1',
+                'active' => 'BOOLEAN NOT NULL DEFAULT 1',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
                 'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',

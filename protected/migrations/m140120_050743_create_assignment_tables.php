@@ -55,7 +55,7 @@ class m140120_050743_create_assignment_tables extends CDbMigration
         $this->createTable('arena_contact_assignment', array(
                 'arena_id' => 'INT(11) NOT NULL',
                 'contact_id' => 'INT(11) NOT NULL',
-                'primary_contact' => 'BIT(1) NOT NULL DEFAULT 1',
+                'primary_contact' => 'BOOLEAN NOT NULL DEFAULT 1',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
                 'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',
