@@ -1,23 +1,12 @@
 <?php
 
 /**
- * This is the model class for table "profile".
+ * This is the model class for table "tag".
  *
- * The followings are the available columns in table 'profile':
- * @property integer $user_id
- * @property string $first_name
- * @property string $last_name
- * @property string $address_line1
- * @property string $address_line2
- * @property string $city
- * @property string $state
- * @property string $zip
- * @property double $lat
- * @property double $lng
- * @property string $phone
- * @property string $ext
- * @property string $avatar
- * @property string $url
+ * The followings are the available columns in table 'tag':
+ * @property integer $id
+ * @property string $name
+ * @property integer $frequency
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -25,18 +14,17 @@
  * @property string $updated_on
  *
  * The followings are the available model relations:
- * @property User $user
  * @property User $createdBy
  * @property User $updatedBy
  */
-class Profile extends RinkfinderActiveRecord
+class Tag extends RinkfinderActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'profile';
+		return 'tag';
 	}
 
 	/**
@@ -47,17 +35,12 @@ class Profile extends RinkfinderActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, first_name, last_name, address_line1, city, state, zip, created_on, updated_on', 'required'),
-			array('user_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('lat, lng', 'numerical'),
-			array('first_name, last_name, address_line1, address_line2, city', 'length', 'max'=>128),
-			array('state', 'length', 'max'=>2),
-			array('zip', 'length', 'max'=>5),
-			array('phone, ext', 'length', 'max'=>10),
-			array('avatar, url', 'length', 'max'=>511),
+			array('name, created_on, updated_on', 'required'),
+			array('frequency, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+			array('name', 'length', 'max'=>128),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, avatar, url, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, name, frequency, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -69,7 +52,6 @@ class Profile extends RinkfinderActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'user' => array(self::BELONGS_TO, 'User', 'user_id'),
 			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
 			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
 		);
@@ -81,20 +63,9 @@ class Profile extends RinkfinderActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'user_id' => 'User',
-			'first_name' => 'First Name',
-			'last_name' => 'Last Name',
-			'address_line1' => 'Address Line1',
-			'address_line2' => 'Address Line2',
-			'city' => 'City',
-			'state' => 'State',
-			'zip' => 'Zip',
-			'lat' => 'Lat',
-			'lng' => 'Lng',
-			'phone' => 'Phone',
-			'ext' => 'Ext',
-			'avatar' => 'Avatar',
-			'url' => 'Url',
+			'id' => 'ID',
+			'name' => 'Name',
+			'frequency' => 'Frequency',
 			'lock_version' => 'Lock Version',
 			'created_by_id' => 'Created By',
 			'created_on' => 'Created On',
@@ -121,20 +92,9 @@ class Profile extends RinkfinderActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('first_name',$this->first_name,true);
-		$criteria->compare('last_name',$this->last_name,true);
-		$criteria->compare('address_line1',$this->address_line1,true);
-		$criteria->compare('address_line2',$this->address_line2,true);
-		$criteria->compare('city',$this->city,true);
-		$criteria->compare('state',$this->state,true);
-		$criteria->compare('zip',$this->zip,true);
-		$criteria->compare('lat',$this->lat);
-		$criteria->compare('lng',$this->lng);
-		$criteria->compare('phone',$this->phone,true);
-		$criteria->compare('ext',$this->ext,true);
-		$criteria->compare('avatar',$this->avatar,true);
-		$criteria->compare('url',$this->url,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('name',$this->name,true);
+		$criteria->compare('frequency',$this->frequency);
 		$criteria->compare('lock_version',$this->lock_version);
 		$criteria->compare('created_by_id',$this->created_by_id);
 		$criteria->compare('created_on',$this->created_on,true);
@@ -150,7 +110,7 @@ class Profile extends RinkfinderActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return Profile the static model class
+	 * @return Tag the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{

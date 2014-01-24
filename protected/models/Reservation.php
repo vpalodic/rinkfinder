@@ -1,23 +1,16 @@
 <?php
 
 /**
- * This is the model class for table "profile".
+ * This is the model class for table "reservation".
  *
- * The followings are the available columns in table 'profile':
- * @property integer $user_id
- * @property string $first_name
- * @property string $last_name
- * @property string $address_line1
- * @property string $address_line2
- * @property string $city
- * @property string $state
- * @property string $zip
- * @property double $lat
- * @property double $lng
- * @property string $phone
- * @property string $ext
- * @property string $avatar
- * @property string $url
+ * The followings are the available columns in table 'reservation':
+ * @property integer $id
+ * @property integer $source_id
+ * @property integer $arena_id
+ * @property integer $event_id
+ * @property integer $for_id
+ * @property string $notes
+ * @property integer $status_id
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -25,18 +18,22 @@
  * @property string $updated_on
  *
  * The followings are the available model relations:
- * @property User $user
+ * @property ReservationRequest $source
+ * @property Arena $arena
+ * @property Event $event
+ * @property User $for
+ * @property ReservationStatus $status
  * @property User $createdBy
  * @property User $updatedBy
  */
-class Profile extends RinkfinderActiveRecord
+class Reservation extends RinkfinderActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'profile';
+		return 'reservation';
 	}
 
 	/**
@@ -47,17 +44,12 @@ class Profile extends RinkfinderActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, first_name, last_name, address_line1, city, state, zip, created_on, updated_on', 'required'),
-			array('user_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('lat, lng', 'numerical'),
-			array('first_name, last_name, address_line1, address_line2, city', 'length', 'max'=>128),
-			array('state', 'length', 'max'=>2),
-			array('zip', 'length', 'max'=>5),
-			array('phone, ext', 'length', 'max'=>10),
-			array('avatar, url', 'length', 'max'=>511),
+			array('arena_id, event_id, for_id, created_on, updated_on', 'required'),
+			array('source_id, arena_id, event_id, for_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+			array('notes', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, avatar, url, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, source_id, arena_id, event_id, for_id, notes, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -69,7 +61,11 @@ class Profile extends RinkfinderActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'user' => array(self::BELONGS_TO, 'User', 'user_id'),
+			'source' => array(self::BELONGS_TO, 'ReservationRequest', 'source_id'),
+			'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
+			'event' => array(self::BELONGS_TO, 'Event', 'event_id'),
+			'for' => array(self::BELONGS_TO, 'User', 'for_id'),
+			'status' => array(self::BELONGS_TO, 'ReservationStatus', 'status_id'),
 			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
 			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
 		);
@@ -81,20 +77,13 @@ class Profile extends RinkfinderActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'user_id' => 'User',
-			'first_name' => 'First Name',
-			'last_name' => 'Last Name',
-			'address_line1' => 'Address Line1',
-			'address_line2' => 'Address Line2',
-			'city' => 'City',
-			'state' => 'State',
-			'zip' => 'Zip',
-			'lat' => 'Lat',
-			'lng' => 'Lng',
-			'phone' => 'Phone',
-			'ext' => 'Ext',
-			'avatar' => 'Avatar',
-			'url' => 'Url',
+			'id' => 'ID',
+			'source_id' => 'Source',
+			'arena_id' => 'Arena',
+			'event_id' => 'Event',
+			'for_id' => 'For',
+			'notes' => 'Notes',
+			'status_id' => 'Status',
 			'lock_version' => 'Lock Version',
 			'created_by_id' => 'Created By',
 			'created_on' => 'Created On',
@@ -121,20 +110,13 @@ class Profile extends RinkfinderActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('first_name',$this->first_name,true);
-		$criteria->compare('last_name',$this->last_name,true);
-		$criteria->compare('address_line1',$this->address_line1,true);
-		$criteria->compare('address_line2',$this->address_line2,true);
-		$criteria->compare('city',$this->city,true);
-		$criteria->compare('state',$this->state,true);
-		$criteria->compare('zip',$this->zip,true);
-		$criteria->compare('lat',$this->lat);
-		$criteria->compare('lng',$this->lng);
-		$criteria->compare('phone',$this->phone,true);
-		$criteria->compare('ext',$this->ext,true);
-		$criteria->compare('avatar',$this->avatar,true);
-		$criteria->compare('url',$this->url,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('source_id',$this->source_id);
+		$criteria->compare('arena_id',$this->arena_id);
+		$criteria->compare('event_id',$this->event_id);
+		$criteria->compare('for_id',$this->for_id);
+		$criteria->compare('notes',$this->notes,true);
+		$criteria->compare('status_id',$this->status_id);
 		$criteria->compare('lock_version',$this->lock_version);
 		$criteria->compare('created_by_id',$this->created_by_id);
 		$criteria->compare('created_on',$this->created_on,true);
@@ -150,7 +132,7 @@ class Profile extends RinkfinderActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return Profile the static model class
+	 * @return Reservation the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
