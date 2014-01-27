@@ -49,7 +49,7 @@ class m140120_033811_create_reservation_table extends CDbMigration
 
     private function createReservationTable()
     {
-        // the source_id field references reservation_request.id and
+        // the source_id field references event_request.id and
         // the arena_id field references arena.id and
         // the event_id field references event.id and
         // the for_id field references user.id and
@@ -78,7 +78,7 @@ class m140120_033811_create_reservation_table extends CDbMigration
                 'KEY reservation_status_id_fk (status_id)',
                 'KEY reservation_created_by_id_fk (created_by_id)',
                 'KEY reservation_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT reservation_source_id_fk FOREIGN KEY (source_id) REFERENCES reservation_request (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT reservation_source_id_fk FOREIGN KEY (source_id) REFERENCES event_request (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
                 'CONSTRAINT reservation_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
                 'CONSTRAINT reservation_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
                 'CONSTRAINT reservation_for_id_fk FOREIGN KEY (for_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',

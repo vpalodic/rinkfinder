@@ -28,11 +28,20 @@
  * @property ArenaStatus[] $arenaStatuses
  * @property ArenaStatus[] $arenaStatuses1
  * @property Arena[] $arenas2
- * @property AuthItem[] $authItems
  * @property Contact[] $contacts
  * @property Contact[] $contacts1
  * @property Event[] $events
  * @property Event[] $events1
+ * @property EventRequest[] $eventRequests
+ * @property EventRequest[] $eventRequests1
+ * @property EventRequest[] $eventRequests2
+ * @property EventRequest[] $eventRequests3
+ * @property EventRequest[] $eventRequests4
+ * @property EventRequest[] $eventRequests5
+ * @property EventRequestStatus[] $eventRequestStatuses
+ * @property EventRequestStatus[] $eventRequestStatuses1
+ * @property EventRequestType[] $eventRequestTypes
+ * @property EventRequestType[] $eventRequestTypes1
  * @property EventStatus[] $eventStatuses
  * @property EventStatus[] $eventStatuses1
  * @property EventType[] $eventTypes
@@ -55,16 +64,6 @@
  * @property Reservation[] $reservations
  * @property Reservation[] $reservations1
  * @property Reservation[] $reservations2
- * @property ReservationRequest[] $reservationRequests
- * @property ReservationRequest[] $reservationRequests1
- * @property ReservationRequest[] $reservationRequests2
- * @property ReservationRequest[] $reservationRequests3
- * @property ReservationRequest[] $reservationRequests4
- * @property ReservationRequest[] $reservationRequests5
- * @property ReservationRequestStatus[] $reservationRequestStatuses
- * @property ReservationRequestStatus[] $reservationRequestStatuses1
- * @property ReservationRequestType[] $reservationRequestTypes
- * @property ReservationRequestType[] $reservationRequestTypes1
  * @property ReservationStatus[] $reservationStatuses
  * @property ReservationStatus[] $reservationStatuses1
  * @property Tag[] $tags
@@ -122,11 +121,20 @@ class User extends RinkfinderActiveRecord
 			'arenaStatuses' => array(self::HAS_MANY, 'ArenaStatus', 'created_by_id'),
 			'arenaStatuses1' => array(self::HAS_MANY, 'ArenaStatus', 'updated_by_id'),
 			'arenas2' => array(self::MANY_MANY, 'Arena', 'arena_user_assignment(user_id, arena_id)'),
-			'authItems' => array(self::MANY_MANY, 'AuthItem', 'auth_assignment(userid, itemname)'),
 			'contacts' => array(self::HAS_MANY, 'Contact', 'created_by_id'),
 			'contacts1' => array(self::HAS_MANY, 'Contact', 'updated_by_id'),
 			'events' => array(self::HAS_MANY, 'Event', 'created_by_id'),
 			'events1' => array(self::HAS_MANY, 'Event', 'updated_by_id'),
+			'eventRequests' => array(self::HAS_MANY, 'EventRequest', 'requester_id'),
+			'eventRequests1' => array(self::HAS_MANY, 'EventRequest', 'acknowledger_id'),
+			'eventRequests2' => array(self::HAS_MANY, 'EventRequest', 'accepter_id'),
+			'eventRequests3' => array(self::HAS_MANY, 'EventRequest', 'rejector_id'),
+			'eventRequests4' => array(self::HAS_MANY, 'EventRequest', 'created_by_id'),
+			'eventRequests5' => array(self::HAS_MANY, 'EventRequest', 'updated_by_id'),
+			'eventRequestStatuses' => array(self::HAS_MANY, 'EventRequestStatus', 'created_by_id'),
+			'eventRequestStatuses1' => array(self::HAS_MANY, 'EventRequestStatus', 'updated_by_id'),
+			'eventRequestTypes' => array(self::HAS_MANY, 'EventRequestType', 'created_by_id'),
+			'eventRequestTypes1' => array(self::HAS_MANY, 'EventRequestType', 'updated_by_id'),
 			'eventStatuses' => array(self::HAS_MANY, 'EventStatus', 'created_by_id'),
 			'eventStatuses1' => array(self::HAS_MANY, 'EventStatus', 'updated_by_id'),
 			'eventTypes' => array(self::HAS_MANY, 'EventType', 'created_by_id'),
@@ -149,16 +157,6 @@ class User extends RinkfinderActiveRecord
 			'reservations' => array(self::HAS_MANY, 'Reservation', 'for_id'),
 			'reservations1' => array(self::HAS_MANY, 'Reservation', 'created_by_id'),
 			'reservations2' => array(self::HAS_MANY, 'Reservation', 'updated_by_id'),
-			'reservationRequests' => array(self::HAS_MANY, 'ReservationRequest', 'requester_id'),
-			'reservationRequests1' => array(self::HAS_MANY, 'ReservationRequest', 'acknowledger_id'),
-			'reservationRequests2' => array(self::HAS_MANY, 'ReservationRequest', 'accepter_id'),
-			'reservationRequests3' => array(self::HAS_MANY, 'ReservationRequest', 'rejector_id'),
-			'reservationRequests4' => array(self::HAS_MANY, 'ReservationRequest', 'created_by_id'),
-			'reservationRequests5' => array(self::HAS_MANY, 'ReservationRequest', 'updated_by_id'),
-			'reservationRequestStatuses' => array(self::HAS_MANY, 'ReservationRequestStatus', 'created_by_id'),
-			'reservationRequestStatuses1' => array(self::HAS_MANY, 'ReservationRequestStatus', 'updated_by_id'),
-			'reservationRequestTypes' => array(self::HAS_MANY, 'ReservationRequestType', 'created_by_id'),
-			'reservationRequestTypes1' => array(self::HAS_MANY, 'ReservationRequestType', 'updated_by_id'),
 			'reservationStatuses' => array(self::HAS_MANY, 'ReservationStatus', 'created_by_id'),
 			'reservationStatuses1' => array(self::HAS_MANY, 'ReservationStatus', 'updated_by_id'),
 			'tags' => array(self::HAS_MANY, 'Tag', 'created_by_id'),

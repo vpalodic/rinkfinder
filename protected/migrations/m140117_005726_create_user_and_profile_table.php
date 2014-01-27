@@ -10,12 +10,12 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         
         $this->insertUserStatusValues();
         $this->insertSuperAdmin();
-        $this->insertGuestUser();
+        //$this->insertGuestUser();
     }
 
     public function safeDown()
     {
-        $this->deleteGuestUser();
+        //$this->deleteGuestUser();
         $this->deleteSuperAdmin();
             
         $this->dropProfileTable();
@@ -66,7 +66,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'failed_logins' => 'INT(3) NOT NULL DEFAULT 0',
                 'last_visited_on' => 'DATETIME NULL',
                 'last_visited_from' => 'VARCHAR(32) NULL',
-                'activation_key' => 'VARCHAR(64) NOT NULL',
+                'user_key' => 'VARCHAR(64) NOT NULL',
                 'activated_on' => 'DATETIME NULL',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
                 'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
@@ -217,7 +217,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'password' => '$2a$13$XbvEz28oJHUt8CMd7ExY3ONPSPMdub5gG7/J09jvYhxQJ4kjpp0cq',
                 'status_id' => 1,
                 'failed_logins' => 0,
-                'activation_key' => '$2a$13$ZgDFkwtY9f57GeMbbV35Sui3umePC8Q2qLprpfuNFHLStRc3yuY.y',
+                'user_key' => '$2a$13$ZgDFkwtY9f57GeMbbV35Sui3umePC8Q2qLprpfuNFHLStRc3yuY.y',
                 'activated_on' => new CDbExpression('NOW()'),
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
@@ -256,7 +256,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'password' => '',
                 'status_id' => 1,
                 'failed_logins' => 0,
-                'activation_key' => '',
+                'user_key' => '',
                 'activated_on' => new CDbExpression('NOW()'),
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),

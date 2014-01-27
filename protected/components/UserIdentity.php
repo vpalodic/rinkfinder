@@ -26,8 +26,10 @@ class UserIdentity extends CUserIdentity
 			$this->errorCode=self::ERROR_USERNAME_INVALID;
 		elseif($users[$this->username]!==$this->password)
 			$this->errorCode=self::ERROR_PASSWORD_INVALID;
-		else
+		else {
 			$this->errorCode=self::ERROR_NONE;
+                        Yii::app()->user->id = 1;
+                }
 		return !$this->errorCode;
 	}
 }

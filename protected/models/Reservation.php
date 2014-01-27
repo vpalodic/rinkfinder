@@ -18,7 +18,7 @@
  * @property string $updated_on
  *
  * The followings are the available model relations:
- * @property ReservationRequest $source
+ * @property EventRequest $source
  * @property Arena $arena
  * @property Event $event
  * @property User $for
@@ -61,7 +61,7 @@ class Reservation extends RinkfinderActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'source' => array(self::BELONGS_TO, 'ReservationRequest', 'source_id'),
+			'source' => array(self::BELONGS_TO, 'EventRequest', 'source_id'),
 			'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
 			'event' => array(self::BELONGS_TO, 'Event', 'event_id'),
 			'for' => array(self::BELONGS_TO, 'User', 'for_id'),

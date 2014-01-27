@@ -14,9 +14,8 @@ class m140120_065309_create_arena_reservation_policy_table extends CDbMigration
     
     private function createArenaReservationPolicyTable()
     {
-        // the source_id field references reservation_request.id and
-        // the event_id field references event.id
-        // the for_id field references user.id and
+        // the arena_id field references arena.id and
+        // the event_type_id field references event_type.id
         // the created_by_id field references user.id and
         // the updated_by_id field references user.id
         // so we add Foreign Keys for these fields
