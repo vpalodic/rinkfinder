@@ -12,7 +12,7 @@
  * @property integer $failed_logins
  * @property string $last_visited_on
  * @property string $last_visited_from
- * @property string $activation_key
+ * @property string $user_key
  * @property string $activated_on
  * @property integer $lock_version
  * @property integer $created_by_id
@@ -22,89 +22,146 @@
  *
  * The followings are the available model relations:
  * @property Arena[] $arenas
- * @property Arena[] $arenas1
- * @property ArenaReservationPolicy[] $arenaReservationPolicies
- * @property ArenaReservationPolicy[] $arenaReservationPolicies1
- * @property ArenaStatus[] $arenaStatuses
- * @property ArenaStatus[] $arenaStatuses1
- * @property Arena[] $arenas2
- * @property Contact[] $contacts
- * @property Contact[] $contacts1
- * @property Event[] $events
- * @property Event[] $events1
- * @property EventRequest[] $eventRequests
- * @property EventRequest[] $eventRequests1
- * @property EventRequest[] $eventRequests2
- * @property EventRequest[] $eventRequests3
- * @property EventRequest[] $eventRequests4
- * @property EventRequest[] $eventRequests5
- * @property EventRequestStatus[] $eventRequestStatuses
- * @property EventRequestStatus[] $eventRequestStatuses1
- * @property EventRequestType[] $eventRequestTypes
- * @property EventRequestType[] $eventRequestTypes1
- * @property EventStatus[] $eventStatuses
- * @property EventStatus[] $eventStatuses1
- * @property EventType[] $eventTypes
- * @property EventType[] $eventTypes1
- * @property IceSheet[] $iceSheets
- * @property IceSheet[] $iceSheets1
- * @property IceSheetBase[] $iceSheetBases
- * @property IceSheetBase[] $iceSheetBases1
- * @property IceSheetRefrigeration[] $iceSheetRefrigerations
- * @property IceSheetRefrigeration[] $iceSheetRefrigerations1
- * @property IceSheetResurfacer[] $iceSheetResurfacers
- * @property IceSheetResurfacer[] $iceSheetResurfacers1
- * @property IceSheetStatus[] $iceSheetStatuses
- * @property IceSheetStatus[] $iceSheetStatuses1
- * @property IceSheetType[] $iceSheetTypes
- * @property IceSheetType[] $iceSheetTypes1
+ * @property EventRequest[] $eventRequestsCreated
+ * @property EventRequest[] $eventRequestsAcknowledged
+ * @property EventRequest[] $eventRequestsAccepted
+ * @property EventRequest[] $eventRequestsRejected
  * @property Profile $profile
- * @property Profile[] $profiles
- * @property Profile[] $profiles1
  * @property Reservation[] $reservations
- * @property Reservation[] $reservations1
- * @property Reservation[] $reservations2
- * @property ReservationStatus[] $reservationStatuses
- * @property ReservationStatus[] $reservationStatuses1
- * @property Tag[] $tags
- * @property Tag[] $tags1
- * @property UserStatus $status
  * @property User $createdBy
- * @property User[] $users
  * @property User $updatedBy
- * @property User[] $users1
- * @property UserStatus[] $userStatuses
- * @property UserStatus[] $userStatuses1
  */
 class User extends RinkfinderActiveRecord
 {
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'user';
-	}
+    const STATUS_NOTACTIVATED = 0;
+    const STATUS_ACTIVE = 1;
+    const STATUS_LOCKED = 2;
+    const STATUS_RESET = 3;
+    const STATUS_INACTIVE = 4;
+    const STATUS_DELETED = 5;
+    const STATUS_BANNED = -1;
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
+    /**
+     * Holds the new unecrypted password
+     * @var string
+     */
+    public $passwordSave;
+    
+    /**
+     * Holds the new unecrypted password and must match $passwordSave
+     * @var string
+     */
+    public $passwordRepeat;
+    
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'user';
+    }
+
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        return array(
+                array(
+                    'username',
+                    'length',
+                    'max' => 32,
+                    'min' => 3,
+                    'message' => Yii::t("Invalid username (length between 3 and 32 characters).")
+                ),
+                array(
+                    'username',
+                    'unique',
+                    'message' => Yii::t("Username already exists.")
+                ),
+                array(
+                    'username',
+                    'match',
+                    'pattern' => '/^[A-Za-z0-9_\.]+$/u',
+                    'message' => Yii::t("Invalid character(s) (A-z, 0-9).")
+                ),
+		array(
+                    'passwordSave, passwordRepeat',
+                    'required',
+                    'on' => 'insert, changePassword'
+                ),
+		array(
+                    'passwordSave, passwordRepeat',
+                    'length',
+                    'max' => 48,
+                    'min' => 8,
+                    'message' => Yii::t("Invalid password (length between 8 and 48 characters)."),
+                    'on' => 'insert, changePassword'
+                ),
+		array(
+                    'passwordSave, passwordRepeat',
+                    'match',
+                    'pattern' => '/(?=^.{8,}$)(?=.*\d)(?=.*[!@#$%^&*]+)(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/u',
+                    'message' => Yii::t("Password must contain at least one from each set (a-z, A-Z, 0-9, !@#$%^&*)."),
+                    'on' => 'insert, changePassword'
+                ),
+                array(
+                    'repeatPassword',
+                    'compare',
+                    'compareAttribute' => 'passwordSave',
+                    'on' => 'insert, changePassword'
+                ),
+                array(
+                    'email',
+                    'length',
+                    'max' => 128,
+                    'min' => 6,
+                    'message' => Yii::t("Invalid email (length between 6 and 128 characters).")
+                ),
+		array(
+                    'email',
+                    'unique',
+                    'message' => Yii::t("Email address already exists.")
+                ),
+		array(
+                    'email',
+                    'email'
+                ),
+		array(
+                    'status_id',
+                    'in',
+                    'range' => array(
+                        self::STATUS_BANNED,
+                        self::STATUS_NOTACTIVATED,
+                        self::STATUS_ACTIVE,
+                        self::STATUS_LOCKED,
+                        self::STATUS_RESET,
+                        self::STATUS_INACTIVE,
+                        self::STATUS_DELETED
+                    )
+                ),
+                array(
+                    'status_id',
+                    'numerical',
+                    'integerOnly' => true
+                ),
+                array(
+                    'username, email, status_id',
+                    'required'
+                ),
+        );
 		return array(
-			array('username, email, password, activation_key, created_on, updated_on', 'required'),
-			array('status_id, failed_logins, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('username, last_visited_from', 'length', 'max'=>32),
+			array('username, email, password', 'required'),
+			array('status_id, failed_logins', 'numerical', 'integerOnly' => true),
+			array('username, last_visited_from', 'length', 'max' => 32),
 			array('email', 'length', 'max'=>128),
-			array('password, activation_key', 'length', 'max'=>64),
+			array('password, user_key', 'length', 'max'=>64),
 			array('last_visited_on, activated_on', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, username, email, password, status_id, failed_logins, last_visited_on, last_visited_from, activation_key, activated_on, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, username, email, status_id, failed_logins, last_visited_on, last_visited_from, user_key, activated_on, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
-	}
+    }
 
 	/**
 	 * @return array relational rules.
@@ -114,60 +171,15 @@ class User extends RinkfinderActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'arenas' => array(self::HAS_MANY, 'Arena', 'created_by_id'),
-			'arenas1' => array(self::HAS_MANY, 'Arena', 'updated_by_id'),
-			'arenaReservationPolicies' => array(self::HAS_MANY, 'ArenaReservationPolicy', 'created_by_id'),
-			'arenaReservationPolicies1' => array(self::HAS_MANY, 'ArenaReservationPolicy', 'updated_by_id'),
-			'arenaStatuses' => array(self::HAS_MANY, 'ArenaStatus', 'created_by_id'),
-			'arenaStatuses1' => array(self::HAS_MANY, 'ArenaStatus', 'updated_by_id'),
-			'arenas2' => array(self::MANY_MANY, 'Arena', 'arena_user_assignment(user_id, arena_id)'),
-			'contacts' => array(self::HAS_MANY, 'Contact', 'created_by_id'),
-			'contacts1' => array(self::HAS_MANY, 'Contact', 'updated_by_id'),
-			'events' => array(self::HAS_MANY, 'Event', 'created_by_id'),
-			'events1' => array(self::HAS_MANY, 'Event', 'updated_by_id'),
-			'eventRequests' => array(self::HAS_MANY, 'EventRequest', 'requester_id'),
-			'eventRequests1' => array(self::HAS_MANY, 'EventRequest', 'acknowledger_id'),
-			'eventRequests2' => array(self::HAS_MANY, 'EventRequest', 'accepter_id'),
-			'eventRequests3' => array(self::HAS_MANY, 'EventRequest', 'rejector_id'),
-			'eventRequests4' => array(self::HAS_MANY, 'EventRequest', 'created_by_id'),
-			'eventRequests5' => array(self::HAS_MANY, 'EventRequest', 'updated_by_id'),
-			'eventRequestStatuses' => array(self::HAS_MANY, 'EventRequestStatus', 'created_by_id'),
-			'eventRequestStatuses1' => array(self::HAS_MANY, 'EventRequestStatus', 'updated_by_id'),
-			'eventRequestTypes' => array(self::HAS_MANY, 'EventRequestType', 'created_by_id'),
-			'eventRequestTypes1' => array(self::HAS_MANY, 'EventRequestType', 'updated_by_id'),
-			'eventStatuses' => array(self::HAS_MANY, 'EventStatus', 'created_by_id'),
-			'eventStatuses1' => array(self::HAS_MANY, 'EventStatus', 'updated_by_id'),
-			'eventTypes' => array(self::HAS_MANY, 'EventType', 'created_by_id'),
-			'eventTypes1' => array(self::HAS_MANY, 'EventType', 'updated_by_id'),
-			'iceSheets' => array(self::HAS_MANY, 'IceSheet', 'created_by_id'),
-			'iceSheets1' => array(self::HAS_MANY, 'IceSheet', 'updated_by_id'),
-			'iceSheetBases' => array(self::HAS_MANY, 'IceSheetBase', 'created_by_id'),
-			'iceSheetBases1' => array(self::HAS_MANY, 'IceSheetBase', 'updated_by_id'),
-			'iceSheetRefrigerations' => array(self::HAS_MANY, 'IceSheetRefrigeration', 'created_by_id'),
-			'iceSheetRefrigerations1' => array(self::HAS_MANY, 'IceSheetRefrigeration', 'updated_by_id'),
-			'iceSheetResurfacers' => array(self::HAS_MANY, 'IceSheetResurfacer', 'created_by_id'),
-			'iceSheetResurfacers1' => array(self::HAS_MANY, 'IceSheetResurfacer', 'updated_by_id'),
-			'iceSheetStatuses' => array(self::HAS_MANY, 'IceSheetStatus', 'created_by_id'),
-			'iceSheetStatuses1' => array(self::HAS_MANY, 'IceSheetStatus', 'updated_by_id'),
-			'iceSheetTypes' => array(self::HAS_MANY, 'IceSheetType', 'created_by_id'),
-			'iceSheetTypes1' => array(self::HAS_MANY, 'IceSheetType', 'updated_by_id'),
+			'arenas' => array(self::MANY_MANY, 'Arena', 'arena_user_assignment(user_id, arena_id)'),
+			'eventRequestsCreated' => array(self::HAS_MANY, 'EventRequest', 'requester_id'),
+			'eventRequestsAcknowledged' => array(self::HAS_MANY, 'EventRequest', 'acknowledger_id'),
+			'eventRequestsAccepted' => array(self::HAS_MANY, 'EventRequest', 'accepter_id'),
+			'eventRequestsRejected' => array(self::HAS_MANY, 'EventRequest', 'rejector_id'),
 			'profile' => array(self::HAS_ONE, 'Profile', 'user_id'),
-			'profiles' => array(self::HAS_MANY, 'Profile', 'created_by_id'),
-			'profiles1' => array(self::HAS_MANY, 'Profile', 'updated_by_id'),
 			'reservations' => array(self::HAS_MANY, 'Reservation', 'for_id'),
-			'reservations1' => array(self::HAS_MANY, 'Reservation', 'created_by_id'),
-			'reservations2' => array(self::HAS_MANY, 'Reservation', 'updated_by_id'),
-			'reservationStatuses' => array(self::HAS_MANY, 'ReservationStatus', 'created_by_id'),
-			'reservationStatuses1' => array(self::HAS_MANY, 'ReservationStatus', 'updated_by_id'),
-			'tags' => array(self::HAS_MANY, 'Tag', 'created_by_id'),
-			'tags1' => array(self::HAS_MANY, 'Tag', 'updated_by_id'),
-			'status' => array(self::BELONGS_TO, 'UserStatus', 'status_id'),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
-			'users' => array(self::HAS_MANY, 'User', 'created_by_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-			'users1' => array(self::HAS_MANY, 'User', 'updated_by_id'),
-			'userStatuses' => array(self::HAS_MANY, 'UserStatus', 'updated_by_id'),
-			'userStatuses1' => array(self::HAS_MANY, 'UserStatus', 'created_by_id'),
+			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id', 'select' => array('id', 'username', 'status_id')),
+			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id', 'select' => array('id', 'username', 'status_id')),
 		);
 	}
 
@@ -185,7 +197,7 @@ class User extends RinkfinderActiveRecord
 			'failed_logins' => 'Failed Logins',
 			'last_visited_on' => 'Last Visited On',
 			'last_visited_from' => 'Last Visited From',
-			'activation_key' => 'Activation Key',
+			'user_key' => 'User Key',
 			'activated_on' => 'Activated On',
 			'lock_version' => 'Lock Version',
 			'created_by_id' => 'Created By',
@@ -221,7 +233,7 @@ class User extends RinkfinderActiveRecord
 		$criteria->compare('failed_logins',$this->failed_logins);
 		$criteria->compare('last_visited_on',$this->last_visited_on,true);
 		$criteria->compare('last_visited_from',$this->last_visited_from,true);
-		$criteria->compare('activation_key',$this->activation_key,true);
+		$criteria->compare('user_key',$this->user_key,true);
 		$criteria->compare('activated_on',$this->activated_on,true);
 		$criteria->compare('lock_version',$this->lock_version);
 		$criteria->compare('created_by_id',$this->created_by_id);

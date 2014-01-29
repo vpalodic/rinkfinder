@@ -46,31 +46,66 @@ class SiteController extends Controller
 		}
 	}
 
-	/**
-	 * Displays the contact page
-	 */
-	public function actionContact()
-	{
-		$model=new ContactForm;
-		if(isset($_POST['ContactForm']))
-		{
-			$model->attributes=$_POST['ContactForm'];
-			if($model->validate())
-			{
-				$name='=?UTF-8?B?'.base64_encode($model->name).'?=';
-				$subject='=?UTF-8?B?'.base64_encode($model->subject).'?=';
-				$headers="From: $name <{$model->email}>\r\n".
-					"Reply-To: {$model->email}\r\n".
-					"MIME-Version: 1.0\r\n".
-					"Content-Type: text/plain; charset=UTF-8";
+    /**
+     * Displays the contact page
+     */
+    public function actionContact()
+    {
+        $model = new ContactForm;
 
-				mail(Yii::app()->params['adminEmail'],$subject,$model->body,$headers);
-				Yii::app()->user->setFlash('contact','Thank you for contacting us. We will respond to you as soon as possible.');
-				$this->refresh();
-			}
-		}
-		$this->render('contact',array('model'=>$model));
-	}
+    	// ajax validator
+        if(isset($_POST['ajax']) && $_POST['ajax'] === 'contact-form') {
+            echo CActiveForm::validate(array($model));
+            Yii::app()->end();
+        }
+
+        if(isset($_POST['ContactForm']))
+        {
+            $model->attributes = $_POST['ContactForm'];
+
+            if($model->validate()) {
+                $model->body = "Request from: " . CHtml::encode($model->name) . CHtml::encode(" <") . CHtml::encode($model->email) . CHtml::encode("> ") . "<br /><br />" . nl2br(CHtml::encode($model->body));
+                
+                $mailSent = Yii::app()->sendMail('',
+                        'vj.palodichuk@gmail.com',
+                        'Rinkfinder.com contact request: ' . CHtml::encode($model->subject),
+                        $model->body);
+                if($mailSent === true) {
+                    Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_SUCCESS,
+                            'Thank you for contacting us. We will respond to you as soon as possible.');
+                    
+                    if($model->copyMe) {
+                        $mailSent = Yii::app()->sendMail('',
+                                $model->email,
+                                'Rinkfinder.com contact request copy: ' . CHtml::encode($model->subject),
+                                $model->body);
+                        
+                        if($mailSent === true) {
+                            Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_INFO,
+                                    'The copy you requested has been e-mailed to you.');
+                        } else {
+                            Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_ERROR,
+                                    'We tried to e-mail you a copy as a requested. An error occurred, please try again later.<br><br>Error: ' . $mailSent);
+                        }
+                    }
+                } else {
+                    Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_ERROR,
+                            'Thank you for trying to contact us. An error occurred, please try again later.<br><br>Error: ' . $mailSent);
+                }
+    		$this->refresh();
+            }
+        }
+
+        // Preload the form if the user is logged in!
+        if(!Yii::app()->user->isGuest) {
+            $user = User::model()->findByPk(Yii::app()->user->id);
+
+            $model->name = $user->profile->first_name . ' ' . $user->profile->last_name;
+            $model->email = $user->email;
+        }
+
+        $this->render('contact', array('model' => $model));
+    }
 
 	/**
 	 * Displays the login page

@@ -9,13 +9,47 @@ body {
 	border: 0px solid #C9E0ED;
 }
 
-#footer
+#sectionHeader
 {
-	padding: 10px;
-	margin: 10px 20px;
-	font-size: 0.8em;
-	text-align: center;
-	border-top: 1px solid #C9E0ED;
+    padding: 10px;
+    font-size: 2.0em;
+    font-weight: bold;
+    color: #FFFFFF;
+    border-radius: 5px 5px;
+    background: #cc070e; /* Old browsers */
+    background: -moz-linear-gradient(left,  #cc070e 0%, #bc2022 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,#cc070e), color-stop(100%,#bc2022)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* IE10+ */
+    background: linear-gradient(to right,  #cc070e 0%,#bc2022 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc070e', endColorstr='#bc2022',GradientType=1 ); /* IE6-9 */
+}
+
+#sectionSubHeader
+{
+    padding-top: 0px;
+    padding-left: 10px;
+    padding-bottom: 0px;
+    padding-right: 10px;
+    font-size: 1.75em;
+    font-weight: bold;
+    color: #cc070e;
+    border-radius: 5px 5px;
+    background: ffffff; /* Old browsers */
+}
+
+#sectionSubHeaderContent
+{
+    padding-top: 0px;
+    padding-left: 10px;
+    padding-bottom: 0px;
+    padding-right: 10px;
+    font-size: 1.0em;
+    font-weight: normal;
+    color: #000000;
+    border-radius: 5px 5px;
+    background: ffffff; /* Old browsers */
 }
 
 #content

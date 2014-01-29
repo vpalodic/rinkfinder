@@ -45,13 +45,13 @@ class RbacCommand extends CConsoleCommand
             $this->createEventRequestObjects();
             $this->createReservationObjects();
             $this->createContactObjects();
-            $this->createLookupAndTagObjects();
+            $this->createLookupObjects();
             
-//            $this->createRoles();
+            $this->createRoles();
             
             // ensure we have at least one admin user by assigning the
             // default sysadmin account to the Administrator role
-//            $this->_authManager->assign("admin", 1);
+            $this->_authManager->assign("Administrator", 1);
 
             // provide a message indicating success
             echo "Authorization hierarchy successfully generated.\n";
@@ -310,9 +310,9 @@ class RbacCommand extends CConsoleCommand
         $task->addChild('adminContact');
     }
 
-    protected function createLookupAndTagObjects()
+    protected function createLookupObjects()
     {
-        // create the lowest level operations for lookups and tags
+        // create the lowest level operations for lookups
         $this->_authManager->createOperation("createLookup", "Create a new lookup.");
         $this->_authManager->createOperation("readLookup", "Read lookup information.");
         $this->_authManager->createOperation("updateLookup", "Update lookup information.");
@@ -320,7 +320,7 @@ class RbacCommand extends CConsoleCommand
         $this->_authManager->createOperation("indexLookup", "List lookup(s).");
         $this->_authManager->createOperation("adminLookup", "Manage all lookups.");
         
-        // create the task level operations for contacta
+        // create the task level operations for lookups
         $task = $this->_authManager->createTask("administerAllLookups", "Manage all the lookups.", $this->applicationAdministratorBizRule);
         $task->addChild('createLookup');
         $task->addChild('readLookup');
@@ -332,43 +332,41 @@ class RbacCommand extends CConsoleCommand
 
     protected function createRoles()
     {
-            // create the adminManagement task
-            $this->_authManager->createTask("adminManagement", "access to the application administration functionality");
-
-            // create the reader role and add the appropriate 
+            // create the user role and add the appropriate 
             // permissions as children to this role
-            $role = $this->_authManager->createRole("reader");
-            $role->addChild("readUser");
-            $role->addChild("readProject");
-            $role->addChild("readIssue");
+            $role = $this->_authManager->createRole("User", "A regular user account.");
+            $role->addChild("manageOwnUser");
 
-            // create the member role, and add the appropriate 
-            // permissions, as well as the reader role itself, as children
-            $role = $this->_authManager->createRole("member");
-            $role->addChild("reader");
-            $role->addChild("createIssue");
-            $role->addChild("updateIssue");
-            $role->addChild("deleteIssue");
+            // create the restricted manager role, and add the appropriate 
+            // permissions, as well as the user role itself, as children
+            $role = $this->_authManager->createRole("RestrictedManager", "An Arena Manager with fewer permissions than a regular Arena Manager.");
+            $role->addChild("User");
 
-            // create the owner role, and add the appropriate permissions, 
-            // as well as both the reader and member roles as children
-            $role = $this->_authManager->createRole("owner");
-            $role->addChild("reader");
-            $role->addChild("member");
-            $role->addChild("createUser");
-            $role->addChild("updateUser");
-            $role->addChild("deleteUser");
-            $role->addChild("createProject");
-            $role->addChild("updateProject");
-            $role->addChild("deleteProject");
+            // create the manager role, and add the appropriate permissions, 
+            // as well as both the user and restricted manager roles as children
+            $role = $this->_authManager->createRole("Manager", "An Arena Manager with full permissions to manage their assigned Arenas.");
+            $role->addChild("User");
+            $role->addChild("RestrictedManager");
+            $role->addChild("manageAssignedUsers");
+            $role->addChild("assignRestrictedManager");
 		
             // create the admin role, and add the appropriate permissions, 
-            // as well as the reader, member, and owner roles as children
-            $role = $this->_authManager->createRole("admin");
-            $role->addChild("reader");
-            $role->addChild("member");
-            $role->addChild("owner");
-            $role->addChild("adminManagement");
-
+            // as well as the user, restricted manager, and manager roles as children
+            $role = $this->_authManager->createRole("ApplicationAdministrator", "An Administrator account with fewer permissions than a Site Administrator.");
+            $role->addChild("User");
+            $role->addChild("RestrictedManager");
+            $role->addChild("Manager");
+            $role->addChild("assignManager");
+            $role->addChild("administerAllUsers");
+            
+            // create the admin role, and add the appropriate permissions, 
+            // as well as the user, restricted manager, and manager roles as children
+            $role = $this->_authManager->createRole("Administrator", "A Site Administrator with full permissions to control everything!");
+            $role->addChild("authManageRbac");
+            $role->addChild("User");
+            $role->addChild("RestrictedManager");
+            $role->addChild("Manager");
+            $role->addChild("ApplicationAdministrator");
+            $role->addChild("assignApplicationAdministrator");
     }
 }

@@ -12,6 +12,7 @@ class ContactForm extends CFormModel
 	public $subject;
 	public $body;
 	public $verifyCode;
+        public $copyMe;
 
 	/**
 	 * Declares the validation rules.
@@ -23,8 +24,10 @@ class ContactForm extends CFormModel
 			array('name, email, subject, body', 'required'),
 			// email has to be a valid email address
 			array('email', 'email'),
+			// copyMe needs to be a boolean
+			array('copyMe', 'boolean'),
 			// verifyCode needs to be entered correctly
-			array('verifyCode', 'captcha', 'allowEmpty'=>!CCaptcha::checkRequirements()),
+			array('verifyCode', 'captcha', 'allowEmpty' => !CCaptcha::checkRequirements()),
 		);
 	}
 
@@ -36,7 +39,12 @@ class ContactForm extends CFormModel
 	public function attributeLabels()
 	{
 		return array(
-			'verifyCode'=>'Verification Code',
+                        'name' => 'Your Name',
+                        'email' => 'Your E-mail Address',
+                        'subject' => 'Subject',
+                        'body' => 'Message',
+                        'copyMe' => 'Send me a copy!',
+			'verifyCode' => 'Verification Code',
 		);
 	}
 }

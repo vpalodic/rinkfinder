@@ -1,20 +1,17 @@
 <?php
-/* @var $this SiteController */
+    /* @var $this SiteController */
 
-$this->pageTitle=Yii::app()->name;
+    $this->pageTitle=Yii::app()->name;
+    $this->breadcrumbs = array();
 ?>
 
-<h1>Welcome to <i><?php echo CHtml::encode(Yii::app()->name); ?></i></h1>
+<h1 id="sectionHeader">Welcome to <i><?php echo CHtml::encode(Yii::app()->name); ?></i></h1>
 
-<p>Congratulations! You have successfully created your Yii application.</p>
+<h3 id="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
 
-<p>You may change the content of this page by modifying the following two files:</p>
-<ul>
-	<li>View file: <code><?php echo __FILE__; ?></code></li>
-	<li>Layout file: <code><?php echo $this->getLayoutFile('main'); ?></code></li>
-</ul>
-
-<p>For more details on how to further develop this application, please read
-the <a href="http://www.yiiframework.com/doc/">documentation</a>.
-Feel free to ask in the <a href="http://www.yiiframework.com/forum/">forum</a>,
-should you have any questions.</p>
+<p id="sectionSubHeaderContent">
+    Rinkfinder.com will help you find over 160 member arenas throughout Minnesota (and other states), including directions, facility details, related vendors and MIAMA information. Our facility schedules lists facility activities and available hours for sale at member arenas. You can now find a member rink near you to go skating for pleasure, not just hockey.
+</p>
+<p id="sectionSubHeaderContent">
+If you have questions or comments on the website, please contact <a href="mailto:rinkfinder@miama.org?subject=Rinkfinder%20Questions%20and%20Comments">rinkfinder@miama.org</a>.
+</p>

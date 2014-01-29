@@ -1,53 +1,84 @@
 <?php
-/* @var $this SiteController */
-/* @var $model LoginForm */
-/* @var $form CActiveForm  */
+    /* @var $this SiteController */
+    /* @var $model LoginForm */
+    /* @var $form TbActiveForm  */
 
-$this->pageTitle=Yii::app()->name . ' - Login';
-$this->breadcrumbs=array(
-	'Login',
-);
+    $this->pageTitle = Yii::app()->name . ' - Login';
+    $this->breadcrumbs = array('Login',);
 ?>
 
-<h1>Login</h1>
+<h2 id="sectionHeader">Login</h2>
 
 <p>Please fill out the following form with your login credentials:</p>
 
 <div class="form">
-<?php $form=$this->beginWidget('CActiveForm', array(
-	'id'=>'login-form',
-	'enableClientValidation'=>true,
-	'clientOptions'=>array(
-		'validateOnSubmit'=>true,
-	),
-)); ?>
+    <?php
+        $form = $this->beginWidget(
+                'bootstrap.widgets.TbActiveForm',
+                array(
+                    'layout' => TbHtml::FORM_LAYOUT_HORIZONTAL,
+                    'id' => 'login-form',
+                    'enableAjaxValidation' => true,
+                    'enableClientValidation' => true,
+                    'clientOptions' => array('validateOnSubmit' => true),
+                )
+        );
+    ?>
 
-	<p class="note">Fields with <span class="required">*</span> are required.</p>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'username'); ?>
-		<?php echo $form->textField($model,'username'); ?>
-		<?php echo $form->error($model,'username'); ?>
+    <fieldset>
+        <p class="note">
+            <legend class="help-block">Fields with <span class="required">*</span> are required.</legend>
+        </p>
+    	<?php
+            echo $form->errorSummary($model);
+        ?>
+        <?php
+            echo $form->textFieldControlGroup(
+                    $model,
+                    'username',
+                    array(
+                        'span' => 5,
+                        'maxlength' => 128,
+                    )
+            );
+        ?>
+        <?php
+            echo $form->passwordFieldControlGroup(
+                    $model,
+                    'password',
+                    array(
+                        'span' => 5,
+                        'maxlength' => 48,
+                    )
+            );
+        ?>
+	<div class="control-group">
+            <div class="controls">
+		<?php echo TbHtml::link("Register", array("site/register")); ?>
+                    | 
+                <?php echo TbHtml::link("Lost Password?", array("site/resetUser")); ?>
+            </div>
 	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'password'); ?>
-		<?php echo $form->passwordField($model,'password'); ?>
-		<?php echo $form->error($model,'password'); ?>
-		<p class="hint">
-			Hint: You may login with <kbd>demo</kbd>/<kbd>demo</kbd> or <kbd>admin</kbd>/<kbd>admin</kbd>.
-		</p>
-	</div>
-
-	<div class="row rememberMe">
-		<?php echo $form->checkBox($model,'rememberMe'); ?>
-		<?php echo $form->label($model,'rememberMe'); ?>
-		<?php echo $form->error($model,'rememberMe'); ?>
-	</div>
-
-	<div class="row buttons">
-		<?php echo CHtml::submitButton('Login'); ?>
-	</div>
-
-<?php $this->endWidget(); ?>
+        <?php
+            echo $form->checkBoxControlGroup(
+                    $model,
+                    'rememberMe',
+                    array(
+                        'span' => 5,
+                    )
+            );
+        ?>
+    </fieldset>
+    <div class="form-actions">
+        <?php
+            echo TbHtml::submitButton(
+                    'Login',
+                    array(
+                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                        'size' => TbHtml::BUTTON_SIZE_LARGE,
+                    )
+            );
+        ?>
+    </div>
+    <?php $this->endWidget(); ?>
 </div><!-- form -->
