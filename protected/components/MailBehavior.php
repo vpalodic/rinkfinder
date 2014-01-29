@@ -39,22 +39,14 @@ class MailBehavior extends CBehavior
      * @param string $view the view to use, defaults to contact.
      * @return mixed true if successful or the error message received.
      */
-	public function sendMail($from, $to, $subject, $message, $view = 'contact')
+    public function sendMail($from, $to, $subject, $message, $view = 'contact')
     {
         if(!isset($this->_mail)) {
-            $this->_mail = new YiiMailer();
-            $this->_mail->IsSMTP();
-            $this->_mail->Host = "mail.miama.org";
-            $this->_mail->Port = 465;
-            $this->_mail->SMTPAuth = true;
-            $this->_mail->SMTPSecure = "ssl";
-            $this->_mail->Mailer = "smtp";
-            $this->_mail->Username = "rinkfinder@miama.org";
-            $this->_mail->Password = "Rinkfinder2013#";
+            $this->getMailer();
         }
 
-	    $message = wordwrap($message, 70);
-	    $message = str_replace("\n.", "\n..", $message);
+        $message = wordwrap($message, 70);
+        $message = str_replace("\n.", "\n..", $message);
 
         //set properties
         //use 'contact' view from views/mail by defaul
@@ -78,18 +70,18 @@ class MailBehavior extends CBehavior
         $this->_mail->setSubject($subject);
         $this->_mail->setTo($to);
 
-	    if($this->_mail->send()) {
+        if($this->_mail->send()) {
             return true;
         } else {
             return $this->_mail->getError();
         }
-	}
+    }
 
     /**
      * @desc Get the YiiMailer object.
      * @return YiiMailer.
      */
-	public function getMailer()
+    public function getMailer()
     {
         if(!isset($this->_mail)) {
             $this->_mail = new YiiMailer();
