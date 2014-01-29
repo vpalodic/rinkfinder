@@ -46,11 +46,11 @@ class TestCommand extends CConsoleCommand
             } while (($end - $start) < $timeTarget);
             
             // Now generate our password using the new cost
-            $hash = CPasswordHelper::hashPassword("Rinkfinder2013#", 11); // Web host is optimal at 11
-            $key_hash = hash('sha256', microtime() . "Rinkfinder2013#");
+            $hash = CPasswordHelper::hashPassword("Blah", 11); // Web host is optimal at 11
+            $key_hash = hash('sha256', microtime() . "Blah");
             
             // Finally, we test to ensure we can verify the new hash
-            $verified = CPasswordHelper::verifyPassword("Rinkfinder2013#", $hash);
+            $verified = CPasswordHelper::verifyPassword("Blah", $hash);
             
             // provide a message indicating success
             echo "Cost and hash successfully generated.\n\n";
