@@ -30,9 +30,9 @@ body {
 .sectionSubHeader
 {
     padding-top: 0px;
-    padding-left: 10px;
+    padding-left: 0px;
     padding-bottom: 0px;
-    padding-right: 10px;
+    padding-right: 0px;
     font-size: 1.75em;
     font-weight: bold;
     color: #0d1b72;
@@ -44,9 +44,9 @@ body {
 .sectionSubHeaderContent
 {
     padding-top: 0px;
-    padding-left: 10px;
+    padding-left: 0px;
     padding-bottom: 0px;
-    padding-right: 10px;
+    padding-right: 0px;
     font-size: 1.0em;
     font-weight: normal;
     color: #000000;
