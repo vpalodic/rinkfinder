@@ -37,7 +37,7 @@ class ProfileController extends Controller
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
 				'actions'=>array('admin','delete'),
-				'users'=>array('admin'),
+				'roles'=>array('ApplicationAdministrator'),
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -70,7 +70,7 @@ class ProfileController extends Controller
 		if (isset($_POST['Profile'])) {
 			$model->attributes=$_POST['Profile'];
 			if ($model->save()) {
-				$this->redirect(array('view','id'=>$model->id));
+				$this->redirect(array('view','id'=>$model->user_id));
 			}
 		}
 
@@ -94,7 +94,7 @@ class ProfileController extends Controller
 		if (isset($_POST['Profile'])) {
 			$model->attributes=$_POST['Profile'];
 			if ($model->save()) {
-				$this->redirect(array('view','id'=>$model->id));
+				$this->redirect(array('view','id'=>$model->user_id));
 			}
 		}
 

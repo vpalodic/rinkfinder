@@ -6,18 +6,18 @@
 <?php
 $this->breadcrumbs=array(
 	'Profiles'=>array('index'),
-	$model->id=>array('view','id'=>$model->id),
+	$model->first_name . ' ' . $model->last_name => array('view','id'=>$model->user_id),
 	'Update',
 );
 
 $this->menu=array(
 	array('label'=>'List Profile', 'url'=>array('index')),
 	array('label'=>'Create Profile', 'url'=>array('create')),
-	array('label'=>'View Profile', 'url'=>array('view', 'id'=>$model->id)),
+	array('label'=>'View Profile', 'url'=>array('view', 'id'=>$model->user_id)),
 	array('label'=>'Manage Profile', 'url'=>array('admin')),
 );
 ?>
 
-    <h1>Update Profile <?php echo $model->id; ?></h1>
+    <h1>Update Profile <?php echo $model->user_id; ?></h1>
 
 <?php $this->renderPartial('_form', array('model'=>$model)); ?>

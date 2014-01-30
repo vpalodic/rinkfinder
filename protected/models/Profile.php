@@ -156,4 +156,9 @@ class Profile extends RinkfinderActiveRecord
 	{
 		return parent::model($className);
 	}
+        
+    public function getId()
+    {
+        return $this->user_id;
+    }
 }

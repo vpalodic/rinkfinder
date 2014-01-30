@@ -6,19 +6,19 @@
 <?php
 $this->breadcrumbs=array(
 	'Profiles'=>array('index'),
-	$model->id,
+	$model->user_id,
 );
 
 $this->menu=array(
 	array('label'=>'List Profile', 'url'=>array('index')),
 	array('label'=>'Create Profile', 'url'=>array('create')),
-	array('label'=>'Update Profile', 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>'Delete Profile', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
+	array('label'=>'Update Profile', 'url'=>array('update', 'id'=>$model->user_id)),
+	array('label'=>'Delete Profile', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->user_id),'confirm'=>'Are you sure you want to delete this item?')),
 	array('label'=>'Manage Profile', 'url'=>array('admin')),
 );
 ?>
 
-<h1>View Profile #<?php echo $model->id; ?></h1>
+<h1>View Profile #<?php echo $model->user_id; ?></h1>
 
 <?php $this->widget('zii.widgets.CDetailView',array(
     'htmlOptions' => array(
@@ -26,7 +26,6 @@ $this->menu=array(
     ),
     'data'=>$model,
     'attributes'=>array(
-		'id',
 		'user_id',
 		'first_name',
 		'last_name',
@@ -39,7 +38,8 @@ $this->menu=array(
 		'lng',
 		'phone',
 		'ext',
-		'birthday',
+		'avatar',
+		'url',
 		'lock_version',
 		'created_by_id',
 		'created_on',

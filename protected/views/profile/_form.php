@@ -21,9 +21,9 @@
 
             <?php echo $form->textFieldControlGroup($model,'user_id',array('span'=>5)); ?>
 
-            <?php echo $form->textFieldControlGroup($model,'first_name',array('span'=>5,'maxlength'=>80)); ?>
+            <?php echo $form->textFieldControlGroup($model,'first_name',array('span'=>5,'maxlength'=>128)); ?>
 
-            <?php echo $form->textFieldControlGroup($model,'last_name',array('span'=>5,'maxlength'=>80)); ?>
+            <?php echo $form->textFieldControlGroup($model,'last_name',array('span'=>5,'maxlength'=>128)); ?>
 
             <?php echo $form->textFieldControlGroup($model,'address_line1',array('span'=>5,'maxlength'=>128)); ?>
 
@@ -43,7 +43,9 @@
 
             <?php echo $form->textFieldControlGroup($model,'ext',array('span'=>5,'maxlength'=>10)); ?>
 
-            <?php echo $form->textFieldControlGroup($model,'birthday',array('span'=>5)); ?>
+            <?php echo $form->textFieldControlGroup($model,'avatar',array('span'=>5,'maxlength'=>511)); ?>
+
+            <?php echo $form->textFieldControlGroup($model,'url',array('span'=>5,'maxlength'=>511)); ?>
 
             <?php echo $form->textFieldControlGroup($model,'lock_version',array('span'=>5)); ?>
 

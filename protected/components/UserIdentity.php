@@ -60,7 +60,7 @@ class UserIdentity extends CUserIdentity
     
     protected function processUserStatus()
     {
-        switch($this->_user->status) {
+        switch($this->_user->status_id) {
             case User::STATUS_BANNED:
                 $this->errorCode = self::ERROR_STATUS_BANNED;
                 break;

@@ -5,12 +5,8 @@
 
 <div class="view">
 
-    	<b><?php echo CHtml::encode($data->getAttributeLabel('id')); ?>:</b>
-	<?php echo CHtml::link(CHtml::encode($data->id),array('view','id'=>$data->id)); ?>
-	<br />
-
-	<b><?php echo CHtml::encode($data->getAttributeLabel('user_id')); ?>:</b>
-	<?php echo CHtml::encode($data->user_id); ?>
+    	<b><?php echo CHtml::encode($data->getAttributeLabel('user_id')); ?>:</b>
+	<?php echo CHtml::link(CHtml::encode($data->user_id),array('view','id'=>$data->user_id)); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('first_name')); ?>:</b>
@@ -33,11 +29,11 @@
 	<?php echo CHtml::encode($data->city); ?>
 	<br />
 
-	<?php /*
 	<b><?php echo CHtml::encode($data->getAttributeLabel('state')); ?>:</b>
 	<?php echo CHtml::encode($data->state); ?>
 	<br />
 
+	<?php /*
 	<b><?php echo CHtml::encode($data->getAttributeLabel('zip')); ?>:</b>
 	<?php echo CHtml::encode($data->zip); ?>
 	<br />
@@ -58,8 +54,12 @@
 	<?php echo CHtml::encode($data->ext); ?>
 	<br />
 
-	<b><?php echo CHtml::encode($data->getAttributeLabel('birthday')); ?>:</b>
-	<?php echo CHtml::encode($data->birthday); ?>
+	<b><?php echo CHtml::encode($data->getAttributeLabel('avatar')); ?>:</b>
+	<?php echo CHtml::encode($data->avatar); ?>
+	<br />
+
+	<b><?php echo CHtml::encode($data->getAttributeLabel('url')); ?>:</b>
+	<?php echo CHtml::encode($data->url); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('lock_version')); ?>:</b>
