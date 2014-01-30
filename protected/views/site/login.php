@@ -7,7 +7,7 @@
     $this->breadcrumbs = array('Login',);
 ?>
 
-<h2 id="sectionHeader">Login</h2>
+<h2 class="sectionHeader">Login</h2>
 
 <p>Please fill out the following form with your login credentials:</p>
 

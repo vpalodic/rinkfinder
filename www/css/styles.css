@@ -9,24 +9,25 @@ body {
 	border: 0px solid #C9E0ED;
 }
 
-#sectionHeader
+.sectionHeader
 {
     padding: 10px;
     font-size: 2.0em;
     font-weight: bold;
     color: #FFFFFF;
-    border-radius: 5px 5px;
-    background: #cc070e; /* Old browsers */
-    background: -moz-linear-gradient(left,  #cc070e 0%, #bc2022 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, right top, color-stop(0%,#cc070e), color-stop(100%,#bc2022)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(left,  #cc070e 0%,#bc2022 100%); /* IE10+ */
-    background: linear-gradient(to right,  #cc070e 0%,#bc2022 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc070e', endColorstr='#bc2022',GradientType=1 ); /* IE6-9 */
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background: #0d1b72; /* Old browsers */
+    background: -moz-linear-gradient(top,  #0d1b72 0%, #207cca 65%, #2989d8 71%, #7db9e8 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0d1b72), color-stop(65%,#207cca), color-stop(71%,#2989d8), color-stop(100%,#7db9e8)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0d1b72', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
 }
 
-#sectionSubHeader
+.sectionSubHeader
 {
     padding-top: 0px;
     padding-left: 10px;
@@ -34,12 +35,13 @@ body {
     padding-right: 10px;
     font-size: 1.75em;
     font-weight: bold;
-    color: #cc070e;
-    border-radius: 5px 5px;
+    color: #0d1b72;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     background: #ffffff; /* Old browsers */
 }
 
-#sectionSubHeaderContent
+.sectionSubHeaderContent
 {
     padding-top: 0px;
     padding-left: 10px;
@@ -48,7 +50,8 @@ body {
     font-size: 1.0em;
     font-weight: normal;
     color: #000000;
-    border-radius: 5px 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     background: #ffffff; /* Old browsers */
 }
 
