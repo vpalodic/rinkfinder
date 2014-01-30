@@ -53,9 +53,9 @@ class MailBehavior extends CBehavior
         $this->_mail->setView($view);
 
         if($from == '') {
-            $this->_mail->setFrom(Yii::app()->params['adminEmail'], 'Rinkfinder.com');
-            $this->_mail->setReplyTo(Yii::app()->params['adminEmail'], 'Rinkfinder.com');
-            $this->_mail->setData(array('message' => $message, 'name' => 'Rinkfinder.com', 'description' => $subject));
+            $this->_mail->setFrom(Yii::app()->params['adminEmail']['email'], Yii::app()->params['adminEmail']['name']);
+            $this->_mail->setReplyTo(Yii::app()->params['adminEmail']['email'], Yii::app()->params['adminEmail']['name']);
+            $this->_mail->setData(array('message' => $message, 'name' => Yii::app()->params['adminEmail']['name'], 'description' => $subject));
         } else {
             if(is_array($from)) {
                 $this->_mail->setFrom($from['email'], $from['name']);
