@@ -17,8 +17,10 @@ class CaptchaBehavior extends CBehavior
     /**
      * @var array holds the items that we want to require Captcha.
      */
-    private $_captcha = array('registration' => true,
-                              'contact' => true);
+    private $_captcha = array(
+        'registration' => true,
+        'contact' => true,
+    );
 
     /**
      * Checks if Captcha should be done
@@ -30,7 +32,7 @@ class CaptchaBehavior extends CBehavior
         if(!extension_loaded('gd')) {
             return false;
         }
-        if(in_array($view, $this->_captcha)) {
+        if(isset($this->_captcha[$view])) {
             return $this->_captcha[$view];
         }
 	    

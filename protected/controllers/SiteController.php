@@ -182,7 +182,13 @@ class SiteController extends Controller
                 }
             } else {
                 // display the registration form
-                $this->render('register', array('model' => $model));
+                $this->render(
+                        'register',
+                        array(
+                            'model' => $model,
+                            'profile' => $profile,
+                        )
+                );
             }
         }
     }

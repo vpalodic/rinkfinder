@@ -54,6 +54,12 @@ class User extends RinkfinderActiveRecord
     public $passwordRepeat;
     
     /**
+     * Holds the captcha code!
+     * @var string
+     */
+    public $verifyCode;
+    
+    /**
      * @return string the associated database table name
      */
     public function tableName()
@@ -106,9 +112,10 @@ class User extends RinkfinderActiveRecord
                 'on' => 'insert, changePassword',
             ),
             array(
-                'repeatPassword',
+                'passwordRepeat',
                 'compare',
                 'compareAttribute' => 'passwordSave',
+                'message' => "Passwords do not match!",
                 'on' => 'insert, changePassword'
             ),
             array(
@@ -150,7 +157,7 @@ class User extends RinkfinderActiveRecord
                 'required'
             ),
             array(
-                'last_visited_on, activated_on',
+                'last_visited_on, activated_on, verifyCode',
                 'safe',
             ),
             // The following rule is used by search().
@@ -239,6 +246,8 @@ class User extends RinkfinderActiveRecord
             'username' => 'Username',
             'email' => 'E-mail Address',
             'password' => 'Password',
+            'passwordSave' => 'Password',
+            'passwordRepeat' => 'Confirm Password',
             'status_id' => 'Status',
             'failed_logins' => 'Failed Logins',
             'last_visited_on' => 'Last Visited On',

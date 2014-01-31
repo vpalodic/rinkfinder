@@ -4,13 +4,13 @@
     /* @var $profile Profile */
     /* @var $form TbActiveForm  */
 
-    $this->pageTitle = Yii::app()->name . ' - Login';
-    $this->breadcrumbs = array('Login',);
+    $this->pageTitle = Yii::app()->name . ' - Registration';
+    $this->breadcrumbs = array('Registration',);
 ?>
 
 <?php $this->widget('bootstrap.widgets.TbAlert'); ?>
 
-<h2>"Registration"</h2>
+<h2 class="sectionHeader">Registration</h2>
 
 <div class="form">
     <?php
@@ -45,27 +45,27 @@
                     array(
                         'span' => 5,
                         'maxlength' => 32,
-                    ),
+                    )
             );
         ?>
         <?php
             echo $form->passwordFieldControlGroup(
                     $model,
-                    '$passwordSave',
+                    'passwordSave',
                     array(
                         'span' => 5,
                         'maxlength' => 48,
-                    ),
+                    )
             );
         ?>
         <?php
             echo $form->passwordFieldControlGroup(
                     $model,
-                    '$passwordRepeat',
+                    'passwordRepeat',
                     array(
                         'span' => 5,
                         'maxlength' => 48,
-                    ),
+                    )
             );
         ?>
         <?php
@@ -75,60 +75,81 @@
                     array(
                         'span' => 5,
                         'maxlength' => 128,
-                    ),
+                    )
             );
         ?>
         <?php
-			$profileFields = $profile->getFields();
+            $profileFields = $profile->getFields();
 
-			if($profileFields) {
-				foreach($profileFields as $field) {
-
-					if($field->widgetEdit($profile)) {
-						echo $form->labelEx($profile, $field->varname);
-						echo $field->widgetEdit($profile);
-						echo $form->error($profile, $field->varname);
-					} elseif($field->range) {
-						echo $form->dropDownListControlGroup($profile,
-															 $field->varname,
-															 Profile::range($field->range));
-					} elseif($field->field_type=="TEXT") {
-						echo $form->textAreaControlGroup($profile,
-														 $field->varname,
-														 array('rows' => 6,
-															   'cols' => 50));
-					} else {
-						echo $form->textFieldControlGroup($profile,
-														  $field->varname,
-														  array('size' => 60,
-																'maxlength' => (($field->field_size) ? $field->field_size : 255)));
-					}
-				}
-			}
-		?>
-
-	<?php if(Yii::app()->doCaptcha('registration')): ?>
-		<div class="controls">
-				<?php $this->widget('CCaptcha'); ?>
-		</div>
-
-		<?php echo $form->textFieldControlGroup($model,
-                                                'verifyCode');
+            if($profileFields) {
+                foreach($profileFields as $field) {
+                    if($field->widgetEdit($profile)) {
+                        echo $form->labelEx($profile, $field->varname);
+                        echo $field->widgetEdit($profile);
+                        echo $form->error($profile, $field->varname);
+                    } elseif($field->range) {
+                        echo $form->dropDownListControlGroup(
+                                $profile,
+                                $field->varname,
+                                Profile::range($field->range),
+                                array(
+                                    'span' => 5
+                                )
+                            );
+                    } elseif($field->field_type=="TEXT") {
+                        echo $form->textAreaControlGroup(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'rows' => 6,
+                                    'span' => 5
+                                )
+                            );
+                    } else {
+                        echo $form->textFieldControlGroup(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'size' => 60,
+                                    'maxlength' => (($field->field_size) ? $field->field_size : 255),
+                                    'span' => 5
+                                )
+                            );
+                    }
+                }
+            }
         ?>
-
-		<div class="control-group">
-			<p class="hint"><?php echo UserModule::t("Please enter the letters as they are shown in the image above."); ?>
-			<br/><?php echo UserModule::t("Letters are not case-sensitive."); ?></p>
-		</div>
-	<?php endif; ?>
-
+	<?php if(Yii::app()->doCaptcha('registration')): ?>
+            <div class="controls">
+                <?php $this->widget('CCaptcha'); ?>
+            </div>
+            <?php
+                echo $form->textFieldControlGroup(
+                        $model,
+                        'verifyCode',
+                        array(
+                            'span' => 5,
+                        )
+                );
+            ?>
+            <div class="controls">
+                <p class="hint">
+                    Please enter the letters as they are shown in the image above.<br />
+                    Letters are not case-sensitive.
+                </p>
+            </div>
+        <?php endif; ?>
     </fieldset>
-
     <?php
-		echo TbHtml::formActions(array(TbHtml::submitButton('Register',
-															array('color' => TbHtml::BUTTON_COLOR_PRIMARY)),
-									   ));
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Register',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
+            );
     ?>
-
     <?php $this->endWidget(); ?>
 </div><!-- form -->

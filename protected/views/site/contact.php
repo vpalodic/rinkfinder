@@ -83,7 +83,6 @@ If you have business inquiries or other questions, please fill out the following
             <div class="controls">
                 <?php $this->widget('CCaptcha'); ?>
             </div>
-
             <?php
                 echo $form->textFieldControlGroup(
                         $model,
@@ -93,10 +92,11 @@ If you have business inquiries or other questions, please fill out the following
                         )
                 );
             ?>
-
             <div class="controls">
-                <p class="hint">Please enter the letters as they are shown in the image above.
-                <br/>Letters are not case-sensitive.</p>
+                <p class="hint">
+                    Please enter the letters as they are shown in the image above.<br />
+                    Letters are not case-sensitive.
+                </p>
             </div>
         <?php endif; ?>
     </fieldset>
