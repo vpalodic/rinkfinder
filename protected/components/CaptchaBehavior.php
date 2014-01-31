@@ -21,11 +21,11 @@ class CaptchaBehavior extends CBehavior
                               'contact' => true);
 
     /**
-     * @desc Checks if Captcha should be done
-     * @param string $view the view to use, defaults to contact.
-     * @return bool true if Captcha should be done.
+     * Checks if Captcha should be done
+     * @param string $view the view to check.
+     * @return bool true if Captcha should and can be done.
      */
-	public function doCaptcha($view)
+    public function doCaptcha($view)
     {
         if(!extension_loaded('gd')) {
             return false;
@@ -33,6 +33,7 @@ class CaptchaBehavior extends CBehavior
         if(in_array($view, $this->_captcha)) {
             return $this->_captcha[$view];
         }
-	    return false;
-	}
+	    
+        return false;
+    }
 }

@@ -38,8 +38,8 @@
 	<?php echo CHtml::encode($data->last_visited_from); ?>
 	<br />
 
-	<b><?php echo CHtml::encode($data->getAttributeLabel('activation_key')); ?>:</b>
-	<?php echo CHtml::encode($data->activation_key); ?>
+	<b><?php echo CHtml::encode($data->getAttributeLabel('user_key')); ?>:</b>
+	<?php echo CHtml::encode($data->user_key); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('activated_on')); ?>:</b>

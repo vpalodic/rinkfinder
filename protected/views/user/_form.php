@@ -33,7 +33,7 @@
 
             <?php echo $form->textFieldControlGroup($model,'last_visited_from',array('span'=>5,'maxlength'=>32)); ?>
 
-            <?php echo $form->textFieldControlGroup($model,'activation_key',array('span'=>5,'maxlength'=>64)); ?>
+            <?php echo $form->textFieldControlGroup($model,'user_key',array('span'=>5,'maxlength'=>64)); ?>
 
             <?php echo $form->textFieldControlGroup($model,'activated_on',array('span'=>5)); ?>
 

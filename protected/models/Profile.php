@@ -31,22 +31,121 @@
  */
 class Profile extends RinkfinderActiveRecord
 {
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'profile';
-	}
+    public $regMode = false;
+    
+    private $_model;
+    private $_modelReg;
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'profile';
+    }
+
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        $required = array();
+        $numerical = array();		
+        $rules = array();
+		
+        $model = $this->getFields();
+
+        foreach($model as $field) {
+            $field_rule = array();
+
+            if($field->required == ProfileField::REQUIRED_YES_NOT_SHOW_REG ||
+                $field->required == ProfileField::REQUIRED_YES_SHOW_REG) {
+                array_push($required, $field->varname);
+            }
+                
+            if($field->field_type == 'FLOAT' || $field->field_type == 'INTEGER') {
+                array_push($numerical, $field->varname);
+            }
+            if($field->field_type == 'VARCHAR' || $field->field_type == 'TEXT') {
+                $field_rule = array(
+                    $field->varname,
+                    'length',
+                    'max' => $field->field_size,
+                    'min' => $field->field_size_min,
+                );
+
+                if($field->error_message) {
+                    $field_rule['message'] = $field->error_message;
+                }
+				
+                array_push($rules, $field_rule);
+            }
+            if($field->other_validator) {
+                if(strpos($field->other_validator, '{') === 0) {
+                    $validator = (array)CJavaScript::jsonDecode($field->other_validator);
+					
+                    foreach($validator as $name => $val) {
+                        $field_rule = array($field->varname, $name);
+                        $field_rule = array_merge($field_rule, (array)$validator[$name]);
+						
+                        if($field->error_message) {
+                            $field_rule['message'] = $field->error_message;
+                        }
+						
+                        array_push($rules, $field_rule);
+                    }
+                } else {
+                    $field_rule = array($field->varname, $field->other_validator);
+					
+                    if($field->error_message) {
+                        $field_rule['message'] = $field->error_message;
+                    }
+					
+                    array_push($rules, $field_rule);
+                }
+            } elseif ($field->field_type == 'DATE') {
+                $field_rule = array(
+                    $field->varname,
+                    'type',
+                    'type' => 'date',
+                    'dateFormat' => 'yyyy-MM-dd',
+                    'allowEmpty' => true,
+                );
+				
+                if($field->error_message) {
+                    $field_rule['message'] = $field->error_message;
+                }
+				
+                array_push($rules, $field_rule);
+            }
+            if($field->match) {
+                $field_rule = array($field->varname, 'match', 'pattern' => $field->match);
+				
+                if($field->error_message) {
+                    $field_rule['message'] = $field->error_message;
+                }
+				
+                array_push($rules, $field_rule);
+            }
+            if($field->range) {
+                $field_rule = array($field->varname, 'in', 'range' => self::rangeRules($field->range));
+				
+                if($field->error_message) {
+                    $field_rule['message'] = $field->error_message;
+                }
+				
+                array_push($rules, $field_rule);
+            }
+        }
+		
+        array_push($rules, array(implode(',', $required), 'required'));
+        array_push($rules, array(implode(',', $numerical), 'numerical', 'integerOnly' => true));
+		
+        return $rules;
+
+/*		return array(
 			array('user_id, first_name, last_name, address_line1, city, state, zip, created_on, updated_on', 'required'),
 			array('user_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
 			array('lat, lng', 'numerical'),
@@ -59,103 +158,176 @@ class Profile extends RinkfinderActiveRecord
 			// @todo Please remove those attributes that should not be searched.
 			array('user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, avatar, url, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
-	}
+ */
+    }
 
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array(
-			'user' => array(self::BELONGS_TO, 'User', 'user_id'),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-		);
-	}
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        // NOTE: you may need to adjust the relation name and the related
+        // class name for the relations automatically generated below.
+        return array(
+            'user' => array(
+                self::BELONGS_TO,
+                'User',
+                'user_id'
+            ),
+            'createdBy' => array(
+                self::BELONGS_TO,
+                'User',
+                'created_by_id',
+                'select' => array(
+                    'id',
+                    'username',
+                    'status_id',
+                ),
+            ),
+            'updatedBy' => array(
+                self::BELONGS_TO,
+                'User',
+                'updated_by_id',
+                'select' => array(
+                    'id',
+                    'username',
+                    'status_id',
+                ),
+            ),
+        );
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'user_id' => 'User',
-			'first_name' => 'First Name',
-			'last_name' => 'Last Name',
-			'address_line1' => 'Address Line1',
-			'address_line2' => 'Address Line2',
-			'city' => 'City',
-			'state' => 'State',
-			'zip' => 'Zip',
-			'lat' => 'Lat',
-			'lng' => 'Lng',
-			'phone' => 'Phone',
-			'ext' => 'Ext',
-			'avatar' => 'Avatar',
-			'url' => 'Url',
-			'lock_version' => 'Lock Version',
-			'created_by_id' => 'Created By',
-			'created_on' => 'Created On',
-			'updated_by_id' => 'Updated By',
-			'updated_on' => 'Updated On',
-		);
-	}
+    /**
+     * @return array customized attribute labels (name => label)
+     */
+    public function attributeLabels()
+    {
+/*        return array(
+            'user_id' => 'User',
+            'first_name' => 'First Name',
+            'last_name' => 'Last Name',
+            'address_line1' => 'Address Line1',
+            'address_line2' => 'Address Line2',
+            'city' => 'City',
+            'state' => 'State',
+            'zip' => 'Zip',
+            'lat' => 'Lat',
+            'lng' => 'Lng',
+            'phone' => 'Phone',
+            'ext' => 'Ext',
+            'avatar' => 'Avatar',
+            'url' => 'Url',
+            'lock_version' => 'Lock Version',
+            'created_by_id' => 'Created By',
+            'created_on' => 'Created On',
+            'updated_by_id' => 'Updated By',
+            'updated_on' => 'Updated On',
+        );
+*/
+        $labels = array(
+            'user_id' => 'User ID',
+        );
+        
+        $model = $this->getFields();
+        
+        foreach($model as $field) {
+            $labels[$field->varname] = $field->title;
+        }
+    
+        return $labels;
+    }
+	
+    private function rangeRules($str)
+    {
+        $rules = explode(';', $str);
+		
+        for($i = 0; $i < count($rules); $i++) {
+            $rules[$i] = current(explode("==", $rules[$i]));
+        }
+		
+        return $rules;
+    }
+	
+    static public function range($str, $fieldValue = NULL)
+    {
+        $rules = explode(';', $str);
+        $array = array();
+		
+        for($i = 0; $i < count($rules); $i++) {
+            $item = explode("==", $rules[$i]);
+            
+            if(isset($item[0])) {
+                $array[$item[0]] = ((isset($item[1])) ? $item[1] : $item[0]);
+            }
+        }
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 *
-	 * Typical usecase:
-	 * - Initialize the model fields with values from filter form.
-	 * - Execute this method to get CActiveDataProvider instance which will filter
-	 * models according to data in model fields.
-	 * - Pass data provider to CGridView, CListView or any similar widget.
-	 *
-	 * @return CActiveDataProvider the data provider that can return the models
-	 * based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		// @todo Please modify the following code to remove attributes that should not be searched.
+        if(isset($fieldValue)) {
+            if(isset($array[$fieldValue])) {
+                return $array[$fieldValue];
+            }
+            else {
+                return '';
+            }
+        } else {
+            return $array;
+        }
+    }
 
-		$criteria=new CDbCriteria;
+    public function widgetAttributes()
+    {
+        $data = array();
+        $model = $this->getFields();
 
-		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('first_name',$this->first_name,true);
-		$criteria->compare('last_name',$this->last_name,true);
-		$criteria->compare('address_line1',$this->address_line1,true);
-		$criteria->compare('address_line2',$this->address_line2,true);
-		$criteria->compare('city',$this->city,true);
-		$criteria->compare('state',$this->state,true);
-		$criteria->compare('zip',$this->zip,true);
-		$criteria->compare('lat',$this->lat);
-		$criteria->compare('lng',$this->lng);
-		$criteria->compare('phone',$this->phone,true);
-		$criteria->compare('ext',$this->ext,true);
-		$criteria->compare('avatar',$this->avatar,true);
-		$criteria->compare('url',$this->url,true);
-		$criteria->compare('lock_version',$this->lock_version);
-		$criteria->compare('created_by_id',$this->created_by_id);
-		$criteria->compare('created_on',$this->created_on,true);
-		$criteria->compare('updated_by_id',$this->updated_by_id);
-		$criteria->compare('updated_on',$this->updated_on,true);
-
-		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
-		));
-	}
-
-	/**
-	 * Returns the static model of the specified AR class.
-	 * Please note that you should have this exact method in all your CActiveRecord descendants!
-	 * @param string $className active record class name.
-	 * @return Profile the static model class
-	 */
-	public static function model($className=__CLASS__)
-	{
-		return parent::model($className);
-	}
+        foreach($model as $field) {
+            if ($field->widget) {
+                $data[$field->varname] = $field->widget;
+            }
+        }
+        
+        return $data;
+    }
+	
+    public function widgetParams($fieldName)
+    {
+        $data = array();
+        $model = $this->getFields();
+		
+        foreach($model as $field) {
+            if($field->widget) {
+                $data[$field->varname] = $field->widgetparams;
+            }
+        }
+    
+        return $data[$fieldName];
+    }
+	
+    public function getFields()
+    {
+        if($this->regMode) {
+            if(!$this->_modelReg) {
+                $this->_modelReg = ProfileField::model()->forRegistration()->findAll();
+            }
+            
+            return $this->_modelReg;
+        } else {
+            if(!$this->_model) {
+                $this->_model = ProfileField::model()->forOwner()->findAll();
+            }
+            
+            return $this->_model;
+        }
+    }
+        
+    /**
+     * Returns the static model of the specified AR class.
+     * Please note that you should have this exact method in all your CActiveRecord descendants!
+     * @param string $className active record class name.
+     * @return Profile the static model class
+     */
+    public static function model($className=__CLASS__)
+    {
+        return parent::model($className);
+    }
         
     public function getId()
     {

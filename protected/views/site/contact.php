@@ -32,38 +32,42 @@ If you have business inquiries or other questions, please fill out the following
         </p>
         <?php echo $form->errorSummary($model); ?>
         <?php
-            echo $form->textFieldControlGroup($model,
-                                              'name',
-                                                array(
-                                                   'class' => 'span5'
-                                                )
+            echo $form->textFieldControlGroup(
+                    $model,
+                    'name',
+                    array(
+                        'span' => 5,
+                    )
             );
         ?>
         <?php
-            echo $form->emailFieldControlGroup($model,
-                                               'email',
-                                                array(
-                                                   'maxlength' => 128,
-                                                   'class' => 'span5'
-                                                )
+            echo $form->emailFieldControlGroup(
+                    $model,
+                    'email',
+                    array(
+                        'maxlength' => 128,
+                        'span' => 5,
+                    )
             );
         ?>
         <?php
-            echo $form->textFieldControlGroup($model,
-                                                'subject',
-                                                array(
-                                                   'maxlength' => 128,
-                                                   'class' => 'span5'
-                                                )
+            echo $form->textFieldControlGroup(
+                    $model,
+                    'subject',
+                    array(
+                        'maxlength' => 128,
+                        'span' => 5,
+                    )
             );
         ?>
         <?php
-            echo $form->textAreaControlGroup($model,
-                                               'body',
-                                               array(
-                                                   'rows' => 6,
-                                                   'class' => 'span5'
-                                               )
+            echo $form->textAreaControlGroup(
+                    $model,
+                    'body',
+                    array(
+                        'rows' => 6,
+                        'span' => 5,
+                    )
             );
         ?>
         <?php
@@ -75,17 +79,18 @@ If you have business inquiries or other questions, please fill out the following
                     )
             );
         ?>
-        <?php if(CCaptcha::checkRequirements()) : ?>
+        <?php if(Yii::app()->doCaptcha('contact')) : ?>
             <div class="controls">
                 <?php $this->widget('CCaptcha'); ?>
             </div>
 
             <?php
-                echo $form->textFieldControlGroup($model,
-                                                  'verifyCode',
-                                                  array(
-                                                    'class' => 'span5'
-                                                  )
+                echo $form->textFieldControlGroup(
+                        $model,
+                        'verifyCode',
+                        array(
+                            'span' => 5,
+                        )
                 );
             ?>
 
@@ -95,16 +100,16 @@ If you have business inquiries or other questions, please fill out the following
             </div>
         <?php endif; ?>
     </fieldset>
-    <div class="form-actions">
-        <?php
-            echo TbHtml::submitButton(
-                    'Submit',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                    )
+    <?php
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Submit',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
             );
-        ?>
-    </div>
+    ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->

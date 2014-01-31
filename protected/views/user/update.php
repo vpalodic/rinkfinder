@@ -5,8 +5,8 @@
 
 <?php
 $this->breadcrumbs=array(
-	'Users' => array('index'),
-	$model->username => array('view', 'id' => $model->id),
+	'Users'=>array('index'),
+	$model->id=>array('view','id'=>$model->id),
 	'Update',
 );
 

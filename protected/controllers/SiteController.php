@@ -2,49 +2,80 @@
 
 class SiteController extends Controller
 {
-	/**
-	 * Declares class-based actions.
-	 */
-	public function actions()
-	{
-		return array(
-			// captcha action renders the CAPTCHA image displayed on the contact page
-			'captcha'=>array(
-				'class'=>'CCaptchaAction',
-				'backColor'=>0xFFFFFF,
-			),
-			// page action renders "static" pages stored under 'protected/views/site/pages'
-			// They can be accessed via: index.php?r=site/page&view=FileName
-			'page'=>array(
-				'class'=>'CViewAction',
-			),
-		);
-	}
+    /**
+     * @return array action filters
+     */
+    public function filters()
+    {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+            'postOnly + delete', // we only allow deletion via POST request
+        );
+    }
 
-	/**
-	 * This is the default 'index' action that is invoked
-	 * when an action is not explicitly requested by users.
-	 */
-	public function actionIndex()
-	{
-		// renders the view file 'protected/views/site/index.php'
-		// using the default layout 'protected/views/layouts/main.php'
-		$this->render('index');
-	}
+    /**
+     * Specifies the access control rules.
+     * This method is used by the 'accessControl' filter.
+     * @return array access control rules
+     */
+    public function accessRules()
+    {
+        return array(
+            array(
+                'allow', // allow all users to perform all actions
+                'actions' => array('index', 'captcha', 'page', 'contact', 'login', 'logout', 'register'),
+                'users' => array('*'),
+            ),
+            array(
+                'deny', // deny all users
+                'users' => array('*'),
+            ),
+        );
+    }
 
-	/**
-	 * This is the action to handle external exceptions.
-	 */
-	public function actionError()
-	{
-		if($error=Yii::app()->errorHandler->error)
-		{
-			if(Yii::app()->request->isAjaxRequest)
-				echo $error['message'];
-			else
-				$this->render('error', $error);
-		}
-	}
+    /**
+     * Declares class-based actions.
+     */
+    public function actions()
+    {
+        return array(
+            // captcha action renders the CAPTCHA image displayed on the contact page
+            'captcha' => array(
+                'class' => 'CCaptchaAction',
+                'backColor' => 0xFFFFFF,
+            ),
+            // page action renders "static" pages stored under 'protected/views/site/pages'
+            // They can be accessed via: index.php?r=site/page&view=FileName
+            'page' => array(
+                'class' => 'CViewAction',
+            ),
+        );
+    }
+
+    /**
+     * This is the default 'index' action that is invoked
+     * when an action is not explicitly requested by users.
+     */
+    public function actionIndex()
+    {
+        // renders the view file 'protected/views/site/index.php'
+        // using the default layout 'protected/views/layouts/main.php'
+        $this->render('index');
+    }
+
+    /**
+     * This is the action to handle external exceptions.
+     */
+    public function actionError()
+    {
+        if($error = Yii::app()->errorHandler->error) {
+            if(Yii::app()->request->isAjaxRequest) {
+                echo $error['message'];
+            } else {
+                $this->render('error', $error);
+            }
+        }
+    }
 
     /**
      * Displays the contact page
@@ -98,47 +129,96 @@ class SiteController extends Controller
 
         // Preload the form if the user is logged in!
         if(!Yii::app()->user->isGuest) {
-            $user = User::model()->findByPk(Yii::app()->user->id);
-
-            $model->name = $user->profile->first_name . ' ' . $user->profile->last_name;
-            $model->email = $user->email;
+            if(($names = Yii::app()->user->getState('_names')) !== null) {
+                if(isset($names['fullName'])) {
+                    $model->name = $names['fullName'];
+                }
+            }
+            
+            if(($email = Yii::app()->user->getState('_email')) !== null) {
+                $model->email = $email;
+            }
         }
 
         $this->render('contact', array('model' => $model));
     }
 
-	/**
-	 * Displays the login page
-	 */
-	public function actionLogin()
-	{
-		$model=new LoginForm;
+    /**
+     * Displays the registration page
+     */
+    function actionRegister()
+    {
+        $model = new User;
+        $profile = new Profile;
 
-		// if it is ajax validation request
-		if(isset($_POST['ajax']) && $_POST['ajax']==='login-form')
-		{
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
+        // ajax validator
+        if(isset($_POST['ajax']) && $_POST['ajax'] === 'registration-form') {
+            echo CActiveForm::validate(array($model, $profile));
+            Yii::app()->end();
+        }
+        
+        // If user is already logged in, send them to their profile page!!!
+        if(Yii::app()->user->id) {
+            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
+        } else {
+            // collect user input data
+            if(isset($_POST['User'])) {
+                $model->attributes = $_POST['User'];
+                $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
 
-		// collect user input data
-		if(isset($_POST['LoginForm']))
-		{
-			$model->attributes=$_POST['LoginForm'];
-			// validate user input and redirect to the previous page if valid
-			if($model->validate() && $model->login())
-				$this->redirect(Yii::app()->user->returnUrl);
-		}
-		// display the login form
-		$this->render('login',array('model'=>$model));
-	}
+                // validate user input and redirect to the welcome! page if valid
+                if($model->save()) {
+                    //optional
+                    $login = new LoginForm;
+                    $login->username = $_POST['User']['username'];
+                    $login->password = $_POST['User']['passwordSave'];
+                
+                    if($login->validate() && $login->login()) {
+                        $this->render('welcome');
+                    }
+                    else {
+                        $this->redirect('/site/error', $login->getErrors());
+                    }
+                }
+            } else {
+                // display the registration form
+                $this->render('register', array('model' => $model));
+            }
+        }
+    }
 
-	/**
-	 * Logs out the current user and redirect to homepage.
-	 */
-	public function actionLogout()
-	{
-		Yii::app()->user->logout();
-		$this->redirect(Yii::app()->homeUrl);
-	}
+    /**
+     * Displays the login page
+     */
+    public function actionLogin()
+    {
+        $model = new LoginForm;
+
+        // if it is ajax validation request
+        if(isset($_POST['ajax']) && $_POST['ajax']==='login-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
+        }
+
+        // collect user input data
+        if(isset($_POST['LoginForm']))
+        {
+            $model->attributes = $_POST['LoginForm'];
+            // validate user input and redirect to the previous page if valid
+            if($model->validate() && $model->login()) {
+                $this->redirect(Yii::app()->user->returnUrl);
+            }
+        }
+        // display the login form
+        $this->render('login', array('model' => $model));
+    }
+
+    /**
+     * Logs out the current user and redirect to homepage.
+     */
+    public function actionLogout()
+    {
+        Yii::app()->user->logout();
+        $this->redirect(Yii::app()->homeUrl);
+    }
 }

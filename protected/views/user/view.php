@@ -6,7 +6,7 @@
 <?php
 $this->breadcrumbs=array(
 	'Users'=>array('index'),
-	$model->username,
+	$model->id,
 );
 
 $this->menu=array(
@@ -34,7 +34,7 @@ $this->menu=array(
 		'failed_logins',
 		'last_visited_on',
 		'last_visited_from',
-		'activation_key',
+		'user_key',
 		'activated_on',
 		'lock_version',
 		'created_by_id',

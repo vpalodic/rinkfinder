@@ -56,7 +56,7 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 		/*
 		'last_visited_on',
 		'last_visited_from',
-		'activation_key',
+		'user_key',
 		'activated_on',
 		'lock_version',
 		'created_by_id',

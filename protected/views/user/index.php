@@ -4,7 +4,7 @@
 ?>
 
 <?php
-$this->breadcrumbs = array(
+$this->breadcrumbs=array(
 	'Users',
 );
 

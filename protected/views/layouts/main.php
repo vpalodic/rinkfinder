@@ -19,6 +19,16 @@
     );
 ?>
 
+<?php
+    $fullName = 'Guest';
+    
+    if(($names = Yii::app()->user->getState('_names')) !== null) {
+        if(isset($names['fullName'])) {
+            $fullName = $names['fullName'];
+        }
+    }
+?>
+    
 <?php $this->widget('bootstrap.widgets.TbNavbar',array(
             'collapse' => true,
             'fluid' => true,
@@ -47,7 +57,8 @@
                             'visible'=> Yii::app()->user->isGuest
                         ),
                         array(
-                            'label'=> Yii::app()->user->name,
+                            'label'=> $fullName,
+//                            'label'=> Yii::app()->user->name,
                             //'url' => Yii::app()->getModule('user')->profileUrl,
                             'visible'=> !Yii::app()->user->isGuest,
                             'items' => array(
