@@ -75,6 +75,8 @@
                     array(
                         'span' => 5,
                         'maxlength' => 128,
+                        'rel' => 'tooltip',
+                        'title' => 'Please enter your e-mail address'
                     )
             );
         ?>
@@ -84,9 +86,21 @@
             if($profileFields) {
                 foreach($profileFields as $field) {
                     if($field->widgetEdit($profile)) {
-                        echo $form->labelEx($profile, $field->varname);
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'htmlOptions' => array(
+                                        'class' => 'control-label',
+                                    )
+                                )
+                             );
+                        echo '<div class="controls">';
                         echo $field->widgetEdit($profile);
                         echo $form->error($profile, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
                     } elseif($field->range) {
                         echo $form->dropDownListControlGroup(
                                 $profile,
@@ -96,7 +110,66 @@
                                     'span' => 5
                                 )
                             );
-                    } elseif($field->field_type=="TEXT") {
+                    } elseif($field->varname == "phone") {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.maskinput.WhMaskInput',
+                                array(
+                                    'model' => $profile,
+                                    'attribute' => $field->varname,
+                                    'mask' => '(000) 000-0000',
+                                    'htmlOptions' => array(
+                                        'class' => 'span5',
+                                    ),
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($profile, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
+                    }  elseif($field->varname == "state") {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.formhelpers.WhStates',
+                                array(
+                                    'model' => $profile,
+                                    'attribute' => $field->varname,
+                                    'pluginOptions' => array(
+                                        'country' => 'US',
+                                        'flags' => 'true',
+                                    ),
+                                    'useHelperSelectBox' => false,
+                                    'htmlOptions' => array(
+                                        'class' => 'span5',
+                                        'prompt' => 'Select a state',
+                                    ),                                    
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($profile, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
+                    } elseif($field->field_type == "TEXT") {
                         echo $form->textAreaControlGroup(
                                 $profile,
                                 $field->varname,

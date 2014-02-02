@@ -72,7 +72,7 @@ class User extends RinkfinderActiveRecord
      */
     public function rules()
     {
-        return array(
+        $rules = array(
             array(
                 'username',
                 'length',
@@ -94,7 +94,7 @@ class User extends RinkfinderActiveRecord
             array(
                 'passwordSave, passwordRepeat',
                 'required',
-                'on' => 'insert, changePassword',
+                'on' => 'insert changePassword registration',
             ),
             array(
                 'passwordSave, passwordRepeat',
@@ -102,21 +102,21 @@ class User extends RinkfinderActiveRecord
                 'max' => 48,
                 'min' => 8,
                 'message' => "Invalid password (length between 8 and 48 characters).",
-                'on' => 'insert, changePassword',
+                'on' => 'insert changePassword registration',
             ),
             array(
                 'passwordSave, passwordRepeat',
                 'match',
                 'pattern' => '/(?=^.{8,}$)(?=.*\d)(?=.*[!@#$%^&*]+)(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/u',
                 'message' => "Password must contain at least one from each set (a-z, A-Z, 0-9, !@#$%^&*).",
-                'on' => 'insert, changePassword',
+                'on' => 'insert changePassword registration',
             ),
             array(
                 'passwordRepeat',
                 'compare',
                 'compareAttribute' => 'passwordSave',
                 'message' => "Passwords do not match!",
-                'on' => 'insert, changePassword'
+                'on' => 'insert changePassword registration'
             ),
             array(
                 'email',
@@ -168,6 +168,22 @@ class User extends RinkfinderActiveRecord
                 'on'=>'search'
             ),
         );
+        
+        if(isset($_POST['ajax']) && $_POST['ajax'] === 'registration-form') {
+            return $rules;
+        } else {
+            array_push(
+                    $rules,
+                    array(
+                        'verifyCode',
+                        'captcha',
+                        'allowEmpty' => !Yii::app()->doCaptcha('registration'),
+                        'on' => 'registration'
+                    )
+            );
+        }
+
+        return $rules;
     }
 
     /**
@@ -313,6 +329,22 @@ class User extends RinkfinderActiveRecord
     }
         
     /**
+     * Apply a hash on the password before we store it in the database
+     */
+    protected function beforeSave()
+    {
+        if(($this->scenario === 'insert' ||
+            $this->scenario === 'changePassword' ||
+            $this->scenario === 'registration') &&
+           (!empty($this->passwordSave) && 
+            !empty($this->passwordRepeat) && 
+            ($this->passwordSave === $this->passwordRepeat))) {
+            $this->setPassword($this->passwordSave);
+        }
+        return parent::beforeSave();;
+    }
+    
+    /**
      * Retrieves the user's first name
      * @return string
      */
@@ -363,111 +395,57 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
-     * Validates that the passed in password meets complexity
+     * Assumes that the passed in password meets complexity
      * requirements before hashing and storing the password. This
-     * function also generates a new user key if activated_on is NULL or
-     * the user's status_id is self::STATUS_NOTACTIVATED
+     * function also generates a new user key.
      * @param string $password
-     * @param bool $save true to save the record
      * @return bool
      */
-	public function changePassword($password, $save = false)
-	{
-		$previousPassword = $this->password;
-		$this->password = $password;
-
-		// validate the password before we go and change it!
-		$oldScenario = $this->scenario;
-		$this->scenario = 'changePassword';
-
-		if(!$this->validate()) {
-			$this->password = $previousPassword;
-			return false;
-		}
-
-		$this->scenario = $oldScenario;
-
-		// We change the activation key if the user has not
-		// activated their account yet and we send a new e-mail.
-		if(!isset($this->activated_on) || $this->status_id == self::STATUS_NOTACTIVATED) {
-			$this->user_key = hash('sha256', microtime() . $password);
-			$this->sendMailMessage('activation');
-		}
-
-		$this->password = $this->hashPassword($password);
-
-		if($save) {
-			return $this->save(true, array('user_key', 'password', 'updated_on', 'updated_by_id'));
-		} else {
-			return true;
-		}
-	}
+    public function setPassword($password)
+    {
+        // We set the user key first
+        $this->user_key = hash('sha256', microtime() . $password);
+        $this->password = $this->hashPassword($password);
+    }
 
     /**
-     * @desc Validates that the new password meets complexity
-     * requirements before hashing and storing the password. This
-     * function also generates an activation key
-     * @param bool $save true to save the record
-     * @return bool
+     * Locks the account if it is active and exceeds the failedLoginsLimit
+     * @return bool true if user account was locked
      */
-	public function hashNewUserPassword($save = false)
-	{
-		if($this->isNewRecord) {
-			// Ensure that the password meets complexity requirements
-			$oldScenario = $this->scenario;
-			$this->scenario = 'changePassword';
-
-			if(!$this->validate()) {
-				return false;
-			}
-
-			$this->scenario = $oldScenario;
-
-			$this->activation_key = hash(Yii::app()->getModule('user')->hash, microtime() . $this->password);
-			$this->password = $this->hashPassword($this->password);
-		}
-
-		if($save) {
-			return $this->save(true, array('activation_key', 'password', 'created_on', 'created_by_id', 'updated_on', 'updated_by_id'));
-		} else {
-			return true;
-		}
-	}
+    public function lockUser()
+    {
+        if($this->status_id == self::STATUS_ACTIVE &&
+           $this->failed_logins > Yii::app()->params[failedLoginsLimit]) {
+            // Lock the user account!
+            $this->status_id = self::STATUS_LOCKED;
+            return true;
+        }
+        return false;
+    }
 
     /**
-     * @desc Locks the account if it is active and
-     * exceeds the failedLogins
-     * @return bool
-     */
-	public function lockUser()
-	{
-		if($this->status_id == self::STATUS_ACTIVE && $this->failed_logins > Yii::app()->getModule('user')->failedLogins) {
-			// Lock the user account!
-			$this->status_id = self::STATUS_LOCKED;
-
-			return true;
-		}
-
-		return false;
-	}
-
-     /**
      * @desc Unlocks the account if it is locked and
-     * resets the failed_logins to zero
-     * @return bool
+     * resets the failed_logins to zero. If the account was previously
+     * activated, the status is set to active, otherwise it is set to
+     * not activated
+     * @return bool true if the account was unlocked
      */
-	public function unlockUser()
-	{
-		if($this->status_id == self::STATUS_LOCKED) {
-			// Lock the user account!
-			$this->status_id = self::STATUS_ACTIVE;
-			$this->failed_logins = 0;
+    public function unlockUser()
+    {
+        if($this->status_id == self::STATUS_LOCKED) {
+            // Unlock the user account!
+            $this->failed_logins = 0;
 
-			return true;
-		}
+            if(!isset($this->activated_on)) {
+                $this->status_id = self::STATUS_NOTACTIVATED;
+            } else {
+                $this->status_id = self::STATUS_ACTIVE;
+            }
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     /**
      * @desc Locks the account if it is active and

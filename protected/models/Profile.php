@@ -76,6 +76,10 @@ class Profile extends RinkfinderActiveRecord
                     'min' => $field->field_size_min,
                 );
 
+                if($field->varname == 'phone') {
+                    $field_rule['max'] = 14;
+                }
+                
                 if($field->error_message) {
                     $field_rule['message'] = $field->error_message;
                 }
@@ -144,21 +148,6 @@ class Profile extends RinkfinderActiveRecord
         array_push($rules, array(implode(',', $numerical), 'numerical', 'integerOnly' => true));
 		
         return $rules;
-
-/*		return array(
-			array('user_id, first_name, last_name, address_line1, city, state, zip, created_on, updated_on', 'required'),
-			array('user_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('lat, lng', 'numerical'),
-			array('first_name, last_name, address_line1, address_line2, city', 'length', 'max'=>128),
-			array('state', 'length', 'max'=>2),
-			array('zip', 'length', 'max'=>5),
-			array('phone, ext', 'length', 'max'=>10),
-			array('avatar, url', 'length', 'max'=>511),
-			// The following rule is used by search().
-			// @todo Please remove those attributes that should not be searched.
-			array('user_id, first_name, last_name, address_line1, address_line2, city, state, zip, lat, lng, phone, ext, avatar, url, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
-		);
- */
     }
 
     /**
@@ -332,5 +321,13 @@ class Profile extends RinkfinderActiveRecord
     public function getId()
     {
         return $this->user_id;
+    }
+    
+    protected function beforeSave()
+    {
+        // We ensure that the input mask for the phone number is removed!!!
+        $this->phone = preg_replace('/[^0-9]/s', '', $this->phone);
+        
+        return parent::beforeSave();
     }
 }

@@ -18,45 +18,118 @@
     <p class="help-block">Fields with <span class="required">*</span> are required.</p>
 
     <?php echo $form->errorSummary($model); ?>
+<?php
+            $modelFields = $model->getFields();
 
-            <?php echo $form->textFieldControlGroup($model,'user_id',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'first_name',array('span'=>5,'maxlength'=>128)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'last_name',array('span'=>5,'maxlength'=>128)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'address_line1',array('span'=>5,'maxlength'=>128)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'address_line2',array('span'=>5,'maxlength'=>128)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'city',array('span'=>5,'maxlength'=>128)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'state',array('span'=>5,'maxlength'=>2)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'zip',array('span'=>5,'maxlength'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'lat',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'lng',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'phone',array('span'=>5,'maxlength'=>10)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'ext',array('span'=>5,'maxlength'=>10)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'avatar',array('span'=>5,'maxlength'=>511)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'url',array('span'=>5,'maxlength'=>511)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'lock_version',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'created_by_id',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'created_on',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'updated_by_id',array('span'=>5)); ?>
-
-            <?php echo $form->textFieldControlGroup($model,'updated_on',array('span'=>5)); ?>
-
+            if($modelFields) {
+                foreach($modelFields as $field) {
+                    if($field->widgetEdit($model)) {
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'htmlOptions' => array(
+                                        'class' => 'control-label',
+                                    )
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $field->widgetEdit($model);
+                        echo $form->error($model, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
+                    } elseif($field->range) {
+                        echo $form->dropDownListControlGroup(
+                                $model,
+                                $field->varname,
+                                Profile::range($field->range),
+                                array(
+                                    'span' => 5
+                                )
+                            );
+                    } elseif($field->varname == "phone") {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.maskinput.WhMaskInput',
+                                array(
+                                    'model' => $model,
+                                    'attribute' => $field->varname,
+                                    'mask' => '(000) 000-0000',
+                                    'htmlOptions' => array(
+                                        'class' => 'span5',
+                                    ),
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($model, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
+                    }  elseif($field->varname == "state") {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.formhelpers.WhStates',
+                                array(
+                                    'model' => $model,
+                                    'attribute' => $field->varname,
+                                    'pluginOptions' => array(
+                                        'country' => 'US',
+                                        'flags' => 'true',
+                                    ),
+                                    'useHelperSelectBox' => false,
+                                    'htmlOptions' => array(
+                                        'class' => 'span5',
+                                        'prompt' => 'Select a state',
+                                    ),                                    
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($model, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
+                    } elseif($field->field_type == "TEXT") {
+                        echo $form->textAreaControlGroup(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'rows' => 6,
+                                    'span' => 5
+                                )
+                            );
+                    } else {
+                        echo $form->textFieldControlGroup(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'size' => 60,
+                                    'maxlength' => (($field->field_size) ? $field->field_size : 255),
+                                    'span' => 5
+                                )
+                            );
+                    }
+                }
+            }
+?>
         <div class="form-actions">
         <?php echo TbHtml::submitButton($model->isNewRecord ? 'Create' : 'Save',array(
 		    'color'=>TbHtml::BUTTON_COLOR_PRIMARY,

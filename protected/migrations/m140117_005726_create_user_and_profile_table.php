@@ -340,7 +340,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'title' => 'Phone Number',
                 'field_type' => 'VARCHAR',
                 'field_size' => 10,
-                'field_size_min' => 10,
+                'field_size_min' => 0,
                 'required' => 2,
                 'match' => '',
                 'range' => '',

@@ -148,7 +148,7 @@ class SiteController extends Controller
      */
     function actionRegister()
     {
-        $model = new User;
+        $model = new User('registration');
         $profile = new Profile;
 
         // ajax validator
@@ -165,7 +165,7 @@ class SiteController extends Controller
             if(isset($_POST['User'])) {
                 $model->attributes = $_POST['User'];
                 $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
-
+                
                 // validate user input and redirect to the welcome! page if valid
                 if($model->save()) {
                     //optional

@@ -20,7 +20,7 @@
 ?>
 
 <?php
-    $fullName = 'Guest';
+    $fullName = Yii::app()->user->name;
     
     if(($names = Yii::app()->user->getState('_names')) !== null) {
         if(isset($names['fullName'])) {

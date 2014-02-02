@@ -71,13 +71,35 @@ If you have business inquiries or other questions, please fill out the following
             );
         ?>
         <?php
-            echo $form->checkBoxControlGroup(
+            $widget = $this->widget(
+                    'yiiwheels.widgets.switch.WhSwitch',
+                    array(
+                        'model' => $model,
+                        'attribute' => 'copyMe',
+                        'onLabel' => 'Yes',
+                        'offLabel' => 'No',
+                        'size' => 'large',
+                        'offColor' => 'warning',
+                        'htmlOptions' => array(
+                            'class' => 'span5',
+                        ),
+                    ),
+                    true
+            );
+            
+            echo '<div class="control-group">';
+            echo $form->labelEx(
                     $model,
                     'copyMe',
                     array(
-                        'span' => 5,
-                    )
-            );
+                        'class' => 'control-label',
+                        )
+                    );
+            echo '<div class="controls">';
+            echo $widget;
+            echo $form->error($model, 'copyMe');
+            echo '</div>';
+            echo '</div>';
         ?>
         <?php if(Yii::app()->doCaptcha('contact')) : ?>
             <div class="controls">

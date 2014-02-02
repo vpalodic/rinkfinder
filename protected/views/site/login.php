@@ -7,6 +7,8 @@
     $this->breadcrumbs = array('Login',);
 ?>
 
+<?php $this->widget('bootstrap.widgets.TbAlert'); ?>
+
 <h2 class="sectionHeader">Login</h2>
 
 <p>Please fill out the following form with your login credentials:</p>
@@ -60,14 +62,36 @@
             </div>
 	</div>
         <?php
-            echo $form->checkBoxControlGroup(
+           $widget = $this->widget(
+                    'yiiwheels.widgets.switch.WhSwitch',
+                    array(
+                        'model' => $model,
+                        'attribute' => 'rememberMe',
+                        'onLabel' => 'Yes',
+                        'offLabel' => 'No',
+                        'size' => 'large',
+                        'offColor' => 'warning',
+                        'htmlOptions' => array(
+                            'class' => 'span5',
+                        ),
+                    ),
+                    true
+            );
+            
+            echo '<div class="control-group">';
+            echo $form->labelEx(
                     $model,
                     'rememberMe',
                     array(
-                        'span' => 5,
-                    )
-            );
-        ?>
+                        'class' => 'control-label',
+                        )
+                    );
+            echo '<div class="controls">';
+            echo $widget;
+            echo $form->error($model, 'rememberMe');
+            echo '</div>';
+            echo '</div>';
+         ?>
     </fieldset>
     <div class="form-actions">
         <?php
