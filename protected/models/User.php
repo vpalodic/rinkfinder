@@ -409,13 +409,17 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
-     * Locks the account if it is active and exceeds the failedLoginsLimit
+     * Locks the account if it is active, not activated, inactive, or reset
+     * and {@link $failed_logins} exceeds the failedLoginsLimit
      * @return bool true if user account was locked
      */
     public function lockUser()
     {
-        if($this->status_id == self::STATUS_ACTIVE &&
-           $this->failed_logins > Yii::app()->params[failedLoginsLimit]) {
+        if(($this->status_id == self::STATUS_NOTACTIVATED ||
+            $this->status_id == self::STATUS_ACTIVE ||
+            $this->status_id == self::STATUS_RESET ||
+            $this->status_id == self::STATUS_INACTIVE) &&
+           $this->failed_logins > Yii::app()->params['failedLoginsLimit']) {
             // Lock the user account!
             $this->status_id = self::STATUS_LOCKED;
             return true;
@@ -424,10 +428,10 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
-     * @desc Unlocks the account if it is locked and
-     * resets the failed_logins to zero. If the account was previously
-     * activated, the status is set to active, otherwise it is set to
-     * not activated
+     * Unlocks the account if it is locked and resets the
+     * failed_logins to zero. If the account was previously
+     * activated, the status is set to active. If the account
+     * was not previously activated, the status is set to not activated.
      * @return bool true if the account was unlocked
      */
     public function unlockUser()
@@ -436,232 +440,245 @@ class User extends RinkfinderActiveRecord
             // Unlock the user account!
             $this->failed_logins = 0;
 
-            if(!isset($this->activated_on)) {
+            if(!isset($this->activated_on) || $this->activated_on == '0000-00-00 00:00:00') {
                 $this->status_id = self::STATUS_NOTACTIVATED;
             } else {
                 $this->status_id = self::STATUS_ACTIVE;
             }
             return true;
         }
-
         return false;
     }
 
     /**
-     * @desc Locks the account if it is active and
-     * exceeds the failedLogins
-     * @return bool
+     * Sets the account as inactive if the user's last visit has been
+     * more than daysSinceLastVisitLimit or if the user has never
+     * visited, if the creation date has been more than
+     * daysSinceLastVisitLimit
+     * @return bool true if the user has been set to inactive
      */
-	public function inactiveUser()
-	{
-		if(!isset($this->last_visited_on) || $this->last_visited_on == '0000-00-00 00:00:00') {
-			return false;
-		}
+    public function inactiveUser()
+    {
+        if(!isset($this->last_visited_on) || $this->last_visited_on == '0000-00-00 00:00:00') {
+            $dtLastVisit = DateTime::createFromFormat('Y-m-d H:i:s', $this->created_on);
+        } else {
+            $dtLastVisit = DateTime::createFromFormat('Y-m-d H:i:s', $this->last_visited_on);
+        }
+        
+        $dtCurrentTime = new DateTime();
+        $dtiDays = $dtLastVisit->diff($dtCurrentTime, true);
 
-		$dtLastVisit = DateTime::createFromFormat('Y-m-d H:i:s', $this->last_visited_on);
-		$dtCurrentTime = DateTime::createFromFormat('m-d-Y H:i:s', 'now');
-		$dtiDays = $dtLastVisit->diff(dtCurrentTime, true);
-
-
-		if($this->status_id == self::STATUS_ACTIVE && $dtiDays->days > Yii::app()->getModule('user')->daysSinceLastVisit) {
-			// Mark the user account inactive!
-			$this->status_id = self::STATUS_INACTIVE;
-
-			return true;
-		}
-
-		return false;
-	}
+        if(($this->status_id == self::STATUS_NOTACTIVATED ||
+            $this->status_id == self::STATUS_ACTIVE ||
+            $this->status_id == self::STATUS_LOCKED ||
+            $this->status_id == self::STATUS_RESET ||
+            $this->status_id == self::STATUS_INACTIVE) &&
+           $dtiDays->days > Yii::app()->params['daysSinceLastVisitLimit']) {
+            // Mark the user account inactive!
+            $this->status_id = self::STATUS_INACTIVE;
+            return true;
+        }
+        return false;
+    }
 
     /**
-     * @desc Resets the account if it is inactive or locked
-     * @return bool
+     * Sets the account account as reset if it is not deleted or banned
+     * @return bool true if the account was reset
      */
-	public function resetUser()
-	{
-		if($this->status_id == self::STATUS_LOCKED ||
-		   $this->status_id == self::STATUS_INACTIVE ||
-		   $this->status_id == self::STATUS_ACTIVE) {
-			// Reset the user account!
-			$this->status_id = self::STATUS_RESET;
+    public function resetUser()
+    {
+        if($this->status_id != self::STATUS_DELETED &&
+           $this->status_id != self::STATUS_BANNED) {
+            // Reset the user account!
+            $this->status_id = self::STATUS_RESET;
 
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-     * @desc Bans the account
-     * @return bool
-     */
-	public function banUser()
-	{
-		// Ban the user account!
-		$this->status_id = self::STATUS_BANNED;
-
-		return true;
-	}
+            return true;
+        }
+        return false;
+    }
 
     /**
-     * @desc Marks the account as deleted
-     * @return bool
+     * Sets the account to banned, even if it has been deleted
+     * @return bool always returns true
      */
-	public function deleteUser()
-	{
-		// Delete the user account!
-		$this->status_id = self::STATUS_DELETED;
+    public function banUser()
+    {
+        // Ban the user account!
+        $this->status_id = self::STATUS_BANNED;
 
-		return true;
-	}
+        return true;
+    }
 
     /**
-     * @desc Determines if the account is not activated
-     * @return bool
+     * Sets the account as deleted, even if it has been banned
+     * @return bool always returns true
      */
-	public function isNotActivated()
-	{
-		if($this->status_id == self::STATUS_NOTACTIVATED) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function deleteUser()
+    {
+        // Delete the user account!
+        $this->status_id = self::STATUS_DELETED;
+
+        return true;
+    }
 
     /**
-     * @desc Determines if the account is active
-     * @return bool
+     * Determines if the account has not been activated.
+     * Please note that this function may return true even if
+     * the account is active.
+     * @return bool true if the account has not been activated
      */
-	public function isActive()
-	{
-		if($this->status_id == self::STATUS_ACTIVE) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isNotActivated()
+    {
+        if($this->status_id == self::STATUS_NOTACTIVATED ||
+           !isset($this->activated_on) ||
+           $this->activated_on == '0000-00-00 00:00:00') {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Determines if the account is locked
-     * @return bool
+     * Determines if the account status_id is active
+     * Please note that this function may return true even if
+     * the account has never been activated.
+     * @return bool true if the account is active
      */
-	public function isLocked()
-	{
-		if($this->status_id == self::STATUS_LOCKED) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isActive()
+    {
+        if($this->status_id == self::STATUS_ACTIVE) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Determines if the account is reset
-     * @return bool
+     * Determines if the account status_id is locked.
+     * Please note that this function does not determine if the
+     * account should be locked.
+     * @return bool true if the account is set to locked
      */
-	public function isReset()
-	{
-		if($this->status_id == self::STATUS_RESET) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isLocked()
+    {
+        if($this->status_id == self::STATUS_LOCKED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Determines if the account is inactive
-     * @return bool
+     * Determines if the account status_id is reset.
+     * @return bool true if the account is set to reset
      */
-	public function isInactive()
-	{
-		if($this->status_id == self::STATUS_INACTIVE) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isReset()
+    {
+        if($this->status_id == self::STATUS_RESET) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Determines if the account is deleted
-     * @return bool
+     * Determines if the account status_id is inactive
+     * Please note that this function does not determine if the
+     * account should be set to inactive.
+     * @return bool true if the account is set to inactive
      */
-	public function isDeleted()
-	{
-		if($this->status_id == self::STATUS_DELETED) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isInactive()
+    {
+        if($this->status_id == self::STATUS_INACTIVE) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Determines if the account is banned
-     * @return bool
+     * Determines if the account status_id is deleted
+     * @return bool true if the account is set to deleted
      */
-	public function isBanned()
-	{
-		if($this->status_id == self::STATUS_BANNED) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public function isDeleted()
+    {
+        if($this->status_id == self::STATUS_DELETED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Increments the failed_logins count and
-     * calls lockUser
-     * @param bool $save true to save the record
-     * @return bool
+     * Determines if the account status_id is banned
+     * @return bool true if the account is set to banned
      */
-	public function loginFailed($save = false)
-	{
-		$this->failed_logins += 1;
-
-		$this->lockUser();
-
-		if($save) {
-			return $this->save(true, array('status', 'failed_logins', 'updated_on', 'updated_by_id'));
-		} else {
-			return true;
-		}
-	}
+    public function isBanned()
+    {
+        if($this->status_id == self::STATUS_BANNED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Updates last_visited_on to NOW() and resets failed_logins to 0
-     * @param bool $save true to save the record
-     * @return bool
+     * Increments the failed_logins count and calls lockUser.
+     * @return bool true if the account has been locked
      */
-	public function loginSuccessful($save = false)
-	{
-		$this->failed_logins = 0;
-		$this->last_visited_on = new CDbExpression('NOW()');
+    public function loginFailed()
+    {
+        $this->saveCounters(array('failed_logins'=>1));
 
-		if($save) {
-			return $this->save(true, array('failed_logins', 'last_visited_on', 'updated_on', 'updated_by_id'));
-		} else {
-			return true;
-		}
-	}
+        if($this->lockUser()) {
+            return $this->saveAttributes(array('status_id'));
+        } else {
+            return false;
+        }
+    }
 
     /**
-     * @desc Activates the user's account!
-     * @param string $activation_key
-     * @param bool $save
+     * Updates last_visited_on to NOW(), last_visited_from to the
+     * IP Address the login request came from and resets
+     * failed_logins to 0 if it is currently non 0. It will not
+     * unlock the account if it is locked.
+     * Please note that regardless of status_id, the above is performed.
+     * @return bool true if login was processed successfully!
+     */
+    public function loginSuccessful()
+    {
+        if($this->failed_logins > 0) {
+            $neg = 0 - $this->failed_logins;
+            $this->saveCounters(array('failed_logins' => $neg));
+        }
+        
+        $this->last_visited_on = new CDbExpression('NOW()');
+        $this->last_visited_from = Yii::app()->request->userHostAddress;
+
+        return $this->saveAttributes(array('failed_logins', 'last_visited_on', 'last_visited_from'));
+    }
+
+    /**
+     * Activates the user's account if it has not been activated and
+     * sets the status_id to active. 
+     * @param string $user_key
      * @return bool
      */
-	public function activateAccount($activation_key, $save = false)
-	{
-		if($this->status_id == self::STATUS_NOTACTIVATED && $this->activation_key == $activation_key) {
-			// Reset the activation key so that it cannot be re-used!
-			$this->activation_key = hash(Yii::app()->getModule('user')->hash, microtime());;
-			$this->status_id = self::STATUS_ACTIVE;
-
-			if($save) {
-				return $this->save(true, array('activation_key', 'status', 'updated_on', 'updated_by_id'));
-			} else {
-				return true;
-			}
-		} else {
-			return false;
-		}
-	}
+    public function activateAccount($user_key)
+    {
+        if(($this->status_id == self::STATUS_NOTACTIVATED ||
+            !isset($this->activated_on) ||
+           $this->activated_on == '0000-00-00 00:00:00') &&
+           $this->user_key == $user_key &&
+           ($this->status_id == self::STATUS_ACTIVE ||
+            $this->status_id == self::STATUS_NOTACTIVATED)) {
+            // Reset the user key so that it cannot be re-used!
+            $this->user_key = hash('sha256', microtime());
+            $this->status_id = self::STATUS_ACTIVE;
+    
+            return $this->saveAttributes(array('user_key', 'status_id'));
+        } else {
+            return false;
+        }
+    }
 }

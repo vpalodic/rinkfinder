@@ -166,6 +166,9 @@ class SiteController extends Controller
                 $model->attributes = $_POST['User'];
                 $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
                 
+                // Register the new user!!!
+                $model->registerNewUser();
+                
                 // validate user input and redirect to the welcome! page if valid
                 if($model->save()) {
                     //optional
