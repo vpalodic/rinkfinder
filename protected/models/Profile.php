@@ -330,4 +330,25 @@ class Profile extends RinkfinderActiveRecord
         
         return parent::beforeSave();
     }
+    
+    /**
+     * Prepares a new user profile from self-registration after they have
+     * been added to the system. 
+     * @return bool true if the user was setup successfully
+     */
+    public function postRegisterNewUser()
+    {
+        // Update the created_by_id and updated_by_id
+        if(Yii::app()->user->isGuest) {
+            $this->created_by_id = $this->user_id;
+            $this->updated_by_id = $this->user_id;
+        } else {
+            $this->created_by_id = Yii::app()->user->id;
+            $this->updated_by_id = Yii::app()->user->id;
+        }
+        
+        $attributes = array('created_by_id', 'updated_by_id');
+        
+        return $this->saveAttributes($attributes);
+    }
 }

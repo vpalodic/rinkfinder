@@ -1,9 +1,8 @@
 <?php
 /**
  * CaptchaBehavior class file.
- * @author Vincent Palodichuk <vj.palodichuk@gmail.com>
- * @copyright Copyright &copy; Vincent Palodichuk 2013-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @author Vincent J Palodichuk <vj.palodichuk@gmail.com>
+ * @copyright Copyright &copy; MIAMA 2014
  * @package app.components
  */
 

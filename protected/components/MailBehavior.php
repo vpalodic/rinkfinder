@@ -2,8 +2,7 @@
 /**
  * MailBehavior class file.
  * @author Vincent Palodichuk <vj.palodichuk@gmail.com>
- * @copyright Copyright &copy; Vincent Palodichuk 2013-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @copyright Copyright &copy; MIAMA 2014
  * @package app.components
  */
 
@@ -21,25 +20,26 @@ class MailBehavior extends CBehavior
 
     /**
      * Send mail method
-	 * Valid arguments:
-	 * $mail->sendMail('', 'john@example.com', 'sub', 'msg', 'view');
-	 * $mail->sendMail(array('name'=>'John Doe',
-	 *                       'email'=>'john@example.com'),
-	 *                 array('john@example.com',
-	 *                       'jane@example.com'),
-	 *                 'sub', 'msg', 'view');
-	 * $mail->sendMail('john@example.com',
-	 *                 array('john@example.com'=>'John Doe',
-	 *                       'jane@example.com'),
-	 *                 'sub', 'msg', 'view');
+     * Valid arguments:
+     * $mail->sendMail('', 'john@example.com', 'sub', 'msg', data[], 'view');
+     * $mail->sendMail(array('name'=>'John Doe',
+     *                       'email'=>'john@example.com'),
+     *                 array('john@example.com',
+     *                       'jane@example.com'),
+     *                 'sub', 'msg', data[], 'view');
+     * $mail->sendMail('john@example.com',
+     *                 array('john@example.com'=>'John Doe',
+     *                       'jane@example.com'),
+     *                 'sub', 'msg', data[], 'view');
      * @param mixed $from address of the recipient.
-     * @param mixed $to address of the recipient.
+     * @param mixed $to address of the recipient(s).
      * @param string $subject subject of the message.
      * @param string $message content of the message.
+     * @param array $data data that will be passed to the view.
      * @param string $view the view to use, defaults to contact.
      * @return mixed true if successful or the error message received.
      */
-    public function sendMail($from, $to, $subject, $message, $view = 'contact')
+    public function sendMail($from, $to, $subject, $message, $data = array(), $view = 'contact')
     {
         if(!isset($this->_mail)) {
             $this->getMailer();
@@ -49,26 +49,32 @@ class MailBehavior extends CBehavior
         $message = str_replace("\n.", "\n..", $message);
 
         //set properties
-        //use 'contact' view from views/mail by defaul
+        $data['to'] = $to;
+        $data['subject'] = $subject;
+        $data['message'] = $message;
         $this->_mail->setView($view);
 
         if($from == '') {
             $this->_mail->setFrom(Yii::app()->params['adminEmail']['email'], Yii::app()->params['adminEmail']['name']);
             $this->_mail->setReplyTo(Yii::app()->params['adminEmail']['email'], Yii::app()->params['adminEmail']['name']);
-            $this->_mail->setData(array('message' => $message, 'name' => Yii::app()->params['adminEmail']['name'], 'description' => $subject));
+            $data['from'] = Yii::app()->params['adminEmail'];
+            $this->_mail->setData($data);
+        } elseif(is_array($from)) {
+            $this->_mail->setFrom($from['email'], $from['name']);
+            $this->_mail->setReplyTo($from['email'], $from['name']);
+            $data['from'] = $from;
+            $this->_mail->setData($data);
         } else {
-            if(is_array($from)) {
-                $this->_mail->setFrom($from['email'], $from['name']);
-                $this->_mail->setReplyTo($from['email'], $from['name']);
-                $this->_mail->setData(array('message' => $message, 'name' => $from['name'] . ' (' . $from['email'] . ')', 'description' => $subject));
-            } else {
-                $this->_mail->setFrom($from);
-                $this->_mail->setReplyTo($from);
-                $this->_mail->setData(array('message' => $message, 'name' => $from, 'description' => $subject));
-            }
+            $this->_mail->setFrom($from);
+            $this->_mail->setReplyTo($from);
+            $data['from'] = array(
+                'email' => $from,
+                'name' => ''
+            );
+            $this->_mail->setData($data);
         }
-        $this->_mail->setSubject($subject);
         $this->_mail->setTo($to);
+        $this->_mail->setSubject($subject);
 
         if($this->_mail->send()) {
             return true;
@@ -78,7 +84,7 @@ class MailBehavior extends CBehavior
     }
 
     /**
-     * @desc Get the YiiMailer object.
+     * Get the YiiMailer object.
      * @return YiiMailer.
      */
     public function getMailer()

@@ -628,7 +628,7 @@ class User extends RinkfinderActiveRecord
      */
     public function loginFailed()
     {
-        $this->saveCounters(array('failed_logins'=>1));
+        $this->saveCounters(array('failed_logins' => 1));
 
         if($this->lockUser()) {
             return $this->saveAttributes(array('status_id'));
@@ -655,30 +655,77 @@ class User extends RinkfinderActiveRecord
         $this->last_visited_on = new CDbExpression('NOW()');
         $this->last_visited_from = Yii::app()->request->userHostAddress;
 
-        return $this->saveAttributes(array('failed_logins', 'last_visited_on', 'last_visited_from'));
+        return $this->saveAttributes(array('last_visited_on', 'last_visited_from'));
     }
 
     /**
      * Activates the user's account if it has not been activated and
-     * sets the status_id to active. 
+     * sets the status_id to active if it is currently set to
+     * not activated or reset.
      * @param string $user_key
-     * @return bool
+     * @return bool true if the account was activated
      */
     public function activateAccount($user_key)
     {
-        if(($this->status_id == self::STATUS_NOTACTIVATED ||
-            !isset($this->activated_on) ||
-           $this->activated_on == '0000-00-00 00:00:00') &&
-           $this->user_key == $user_key &&
-           ($this->status_id == self::STATUS_ACTIVE ||
-            $this->status_id == self::STATUS_NOTACTIVATED)) {
+        if($this->user_key == $user_key &&
+           ($this->status_id == self::STATUS_NOTACTIVATED ||
+            $this->status_id == self::STATUS_ACTIVE ||
+            $this->status_id == self::STATUS_RESET)) {
             // Reset the user key so that it cannot be re-used!
             $this->user_key = hash('sha256', microtime());
             $this->status_id = self::STATUS_ACTIVE;
-    
-            return $this->saveAttributes(array('user_key', 'status_id'));
+
+            $attributes = array('user_key', 'status_id');
+            // Check if we should set an activated_on date
+            if(!isset($this->activated_on) ||
+               $this->activated_on == '0000-00-00 00:00:00') {
+                $this->activated_on = date('Y-m-d H:i:s');
+                $attributes[] = 'activated_on';
+            }
+            return $this->saveAttributes($attributes);
         } else {
             return false;
         }
+    }
+
+    /**
+     * Prepares a new user account from self-registration prior to them
+     * being added to the system.
+     * Sets the status_id to not activated and records the user's
+     * ip address.
+     * @return bool true if the user was setup successfully
+     */
+    public function preRegisterNewUser()
+    {
+        $this->status_id = self::STATUS_NOTACTIVATED;
+        $this->last_visited_from = Yii::app()->request->userHostAddress;
+        
+        return true;
+    }
+
+    /**
+     * Prepares a new user account from self-registration after they have
+     * been added to the system. Add thems to the "User" role.
+     * Sets the status_id to not activated and records the user's
+     * ip address.
+     * @return bool true if the user was setup successfully
+     */
+    public function postRegisterNewUser()
+    {
+        // First add them to the User role
+        Yii::app()->authManager->assign('User', $this->id);
+        
+        // Next, update the created_by_id and updated_by_id
+        if(Yii::app()->user->isGuest) {
+            $this->created_by_id = $this->id;
+            $this->updated_by_id = $this->id;
+        } else {
+            $this->created_by_id = Yii::app()->user->id;
+            $this->updated_by_id = Yii::app()->user->id;
+        }
+        
+        $attributes = array('created_by_id', 'updated_by_id');
+        
+        return $this->saveAttributes($attributes);
     }
 }

@@ -9,7 +9,6 @@ class SiteController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
         );
     }
 
@@ -23,7 +22,7 @@ class SiteController extends Controller
         return array(
             array(
                 'allow', // allow all users to perform all actions
-                'actions' => array('index', 'captcha', 'page', 'contact', 'login', 'logout', 'register'),
+                'actions' => array('error', 'index', 'captcha', 'page', 'contact', 'login', 'logout', 'register', 'activateAccount'),
                 'users' => array('*'),
             ),
             array(
@@ -95,34 +94,7 @@ class SiteController extends Controller
             $model->attributes = $_POST['ContactForm'];
 
             if($model->validate()) {
-                $model->body = "Request from: " . CHtml::encode($model->name) . CHtml::encode(" <") . CHtml::encode($model->email) . CHtml::encode("> ") . "<br /><br />" . nl2br(CHtml::encode($model->body));
-                
-                $mailSent = Yii::app()->sendMail('',
-                        'vj.palodichuk@gmail.com',
-                        'Rinkfinder.com contact request: ' . CHtml::encode($model->subject),
-                        $model->body);
-                if($mailSent === true) {
-                    Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_SUCCESS,
-                            'Thank you for contacting us. We will respond to you as soon as possible.');
-                    
-                    if($model->copyMe) {
-                        $mailSent = Yii::app()->sendMail('',
-                                $model->email,
-                                'Rinkfinder.com contact request copy: ' . CHtml::encode($model->subject),
-                                $model->body);
-                        
-                        if($mailSent === true) {
-                            Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_INFO,
-                                    'The copy you requested has been e-mailed to you.');
-                        } else {
-                            Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_ERROR,
-                                    'We tried to e-mail you a copy as a requested. An error occurred, please try again later.<br><br>Error: ' . $mailSent);
-                        }
-                    }
-                } else {
-                    Yii::app()->user->setFlash(TbHtml::ALERT_COLOR_ERROR,
-                            'Thank you for trying to contact us. An error occurred, please try again later.<br><br>Error: ' . $mailSent);
-                }
+                $this->sendContactEmail($model);
     		$this->refresh();
             }
         }
@@ -166,11 +138,20 @@ class SiteController extends Controller
                 $model->attributes = $_POST['User'];
                 $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
                 
-                // Register the new user!!!
-                $model->registerNewUser();
+                // Preregister the new user!!!
+                $model->preRegisterNewUser();
                 
                 // validate user input and redirect to the welcome! page if valid
                 if($model->save()) {
+                    $model->postRegisterNewUser();
+                    
+                    $profile->user_id = $model->id;
+                    $profile->save();
+                    $profile->postRegisterNewUser();
+                    
+                    $this->sendWelcomeEmail($model);
+                    $this->sendActivationEmail($model);
+                    
                     //optional
                     $login = new LoginForm;
                     $login->username = $_POST['User']['username'];
@@ -180,7 +161,13 @@ class SiteController extends Controller
                         $this->render('welcome');
                     }
                     else {
-                        $this->redirect('/site/error', $login->getErrors());
+                        $this->render(
+                                'error',
+                                array(
+                                    'message' => $login->getErrors(),
+                                    'code' => 400,
+                                )
+                        );
                     }
                 }
             } else {
@@ -194,6 +181,69 @@ class SiteController extends Controller
                 );
             }
         }
+    }
+
+    /**
+     * Displays the registration page
+     */
+    function actionActivateAccount()
+    {
+        $email = (isset($_GET['email']) ? $_GET['email'] : false);
+        $user_key = (isset($_GET['user_key']) ? $_GET['user_key'] : false);
+        $activated = false;
+        $message = '';
+        
+        if($email && $user_key) {
+            $email = strtolower($email);
+            
+            // Both $email and $user_key must be valid
+            $user = User::model()->find(
+                    'LOWER(email) = :email AND user_key = :user_key',
+                    array(
+                        ':email' => $email,
+                        ':user_key' => $user_key,
+                    )
+            );
+            
+            if($user) {
+                // We found the user account. Now activate it!
+                if($user->activateAccount($user_key)) {
+                    // The account has been activated!
+                    $activated = true;
+                    $message = 'Your account has been successfully activated and you may now login!';
+                    Yii::app()->user->setFlash(
+                            TbHtml::ALERT_COLOR_SUCCESS,
+                            $message
+                    );
+                } else {
+                    // Oops, something went wrong!!!
+                    $message = 'Unable to activate your account';
+                    Yii::app()->user->setFlash(
+                            TbHtml::ALERT_COLOR_ERROR,
+                            $message
+                    );
+                }
+            } else {
+                $message = 'Unable to activate your account';
+                Yii::app()->user->setFlash(
+                        TbHtml::ALERT_COLOR_ERROR,
+                        $message
+                );
+            }
+        } else {
+            $message = 'Please enter your E-mail address and User Key as was e-mailed to you.';
+        }
+
+        // Display the activation form
+        $this->render(
+                'activateAccount',
+                array(
+                    'email' => $email,
+                    'user_key' => $user_key,
+                    'activated' => $activated,
+                    'message' => $message,
+                )
+        );
     }
 
     /**
@@ -229,5 +279,114 @@ class SiteController extends Controller
     {
         Yii::app()->user->logout();
         $this->redirect(Yii::app()->homeUrl);
+    }
+    
+    protected function sendContactEmail($model)
+    {
+        $data = array();
+        $data['description'] = CHtml::encode($model->subject);
+        $data['requester'] = array(
+            'name' => $model->name,
+            'email' => $model->email,
+        );
+        $to = array('vj.palodichuk@gmail.com' => 'Vincent J. Palodichuk');
+        $model->subject = CHtml::encode(Yii::app()->name) . ' contact request: ' . CHtml::encode($model->subject);
+        $model->body = nl2br(CHtml::encode($model->body));
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $model->subject,
+                $model->body,
+                $data,
+                'contact'
+        );
+        
+        if($mailSent == true) {
+            Yii::app()->user->setFlash(
+                    TbHtml::ALERT_COLOR_SUCCESS,
+                    'Thank you for contacting us. We will respond to you as soon as possible.'
+            );
+        } else {
+            Yii::app()->user->setFlash(
+                    TbHtml::ALERT_COLOR_ERROR,
+                    'Thank you for trying to contact us. An error occurred, please try again later.<br><br>Error: ' . $mailSent
+            );
+        }
+        
+        if($model->copyMe) {
+            $to = array($model->email => $model->name);
+            
+            $mailSent = Yii::app()->sendMail(
+                    '',
+                    $to,
+                    'REQUESTED COPY OF: ' . $model->subject,
+                    $model->body,
+                    $data,
+                    'contact'
+            );
+            
+            if($mailSent == true) {
+                Yii::app()->user->setFlash(
+                        TbHtml::ALERT_COLOR_INFO,
+                        'The copy you requested has been e-mailed to you.'
+                );
+            } else {
+                Yii::app()->user->setFlash(
+                        TbHtml::ALERT_COLOR_WARNING,
+                        'We tried to e-mail you a copy as a requested. An error occurred, please try again later.<br><br>Error: ' . $mailSent
+                );
+            }
+        }
+    }
+    
+    protected function sendWelcomeEmail($user)
+    {
+        $data = array();
+        $data['fullName'] = $user->fullName;
+        $to = array($user->email => $user->fullName);
+        $subject = 'Welcome ' . CHtml::encode($user->fullName) . ' to ' . CHtml::encode(Yii::app()->name);
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'welcome'
+        );
+        
+        return $mailSent;
+    }
+    
+    protected function sendActivationEmail($user)
+    {
+        $data = array();
+        $data['fullName'] = $user->fullName;
+        $data['activationUrl'] = $this->createAbsoluteUrl(
+                'site/activateAccount',
+                array(
+                    'user_key' => $user->user_key,
+                    'email' => $user->email
+                )
+        );
+        $data['manualUrl'] = $this->createAbsoluteUrl('site/activateAccount');
+        $data['username'] = $user->username;
+        $data['email'] = $user->email;
+        $data['user_key'] = $user->user_key;
+        
+        $to = array($user->email => $user->fullName);
+        $subject = CHtml::encode(Yii::app()->name) . ': Account Registration Confirmation';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'registration'
+        );
+        
+        return $mailSent;
     }
 }

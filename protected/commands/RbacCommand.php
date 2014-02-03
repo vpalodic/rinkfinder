@@ -123,7 +123,7 @@ class RbacCommand extends CConsoleCommand
 
     protected function getUserBizRule()
     {
-        $bizRule = 'return isset($params["userId"]) && $params["userId"] == Yii::app()->user->id;';
+        $bizRule = 'return isset($params["user"]) && $params["user"]->id == Yii::app()->user->id;';
 
         return $bizRule;
     }

@@ -20,8 +20,8 @@
                 array(
                     'layout' => TbHtml::FORM_LAYOUT_HORIZONTAL,
                     'id' => 'login-form',
-                    'enableAjaxValidation' => true,
-                    'enableClientValidation' => true,
+                    'enableAjaxValidation' => false,
+                    'enableClientValidation' => false,
                     'clientOptions' => array('validateOnSubmit' => true),
                 )
         );

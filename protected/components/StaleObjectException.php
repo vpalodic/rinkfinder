@@ -1,10 +1,9 @@
 <?php
-
 /**
  * Exception class for optimistic locking exception
- * 
- * @author vj.palodichuk@gmail.com
- * @package application.components
+ * @author Vincent J Palodichuk <vj.palodichuk@gmail.com>
+ * @copyright Copyright &copy; MIAMA 2014
+ * @package app.components
  */
 class StaleObjectException extends CDbException
 {

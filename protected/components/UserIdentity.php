@@ -1,9 +1,11 @@
 <?php
-
 /**
  * UserIdentity represents the data needed to identity a user.
  * It contains the authentication method that checks if the provided
  * data can identity the user.
+ * @author Vincent J Palodichuk <vj.palodichuk@gmail.com>
+ * @copyright Copyright &copy; MIAMA 2014
+ * @package app.components
  */
 class UserIdentity extends CUserIdentity
 {
