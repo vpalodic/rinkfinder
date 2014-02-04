@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This is the model class for table "user".
  *
@@ -278,6 +277,27 @@ class User extends RinkfinderActiveRecord
         );
     }
 
+    public static function itemAlias($type, $code = NULL)
+    {
+        $_items = array(
+            'UserStatus' => array(
+                self::STATUS_NOTACTIVATED => 'Not Activated',
+                self::STATUS_ACTIVE => 'Active',
+                self::STATUS_LOCKED => 'Locked',
+                self::STATUS_RESET => 'Reset',
+                self::STATUS_INACTIVE => 'Inactive',
+                self::STATUS_DELETED => 'Deleted',
+                self::STATUS_BANNED => 'Banned',
+            ),
+        );
+
+        if(isset($code)) {
+            return isset($_items[$type][$code]) ? $_items[$type][$code] : false;
+        } else {
+            return isset($_items[$type]) ? $_items[$type] : false;
+        }
+    }
+
     /**
      * Retrieves a list of models based on the current search/filter conditions.
      *
@@ -406,6 +426,8 @@ class User extends RinkfinderActiveRecord
         // We set the user key first
         $this->user_key = hash('sha256', microtime() . $password);
         $this->password = $this->hashPassword($password);
+        
+        return $this->saveAttributes(array('user_key', 'password'));
     }
 
     /**
@@ -482,7 +504,8 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
-     * Sets the account account as reset if it is not deleted or banned
+     * Sets the account status as reset and resets the failed_logins
+     * to zero if the account is not deleted or banned
      * @return bool true if the account was reset
      */
     public function resetUser()
@@ -492,7 +515,12 @@ class User extends RinkfinderActiveRecord
             // Reset the user account!
             $this->status_id = self::STATUS_RESET;
 
-            return true;
+            if($this->failed_logins > 0) {
+                $neg = 0 - $this->failed_logins;
+                $this->saveCounters(array('failed_logins' => $neg));
+            }
+
+            return $this->saveAttributes(array('status_id'));
         }
         return false;
     }

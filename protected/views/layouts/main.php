@@ -145,8 +145,11 @@
 	<div class="clear"></div>
 
 	<div id="footer">
-		Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?><br/>
-		All Rights Reserved.<br/>
+		Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
+                All Rights Reserved.<br/>
+                <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> 
+                <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?>
+                <br />
 	</div><!-- footer -->
 
 </div><!-- page -->

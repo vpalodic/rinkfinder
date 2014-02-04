@@ -3,36 +3,6 @@
 class SiteController extends Controller
 {
     /**
-     * @return array action filters
-     */
-    public function filters()
-    {
-        return array(
-            'accessControl', // perform access control for CRUD operations
-        );
-    }
-
-    /**
-     * Specifies the access control rules.
-     * This method is used by the 'accessControl' filter.
-     * @return array access control rules
-     */
-    public function accessRules()
-    {
-        return array(
-            array(
-                'allow', // allow all users to perform all actions
-                'actions' => array('error', 'index', 'captcha', 'page', 'contact', 'login', 'logout', 'register', 'activateAccount'),
-                'users' => array('*'),
-            ),
-            array(
-                'deny', // deny all users
-                'users' => array('*'),
-            ),
-        );
-    }
-
-    /**
      * Declares class-based actions.
      */
     public function actions()
@@ -122,6 +92,8 @@ class SiteController extends Controller
     {
         $model = new User('registration');
         $profile = new Profile;
+        $registered = false;
+        $message = '';
 
         // ajax validator
         if(isset($_POST['ajax']) && $_POST['ajax'] === 'registration-form') {
@@ -138,100 +110,140 @@ class SiteController extends Controller
                 $model->attributes = $_POST['User'];
                 $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
                 
-                // Preregister the new user!!!
-                $model->preRegisterNewUser();
+                if($model->validate() && $profile->validate()) {
+                    // Preregister the new user!!!
+                    $model->preRegisterNewUser();
                 
-                // validate user input and redirect to the welcome! page if valid
-                if($model->save()) {
-                    $model->postRegisterNewUser();
+                    // Register the account!!!!
+                    if($model->save()) {
+                        $model->postRegisterNewUser();
                     
-                    $profile->user_id = $model->id;
-                    $profile->save();
-                    $profile->postRegisterNewUser();
+                        $profile->user_id = $model->id;
+                        $profile->save();
+                        $profile->postRegisterNewUser();
                     
-                    $this->sendWelcomeEmail($model);
-                    $this->sendActivationEmail($model);
+                        $this->sendWelcomeEmail($model);
+                        $this->sendActivationEmail($model);
                     
-                    //optional
-                    $login = new LoginForm;
-                    $login->username = $_POST['User']['username'];
-                    $login->password = $_POST['User']['passwordSave'];
-                
-                    if($login->validate() && $login->login()) {
-                        $this->render('welcome');
-                    }
-                    else {
-                        $this->render(
-                                'error',
-                                array(
-                                    'message' => $login->getErrors(),
-                                    'code' => 400,
-                                )
+                        $registered = true;
+                        $message = '<h4>Registration Completed!</h4>';
+                        $message .= 'Thank you for registering with ' . CHtml::encode(Yii::app()->name) . '. ';
+                        $message .= 'In order to login and start using the site, you must first activate your account. ';
+                        $message .= 'Please check your e-mail for instructions on how to activate your account.';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_SUCCESS,
+                                $message
                         );
                     }
+                } else {
+                    $profile->validate();
                 }
-            } else {
-                // display the registration form
-                $this->render(
-                        'register',
-                        array(
-                            'model' => $model,
-                            'profile' => $profile,
-                        )
-                );
             }
         }
+        
+        // display the registration form
+        $this->render(
+                'register',
+                array(
+                    'model' => $model,
+                    'profile' => $profile,
+                    'registered' => $registered,
+                )
+        );
     }
 
     /**
-     * Displays the registration page
+     * Displays the activation page
      */
     function actionActivateAccount()
     {
         $email = (isset($_GET['email']) ? $_GET['email'] : false);
         $user_key = (isset($_GET['user_key']) ? $_GET['user_key'] : false);
+        $resendEmail = (isset($_GET['resendEmail']) ? $_GET['resendEmail'] : false);
         $activated = false;
         $message = '';
         
-        if($email && $user_key) {
+        if($email) {
             $email = strtolower($email);
             
-            // Both $email and $user_key must be valid
+            // Both $email and $user_key must be valid but, we will only
+            // search by $email to find the account
             $user = User::model()->find(
-                    'LOWER(email) = :email AND user_key = :user_key',
+                    'LOWER(email) = :email',
                     array(
                         ':email' => $email,
-                        ':user_key' => $user_key,
                     )
             );
             
-            if($user) {
-                // We found the user account. Now activate it!
-                if($user->activateAccount($user_key)) {
-                    // The account has been activated!
-                    $activated = true;
-                    $message = 'Your account has been successfully activated and you may now login!';
-                    Yii::app()->user->setFlash(
-                            TbHtml::ALERT_COLOR_SUCCESS,
-                            $message
-                    );
-                } else {
-                    // Oops, something went wrong!!!
-                    $message = 'Unable to activate your account';
-                    Yii::app()->user->setFlash(
-                            TbHtml::ALERT_COLOR_ERROR,
-                            $message
-                    );
+            if($user !== null) {
+                if($user_key) {
+                    // We found the user account. Now activate it!
+                    if($user->activateAccount($user_key)) {
+                        // The account has been activated!
+                        $activated = true;
+                        $message = '<h4>Account Activated!</h4>';
+                        $message .= 'Your account has been successfully activated and you may now login!';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_SUCCESS,
+                                $message
+                        );
+                    } elseif($user->isNotActivated()) {
+                        // Oops, something went wrong!!!
+                        $message = '<h4>Account Not Activated!</h4>';
+                        $message .= 'Unable to activate your account as the User Key entered is no longer valid.';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_ERROR,
+                                $message
+                        );
+                    } elseif($user->isActive()) {
+                        // Oops, something went wrong!!!
+                        $activated = true;
+                        $message = '<h4>Account Already Activated!</h4>';
+                        $message .= 'Your account is active and has already been activated. Please ';
+                        $message .= '<a href="' . $this->createUrl('site/login') . '">login.</a>';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_SUCCESS,
+                                $message
+                        );
+                    } else {
+                        // Oops, something went wrong!!!
+                        $activated = true;
+                        $message = '<h4>Account Already Activated!</h4>';
+                        $message .= 'Your account has already been activated but it is ' . $user->itemAlias('UserStatus', $user->status_id) . '!';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_ERROR,
+                                $message
+                        );
+                    }
+                }
+                
+                if($resendEmail) {
+                    if($this->sendActivationEmail($user) == true) {
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_INFO,
+                                '<h4>Activation E-mail Sent Successfully</h4>'
+                        );
+                    } else {
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_WARNING,
+                                '<h4>An error occurred while sending the Activation E-mail.</h>Please try again later.<br><br>Error: ' . $mailSent
+                        );
+                    }
                 }
             } else {
-                $message = 'Unable to activate your account';
+                $message = '<h4>Account Not Found!</h4>';
+                $message .= 'Unable to locate an account with the provided e-mail address.';
                 Yii::app()->user->setFlash(
                         TbHtml::ALERT_COLOR_ERROR,
                         $message
                 );
             }
         } else {
-            $message = 'Please enter your E-mail address and User Key as was e-mailed to you.';
+            $message = 'Please enter your E-mail Address and User Key as was e-mailed to you.';
+            Yii::app()->user->setFlash(
+                    TbHtml::ALERT_COLOR_WARNING,
+                    $message
+            );
         }
 
         // Display the activation form
@@ -240,10 +252,168 @@ class SiteController extends Controller
                 array(
                     'email' => $email,
                     'user_key' => $user_key,
+                    'resendEmail' => $resendEmail,
                     'activated' => $activated,
                     'message' => $message,
                 )
         );
+    }
+
+    /**
+     * Displays the activation page
+     */
+    function actionResetAccount()
+    {
+        // If the user is logged in, then no need to be here!
+        if(Yii::app()->user->id) {
+            $this->redirect(Yii::app()->user->returnUrl);
+        }
+                
+        $email = (isset($_GET['email']) ? $_GET['email'] : false);
+        $user_key = (isset($_GET['user_key']) ? $_GET['user_key'] : false);
+        $sendEmail = (isset($_GET['sendEmail']) ? $_GET['sendEmail'] : false);
+        $reset = false;
+        $message = '';
+        
+        if($email && $user_key) {
+            $email = strtolower($email);
+            
+            // We will only search by $email to find the account
+            $user = User::model()->find(
+                    'LOWER(email) = :email',
+                    array(
+                        ':email' => $email,
+                    )
+            );
+            
+            if(isset($user) && $user->user_key == $user_key) {
+                $model = new UserChangePassword;
+                if(isset($_POST['UserChangePassword'])) {
+                    $model->attributes = $_POST['UserChangePassword'];
+                    if($model->validate()) {
+                        if($user->activateAccount($user_key)) {
+                            if($user->setPassword($model->passwordSave)) {
+                                $message = '<h4>New password has been saved!</h4>';
+                                $message .= 'You may now login to your account using your new password.';
+                                
+                                Yii::app()->user->setFlash(
+                                        TbHtml::ALERT_COLOR_SUCCESS,
+                                        $message
+                                );
+                            } else {
+                                $message = '<h4>Error saving password!</h4>';
+                                $message .= 'Your new password has not been saved. Please restart the process.';
+                                
+                                Yii::app()->user->setFlash(
+                                        TbHtml::ALERT_COLOR_ERROR,
+                                        $message
+                                );
+                            }
+                        } else {
+                            $message = '<h4>Error recovering account!</h4>';
+                            $message .= 'Unable to recover your account. Your account status is ';
+                            $message .= $user->itemAlias('UserStatus', $user->status_id) . '.';
+                                
+                            Yii::app()->user->setFlash(
+                                    TbHtml::ALERT_COLOR_ERROR,
+                                    $message
+                            );
+                        }
+			$this->redirect('resetAccount');
+                    }
+                }
+                $this->render(
+                        'resetAccount',
+                        array(
+                            'model' => $model
+                        )
+                );
+            } else {
+                $message = "<h4>Invalid recovery link!</h4>";
+                
+                Yii::app()->user->setFlash(
+                        TbHtml::ALERT_COLOR_ERROR,
+                        $message
+                );
+                
+                $this->redirect('resetAccount');
+            }
+        } elseif($email && $sendEmail) {
+            $email = strtolower($email);
+            
+            // We will only search by $email to find the account
+            $user = User::model()->find(
+                    'LOWER(email) = :email',
+                    array(
+                        ':email' => $email,
+                    )
+            );
+            
+            if(isset($user)) {
+                if($user->resetUser() == true) {
+                    if($this->sendRecoveryEmail($user) == true) {
+                        $reset = true;
+                        $message = '<h4>Recovery E-mail Sent Successfully</h4>';
+                        $message .= 'Instructions on recoverying your account have been e-mailed to you.';
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_INFO,
+                                $message
+                        );
+                    } else {
+                        $message = '<h4>An error occurred while sending the Recovery E-mail.</h>';
+                        $message .= 'Please try again later.<br><br>Error: ' . $mailSent;
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_WARNING,
+                                $message
+                        );
+                    }
+                } else {
+                    $message = '<h4>Error recovering account!</h4>';
+                    $message .= 'Unable to recover your account. Your account status is ';
+                    $message .= $user->itemAlias('UserStatus', $user->status_id) . '.';
+                    
+                    Yii::app()->user->setFlash(
+                            TbHtml::ALERT_COLOR_ERROR,
+                            $message
+                    );
+                }
+            } else {
+                $message = '<h4>Account Not Found!</h4>';
+                $message .= 'Unable to locate an account with the provided e-mail address.';
+                Yii::app()->user->setFlash(
+                        TbHtml::ALERT_COLOR_ERROR,
+                        $message
+                );
+            }
+
+            // Display the reset account form
+            $this->render(
+                    'resetAccount',
+                    array(
+                        'email' => $email,
+                        'user_key' => $user_key,
+                        'reset' => $reset,
+                        'message' => $message,
+                    )
+            );
+        } else {
+            $message = 'Please enter the E-mail Address you registered with to begin the Account Recovery process.';
+            Yii::app()->user->setFlash(
+                    TbHtml::ALERT_COLOR_WARNING,
+                    $message
+            );
+
+            // Display the reset account form
+            $this->render(
+                    'resetAccount',
+                    array(
+                        'email' => $email,
+                        'user_key' => $user_key,
+                        'reset' => $reset,
+                        'message' => $message,
+                    )
+            );
+        }
     }
 
     /**
@@ -334,7 +504,7 @@ class SiteController extends Controller
             } else {
                 Yii::app()->user->setFlash(
                         TbHtml::ALERT_COLOR_WARNING,
-                        'We tried to e-mail you a copy as a requested. An error occurred, please try again later.<br><br>Error: ' . $mailSent
+                        'We tried to e-mail you a copy as requested. An error occurred, please try again later.<br><br>Error: ' . $mailSent
                 );
             }
         }
@@ -385,6 +555,42 @@ class SiteController extends Controller
                 $subject,
                 $data,
                 'registration'
+        );
+        
+        return $mailSent;
+    }
+    
+    protected function sendRecoveryEmail($user)
+    {
+        $data = array();
+        $data['fullName'] = $user->fullName;
+        $data['recoveryUrl'] = $this->createAbsoluteUrl(
+                'site/resetAccount',
+                array(
+                    'user_key' => $user->user_key,
+                    'email' => $user->email
+                )
+        );
+        $data['manualUrl'] = $this->createAbsoluteUrl(
+                'site/resetAccount',
+                array(
+                    'email' => $user->email
+                )
+        );
+        $data['username'] = $user->username;
+        $data['email'] = $user->email;
+        $data['user_key'] = $user->user_key;
+        
+        $to = array($user->email => $user->fullName);
+        $subject = CHtml::encode(Yii::app()->name) . ': Account Recovery Instructions';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'account_recovery'
         );
         
         return $mailSent;

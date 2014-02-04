@@ -2,15 +2,20 @@
     /* @var $this SiteController */
     /* @var $model User */
     /* @var $profile Profile */
+    /* @var $registered bool */
     /* @var $form TbActiveForm  */
 
     $this->pageTitle = Yii::app()->name . ' - Registration';
     $this->breadcrumbs = array('Registration',);
 ?>
 
-<?php $this->widget('bootstrap.widgets.TbAlert'); ?>
-
 <h2 class="sectionHeader">Registration</h2>
+
+<?php
+    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
+?>
+
+<?php if(!isset($registered) || $registered == false) : ?>
 
 <div class="form">
     <?php
@@ -211,6 +216,36 @@
                     Letters are not case-sensitive.
                 </p>
             </div>
+            <div class="control-group">
+                <h4 class="hint">
+                    By clicking on the "Register" button below, you agree you have read 
+                    and agree to both the
+                    <?php
+                        echo CHtml::link(
+                                'Terms of Use',
+                                array(
+                                    'site/page', 'view' => 'terms_of_use'
+                                ),
+                                array(
+                                    'target' => '_blank'
+                                )
+                        );
+                    ?> 
+                    and the 
+                    <?php
+                        echo CHtml::link(
+                                'Privacy Policy',
+                                array(
+                                    'site/page', 'view' => 'privacy_policy'
+                                ),
+                                array(
+                                    'target' => '_blank'
+                                )
+                        );
+                    ?> 
+                    of this site and that you are over the age of thirteen (13). 
+                </h4>
+            </div>
         <?php endif; ?>
     </fieldset>
     <?php
@@ -226,3 +261,4 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<?php endif; ?>

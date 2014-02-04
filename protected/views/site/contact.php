@@ -6,10 +6,12 @@
     $this->breadcrumbs = array('Contact');
 ?>
 
+<h2 class="sectionHeader">Contact Us</h2>
+
 <?php
     $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
 ?>
-<h2 class="sectionHeader">Contact Us</h2>
+
 <p>
 If you have business inquiries or other questions, please fill out the following form to contact us. Thank you.
 </p>

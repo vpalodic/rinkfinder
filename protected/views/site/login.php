@@ -58,7 +58,9 @@
             <div class="controls">
 		<?php echo TbHtml::link("Register", array("site/register")); ?>
                     | 
-                <?php echo TbHtml::link("Lost Password?", array("site/resetUser")); ?>
+                <?php echo TbHtml::link("Activate Account", array("site/activateAccount")); ?>
+                    |
+                <?php echo TbHtml::link("Lost Password?", array("site/resetAccount")); ?>
             </div>
 	</div>
         <?php
@@ -93,16 +95,16 @@
             echo '</div>';
          ?>
     </fieldset>
-    <div class="form-actions">
-        <?php
-            echo TbHtml::submitButton(
-                    'Login',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                    )
+    <?php
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Login',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
             );
-        ?>
-    </div>
+    ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
