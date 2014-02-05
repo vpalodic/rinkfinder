@@ -61,15 +61,20 @@ class RinkfinderWebUser extends CWebUser
      */
     public function checkAccess($operation, $params = array(), $allowCaching = true)
     {
+        Yii::trace('checkAccess - enter', 'application.components.RinkfinderWebUser');
+        
         // Site administrator can perform every action!
         if($this->isSiteAdministrator()) {
+            Yii::trace('checkAccess - isSiteAdministrator() returned true', 'application.components.RinkfinderWebUser');
             return true;
         }
 
+        Yii::trace('checkAccess - isSiteAdministrator() returned false', 'application.components.RinkfinderWebUser');
         return parent::checkAccess($operation, $params, $allowCaching);
     }
     
     public function isSiteAdministrator($id = null) {
+        Yii::trace('isSiteAdministrator', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'Administrator',
                 ($id !== null ? $id : $this->id));
