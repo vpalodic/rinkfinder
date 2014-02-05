@@ -2,8 +2,12 @@
     /* @var $this SiteController */
     /* @var $model ContactForm */
     /* @var $form TbActiveForm */
+    /* @var $contacted bool */
+
     $this->pageTitle = Yii::app()->name . ' - Contact Us';
-    $this->breadcrumbs = array('Contact');
+    $this->breadcrumbs = array(
+        'Contact'
+    );
 ?>
 
 <h2 class="sectionHeader">Contact Us</h2>
@@ -11,6 +15,8 @@
 <?php
     $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
 ?>
+
+<?php if(!isset($contacted) || $contacted == false) : ?>
 
 <p>
 If you have business inquiries or other questions, please fill out the following form to contact us. Thank you.
@@ -90,15 +96,15 @@ If you have business inquiries or other questions, please fill out the following
             );
             
             echo '<div class="control-group">';
+            echo '<div class="controls">';
+            echo $widget;
             echo $form->labelEx(
                     $model,
                     'copyMe',
                     array(
-                        'class' => 'control-label',
+//                        'class' => 'control-label',
                         )
                     );
-            echo '<div class="controls">';
-            echo $widget;
             echo $form->error($model, 'copyMe');
             echo '</div>';
             echo '</div>';
@@ -137,3 +143,4 @@ If you have business inquiries or other questions, please fill out the following
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<?php endif; ?>

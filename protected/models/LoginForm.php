@@ -7,11 +7,25 @@
  */
 class LoginForm extends CFormModel
 {
-	public $username;
-	public $password;
-	public $rememberMe;
+    /**
+     * @var string The username or email address
+     */
+    public $username;
+    
+    /**
+     * @var string The unecrypted password
+     */
+    public $password;
 
-	private $_identity;
+    /**
+     * @var bool If true sets a cookie
+     */
+    public $rememberMe;
+    
+    /**
+     * @var UserIdentity The identity model
+     */
+    private $_identity;
 
     /**
      * Declares the validation rules.
@@ -38,7 +52,9 @@ class LoginForm extends CFormModel
     public function attributeLabels()
     {
         return array(
-            'rememberMe' => 'Remember me next time',
+            'rememberMe' => 'Remember me next time?',
+            'username' => 'Username or E-mail',
+            'password' => 'Password',
         );
     }
 
@@ -50,8 +66,78 @@ class LoginForm extends CFormModel
     {
         if(!$this->hasErrors()) {
             $this->_identity = new UserIdentity($this->username, $this->password);
-            if(!$this->_identity->authenticate()) {
-                $this->addError('password', 'Incorrect username or password.');
+            
+            $this->_identity->authenticate();
+                    
+            switch($this->_identity->errorCode) {
+                case UserIdentity::ERROR_NONE:
+                    break;
+                case UserIdentity::ERROR_PASSWORD_INVALID:
+                    $this->addError('password', 'Invalid password.');
+                    break;
+                case UserIdentity::ERROR_USERNAME_INVALID:
+                    $this->addError('username', 'Invalid username.');
+                    break;
+                case UserIdentity::ERROR_EMAIL_INVALID:
+                    $this->addError('username', 'Invalid e-mail address.');
+                    break;
+                case UserIdentity::ERROR_STATUS_NOTACTIVATED:
+                    $message = '<h4>Your account has not been activated!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/activateAccount');
+                    $message .= '">here</a> to activate your account.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_LOCKED:
+                    $message = '<h4>Your account is currently locked!</h4>';
+                    $message .= 'Please wait fifteen minutes ';
+                    $message .= 'to try again or click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/resetAccount');
+                    $message .= '">here</a> to reset your account.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_RESET:
+                    $message = '<h4>Your account is currently reset!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/resetAccount');
+                    $message .= '">here</a> to finish resetting your account.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_INACTIVE:
+                    $message = '<h4>Your account is currently inactive!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/resetAccount');
+                    $message .= '">here</a> to reset your account.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_DELETED:
+                    $message = '<h4>Your account has been deleted!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/contact');
+                    $message .= '">here</a> to request your account be reinstated.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_BANNED:
+                    $message = '<h4>Your account has been blocked!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/contact');
+                    $message .= '">here</a> to request your account be reinstated.';
+                    
+                    $this->addError('username', $message);
+                    break;
+                case UserIdentity::ERROR_STATUS_UNKNOWN:
+                    $message = '<h4>Your account has an unknown status!</h4>';
+                    $message .= 'Please click <a href="';
+                    $message .= Yii::app()->controller->createUrl('site/contact');
+                    $message .= '">here</a> to request your account be reinstated.';
+                    
+                    $this->addError('username', $message);
+                    break;
             }
         }
     }

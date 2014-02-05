@@ -4,12 +4,16 @@
     /* @var $form TbActiveForm  */
 
     $this->pageTitle = Yii::app()->name . ' - Login';
-    $this->breadcrumbs = array('Login',);
+    $this->breadcrumbs = array(
+        'Login'
+    );
 ?>
 
-<?php $this->widget('bootstrap.widgets.TbAlert'); ?>
-
 <h2 class="sectionHeader">Login</h2>
+
+<?php
+    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
+?>
 
 <p>Please fill out the following form with your login credentials:</p>
 
@@ -71,6 +75,7 @@
                         'attribute' => 'rememberMe',
                         'onLabel' => 'Yes',
                         'offLabel' => 'No',
+                        'textLabel' => $model->getAttributeLabel('rememberMe'),
                         'size' => 'large',
                         'offColor' => 'warning',
                         'htmlOptions' => array(
@@ -81,15 +86,22 @@
             );
             
             echo '<div class="control-group">';
+            echo '<div class="controls">';
+/*            echo TbHtml::tag(
+                    'label',
+                    array(
+                        'for' => 'LoginForm_rememberMe',
+                        'class' => 'control-label',
+                    ),
+                    $widget . ' ' . $model->getAttributeLabel('rememberMe'));*/
+            echo $widget;
             echo $form->labelEx(
                     $model,
                     'rememberMe',
                     array(
-                        'class' => 'control-label',
+//                        'class' => 'control-label',
                         )
                     );
-            echo '<div class="controls">';
-            echo $widget;
             echo $form->error($model, 'rememberMe');
             echo '</div>';
             echo '</div>';

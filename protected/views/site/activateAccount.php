@@ -9,7 +9,7 @@
 
     $this->pageTitle = Yii::app()->name . ' - Account Activation';
     $this->breadcrumbs = array(
-        'Login' => 'site/login',
+        'Login' => array('site/login'),
         'Account Activation',
     );
 ?>
@@ -91,15 +91,15 @@
             );
             
             echo '<div class="control-group">';
-            echo CHtml::label(
-                    'Resend Activation E-mail',
-                    'resendEmail',
-                    array(
-                        'class' => 'control-label',
-                        )
-                    );
             echo '<div class="controls">';
             echo $widget;
+            echo CHtml::label(
+                    'Resend Activation E-mail?',
+                    'resendEmail',
+                    array(
+//                        'class' => 'control-label',
+                        )
+                    );
             echo '</div>';
             echo '</div>';
          ?>

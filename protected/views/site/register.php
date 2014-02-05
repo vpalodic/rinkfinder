@@ -6,7 +6,10 @@
     /* @var $form TbActiveForm  */
 
     $this->pageTitle = Yii::app()->name . ' - Registration';
-    $this->breadcrumbs = array('Registration',);
+    $this->breadcrumbs = array(
+        'Login' => array('site/login'),
+        'Registration',
+    );
 ?>
 
 <h2 class="sectionHeader">Registration</h2>

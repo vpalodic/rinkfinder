@@ -52,6 +52,7 @@ class SiteController extends Controller
     public function actionContact()
     {
         $model = new ContactForm;
+        $contacted = false;
 
     	// ajax validator
         if(isset($_POST['ajax']) && $_POST['ajax'] === 'contact-form') {
@@ -64,8 +65,9 @@ class SiteController extends Controller
             $model->attributes = $_POST['ContactForm'];
 
             if($model->validate()) {
-                $this->sendContactEmail($model);
-    		$this->refresh();
+                if($this->sendContactEmail($model) == true) {
+                    $contacted = true;
+                }
             }
         }
 
@@ -82,7 +84,13 @@ class SiteController extends Controller
             }
         }
 
-        $this->render('contact', array('model' => $model));
+        $this->render(
+                'contact',
+                array(
+                    'model' => $model,
+                    'contacted' => $contacted,
+                )
+        );
     }
 
     /**
@@ -260,7 +268,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays the activation page
+     * Displays the account recovery page
      */
     function actionResetAccount()
     {
@@ -312,14 +320,15 @@ class SiteController extends Controller
                         } else {
                             $message = '<h4>Error recovering account!</h4>';
                             $message .= 'Unable to recover your account. Your account status is ';
-                            $message .= $user->itemAlias('UserStatus', $user->status_id) . '.';
+                            $astatus = $user->itemAlias('UserStatus', $user->status_id);
+                            $message .=  (($astatus != false && !empty($astatus)) ? $astatus : 'Unknown') . '.';
                                 
                             Yii::app()->user->setFlash(
                                     TbHtml::ALERT_COLOR_ERROR,
                                     $message
                             );
                         }
-			$this->redirect('resetAccount');
+                        $this->redirect(array('site/resetAccount'));
                     }
                 }
                 $this->render(
@@ -336,7 +345,7 @@ class SiteController extends Controller
                         $message
                 );
                 
-                $this->redirect('resetAccount');
+                $this->redirect(array('site/resetAccount'));
             }
         } elseif($email && $sendEmail) {
             $email = strtolower($email);
@@ -366,16 +375,19 @@ class SiteController extends Controller
                                 TbHtml::ALERT_COLOR_WARNING,
                                 $message
                         );
+                        $this->redirect(array('site/resetAccount'));
                     }
                 } else {
                     $message = '<h4>Error recovering account!</h4>';
                     $message .= 'Unable to recover your account. Your account status is ';
-                    $message .= $user->itemAlias('UserStatus', $user->status_id) . '.';
+                    $astatus = $user->itemAlias('UserStatus', $user->status_id);
+                    $message .=  (($astatus != false && !empty($astatus)) ? $astatus : 'Unknown') . '.';
                     
                     Yii::app()->user->setFlash(
                             TbHtml::ALERT_COLOR_ERROR,
                             $message
                     );
+                    $this->redirect(array('site/resetAccount'));
                 }
             } else {
                 $message = '<h4>Account Not Found!</h4>';
@@ -384,6 +396,7 @@ class SiteController extends Controller
                         TbHtml::ALERT_COLOR_ERROR,
                         $message
                 );
+                $this->redirect(array('site/resetAccount'));
             }
 
             // Display the reset account form
@@ -434,12 +447,23 @@ class SiteController extends Controller
         {
             $model->attributes = $_POST['LoginForm'];
             // validate user input and redirect to the previous page if valid
-            if($model->validate() && $model->login()) {
-                $this->redirect(Yii::app()->user->returnUrl);
+            if($model->validate()) {
+                if($model->login()) {
+                    $this->redirect(Yii::app()->user->returnUrl);
+                } else {
+                    // Let's find our why we didn't login!
+                    
+                }
             }
         }
+        
         // display the login form
-        $this->render('login', array('model' => $model));
+        $this->render(
+                'login',
+                array(
+                    'model' => $model
+                )
+        );        
     }
 
     /**
@@ -451,6 +475,11 @@ class SiteController extends Controller
         $this->redirect(Yii::app()->homeUrl);
     }
     
+    /**
+     * Sends the contact e-mail to the site admin and the user if requested
+     * @param ContactForm $model
+     * @return mixed True if mail was sent, otherwise the error information
+     */
     protected function sendContactEmail($model)
     {
         $data = array();
@@ -508,8 +537,14 @@ class SiteController extends Controller
                 );
             }
         }
+        return $mailSent;
     }
     
+    /**
+     * Sends the welcome e-mail to the user
+     * @param User $user
+     * @return mixed True if mail was sent, otherwise the error information
+     */
     protected function sendWelcomeEmail($user)
     {
         $data = array();
@@ -529,6 +564,11 @@ class SiteController extends Controller
         return $mailSent;
     }
     
+    /**
+     * Sends the account activation e-mail to the user
+     * @param User $user
+     * @return mixed True if mail was sent, otherwise the error information
+     */
     protected function sendActivationEmail($user)
     {
         $data = array();
@@ -560,6 +600,11 @@ class SiteController extends Controller
         return $mailSent;
     }
     
+    /**
+     * Sends the account recovery e-mail to the user
+     * @param User $user
+     * @return mixed True if mail was sent, otherwise the error information
+     */
     protected function sendRecoveryEmail($user)
     {
         $data = array();

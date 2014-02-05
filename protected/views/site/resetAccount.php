@@ -9,7 +9,7 @@
 
     $this->pageTitle = Yii::app()->name . ' - Account Recovery';
     $this->breadcrumbs = array(
-        'Login' => 'site/login',
+        'Login' => array('site/login'),
         'Account Recovery',
     );
 ?>
@@ -21,6 +21,10 @@
 ?>
 
 <?php if(!isset($model) && (!isset($email) || empty($email))) : ?>
+
+<h3 class="sectionSubHeader">
+    Step 1 of 3:
+</h3>
 
 <p>
     Please fill out the following form with your E-mail Address.
@@ -68,7 +72,7 @@
     <div class="form-actions">
         <?php
             echo TbHtml::submitButton(
-                    'Recover Account',
+                    'Begin Account Recovery',
                     array(
                         'color' => TbHtml::BUTTON_COLOR_PRIMARY,
                         'size' => TbHtml::BUTTON_SIZE_LARGE,
@@ -79,6 +83,10 @@
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php elseif(!isset($model) && (isset($email) && !empty($email)) && (!isset($user_key) || empty($user_key))) : ?>
+
+<h3 class="sectionSubHeader">
+    Step 2 of 3:
+</h3>
 
 <p>
     Please fill out the following form with your E-mail Address and User Key.
@@ -137,7 +145,7 @@
     <div class="form-actions">
         <?php
             echo TbHtml::submitButton(
-                    'Recover Account',
+                    'Continue Account Recovery',
                     array(
                         'color' => TbHtml::BUTTON_COLOR_PRIMARY,
                         'size' => TbHtml::BUTTON_SIZE_LARGE,
@@ -148,6 +156,10 @@
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php elseif(isset($model)) : ?>
+
+<h3 class="sectionSubHeader">
+    Step 3 of 3:
+</h3>
 
 <p>
     Please fill out the following form with your new password.
@@ -199,7 +211,7 @@
     <div class="form-actions">
         <?php
             echo TbHtml::submitButton(
-                    'Change Password',
+                    'Finish Account Recovery',
                     array(
                         'color' => TbHtml::BUTTON_COLOR_PRIMARY,
                         'size' => TbHtml::BUTTON_SIZE_LARGE,

@@ -505,13 +505,16 @@ class User extends RinkfinderActiveRecord
 
     /**
      * Sets the account status as reset and resets the failed_logins
-     * to zero if the account is not deleted or banned
+     * to zero if the account has a valid status.
      * @return bool true if the account was reset
      */
     public function resetUser()
     {
-        if($this->status_id != self::STATUS_DELETED &&
-           $this->status_id != self::STATUS_BANNED) {
+        if($this->status_id == self::STATUS_NOTACTIVATED ||
+           $this->status_id == self::STATUS_ACTIVE ||
+           $this->status_id == self::STATUS_LOCKED ||
+           $this->status_id == self::STATUS_RESET ||
+           $this->status_id == self::STATUS_INACTIVE) {
             // Reset the user account!
             $this->status_id = self::STATUS_RESET;
 

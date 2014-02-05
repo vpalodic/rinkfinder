@@ -43,7 +43,7 @@ class ContactForm extends CFormModel
                         'email' => 'Your E-mail Address',
                         'subject' => 'Subject',
                         'body' => 'Message',
-                        'copyMe' => 'Send me a copy!',
+                        'copyMe' => 'Send me a copy?',
 			'verifyCode' => 'Verification Code',
 		);
 	}

@@ -25,3 +25,4 @@ index
 #demo directories
 /docs/app/runtime/*
 /docs/web/assets/*
+!/widgets/switch/

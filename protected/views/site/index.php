@@ -1,11 +1,17 @@
 <?php
     /* @var $this SiteController */
 
-    $this->pageTitle=Yii::app()->name;
-    $this->breadcrumbs = array('Home');
+    $this->pageTitle = Yii::app()->name;
+    $this->breadcrumbs = array(
+        'Home'
+    );
 ?>
 
 <h2 class="sectionHeader"><i><?php echo CHtml::encode(Yii::app()->name); ?></i></h2>
+
+<?php
+    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
+?>
 
 <h3 class="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
 
