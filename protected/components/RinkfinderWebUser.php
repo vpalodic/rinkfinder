@@ -72,7 +72,7 @@ class RinkfinderWebUser extends CWebUser
     public function isSiteAdministrator($id = null) {
         return Yii::app()->authManager->isAssigned(
                 'Administrator',
-                ($id ? $id : $this->id));
+                ($id !== null ? $id : $this->id));
     }
     
     public function isApplicationAdministrator($id = null) {
