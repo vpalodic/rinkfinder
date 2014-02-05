@@ -236,3 +236,53 @@ div.search-form
     top: auto;
     bottom: 270px;
 }
+
+.calendar {
+    font-family: Helvetica, Arial;
+    width: 56px; font-size: 1.0em;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -moz-box-shadow: 0 0 5px #05587e;
+    -webkit-box-shadow: 0 0 5px #05587e;
+    box-shadow: 0 0 5px #05587e;
+}
+
+.calendar > span {
+    display: block;
+}
+
+.calendar > .month {
+    text-align: center;
+    padding: 2px 5px 2px 0;
+    font-size: 1.25em;
+    color: #fff;
+    font-weight: bold;
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    text-shadow: 0 1px #000;
+    background: #0d1b72; /* Old browsers */
+    background: -moz-linear-gradient(top,  #0d1b72 0%, #207cca 65%, #2989d8 71%, #7db9e8 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0d1b72), color-stop(65%,#207cca), color-stop(71%,#2989d8), color-stop(100%,#7db9e8)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0d1b72', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
+}
+
+.calendar > .day {
+    text-align: center;
+    font-weight: bold;
+    font-size: 2.25em;
+    line-height: 1.0;
+    background: #fff;
+    -webkit-border-bottom-left-radius:  5px;
+    -moz-border-radius-bottomleft:      5px;
+    -webkit-border-bottom-right-radius: 5px;
+    -moz-border-radius-bottomright:     5px;
+    background: -webkit-gradient(linear, left top, left bottom, from(#405b72), to(#e6e6e6), color-stop(.08,#f9f9f9));
+    background: -moz-linear-gradient(top, #f9f9f9, #e6e6e6);
+}

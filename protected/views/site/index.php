@@ -15,6 +15,11 @@
 
 <h3 class="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
 
+<div class="calendar event_date pull-right">
+    <span class="month"><?php echo date('M'); ?></span>
+    <span class="day"><?php echo date('j'); ?></span>
+</div>
+<br />
 <p class="sectionSubHeaderContent">
     Rinkfinder.com will help you find over 160 member arenas throughout Minnesota (and other states), including directions, facility details, related vendors and MIAMA information. Our facility schedules lists facility activities and available hours for sale at member arenas. You can now find a member rink near you to go skating for pleasure, not just hockey.
 </p>
