@@ -73,7 +73,7 @@ class UserIdentity extends CUserIdentity
                 $this->_id = $this->_user->id;
                 $this->username = $this->_user->username;
                 $this->errorCode = self::ERROR_NONE;
-                $this->_user->loginSuccessful(true);
+                $this->_user->loginSuccessful();
                 break;
             case User::STATUS_LOCKED:
                 $this->errorCode = self::ERROR_STATUS_LOCKED;
@@ -112,7 +112,7 @@ class UserIdentity extends CUserIdentity
             // We have a valid user account that we need to authenticate!
             if(!$this->_user->verifyPassword($this->password)) {
                 $this->errorCode = self::ERROR_PASSWORD_INVALID;
-                $this->_user->loginFailed(true);
+                $this->_user->loginFailed();
             } else {
                 $this->processUserStatus();
             }

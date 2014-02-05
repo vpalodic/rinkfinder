@@ -219,7 +219,7 @@
                     Letters are not case-sensitive.
                 </p>
             </div>
-            <div class="control-group">
+            <div class="controls span5">
                 <h4 class="hint">
                     By clicking on the "Register" button below, you agree you have read 
                     and agree to both the
