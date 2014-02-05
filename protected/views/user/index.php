@@ -23,7 +23,7 @@ $this->menu=array(
                 'responsiveTable' => true,
                 'fixedHeader' => true,
                 'headerOffset' => 40,
-                'type' => 'striped bordered',
+                'type' => 'striped bordered condensed hover',
                 'template' => "{summary}\n{pager}\n{items}\n{pager}\n{summary}",
                 'dataProvider' => $dataProvider,
                 'columns' => array(
@@ -39,21 +39,70 @@ $this->menu=array(
                         )',
                     ),
                     array(
+                        'name' => 'fullName',
+                        'type'=>'raw',
+                    ),
+                    array(
+                        'name' => 'email',
+                        'type'=>'raw',
+                        'value' => 'TbHtml::mailto($data->email)',
+                    ),
+                    array(
+                        'name' => 'status_id',
+                        'type'=>'raw',
+                        'value' => '($data->itemAlias("UserStatus", $data->status_id) !== false) ?
+                            $data->itemAlias("UserStatus", $data->status_id) :
+                            "Unknown"',
+                    ),
+                    array(
+                        'name' => 'activated_on',
+                        'value' => '((isset($data->activated_on) && $data->activated_on != "0000-00-00 00:00:00") ?
+                                      date_format(date_create_from_format("Y-m-d H:i:s", $data->activated_on), "m-d-Y H:i:s") :
+                                      "Not Activated"
+                        )',
+                    ),
+                    array(
                         'name' => 'last_visited_on',
-                        'value' => '((isset($data->last_visisted_on) && $data->last_visited_on != "0000-00-00 00:00:00") ?
-                                      date_format(date_create_from_format("Y-m-d H:i:s", $data->last_visit), "m-d-Y H:i:s") :
+                        'value' => '((isset($data->last_visited_on) && $data->last_visited_on != "0000-00-00 00:00:00") ?
+                                      date_format(date_create_from_format("Y-m-d H:i:s", $data->last_visited_on), "m-d-Y H:i:s") :
                                       "Not visited"
                         )',
                     ),
+/*                    array(
+                        'name' => 'last_visited_from',
+                        'type'=>'raw',
+                    ),*/
                     array(
                         'name' => 'created_on',
                         'value' => 'date_format(date_create_from_format("Y-m-d H:i:s", $data->created_on), "m-d-Y H:i:s")',
                     ),
+/*                    array(
+                        'name' => 'created_by_id',
+                        'type'=>'raw',
+                        'value' => 'TbHtml::link(
+                            CHtml::encode($data->createdBy->username),
+                            array(
+                                "user/view",
+                                "id" => $data->created_by_id
+                            )
+                        )',
+                   ),*/
+                    array(
+                        'name' => 'updated_on',
+                        'value' => 'date_format(date_create_from_format("Y-m-d H:i:s", $data->updated_on), "m-d-Y H:i:s")',
+                    ),
+/*                    array(
+                        'name' => 'updated_by_id',
+                        'type'=>'raw',
+                        'value' => 'TbHtml::link(
+                            CHtml::encode($data->updatedBy->username),
+                            array(
+                                "user/view",
+                                "id" => $data->updated_by_id
+                            )
+                        )',
+                    ),*/
                 ),
             )
     );
 ?>
-<?php $this->widget('bootstrap.widgets.TbListView',array(
-	'dataProvider'=>$dataProvider,
-	'itemView'=>'_view',
-)); ?>

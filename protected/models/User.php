@@ -270,8 +270,8 @@ class User extends RinkfinderActiveRecord
             'user_key' => 'User Key',
             'activated_on' => 'Activated On',
             'lock_version' => 'Lock Version',
-            'created_by_id' => 'Created By',
-            'created_on' => 'Created On',
+            'created_by_id' => 'Registered By',
+            'created_on' => 'Registered On',
             'updated_by_id' => 'Updated By',
             'updated_on' => 'Updated On',
         );
