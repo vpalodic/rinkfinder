@@ -269,7 +269,7 @@
             'ext.magnific-popup.EMagnificPopup',
             array(
                 'target' => '#terms_of_use',
-                'type' => 'iframe',
+                'type' => 'ajax',
             )
     );
 ?>
@@ -278,7 +278,7 @@
             'ext.magnific-popup.EMagnificPopup',
             array(
                 'target' => '#privacy_policy',
-                'type' => 'iframe',
+                'type' => 'ajax',
             )
     );
 ?>
