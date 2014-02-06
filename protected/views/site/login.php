@@ -68,7 +68,7 @@
             </div>
 	</div>
         <?php
-           $widget = $this->widget(
+            $widget = $this->widget(
                     'yiiwheels.widgets.switch.WhSwitch',
                     array(
                         'model' => $model,
@@ -79,12 +79,11 @@
                         'size' => 'large',
                         'offColor' => 'warning',
                         'htmlOptions' => array(
-                            'class' => 'span5',
                         ),
                     ),
                     true
             );
-            
+
             echo '<div class="control-group">';
             echo '<div class="controls">';
 /*            echo TbHtml::tag(

@@ -84,7 +84,6 @@
                         'offColor' => 'warning',
                         'value' => $resendEmail,
                         'htmlOptions' => array(
-                            'class' => 'span5',
                         ),
                     ),
                     true

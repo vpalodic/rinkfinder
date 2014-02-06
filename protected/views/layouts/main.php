@@ -4,6 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="<?php echo Yii::app()->request->baseUrl; ?>/images/favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/styles.css" />
     <?php Yii::app()->bootstrap->register(); ?>
@@ -15,7 +16,7 @@
 <?php
     Yii::app()->clientScript->registerScript(
 		'fadeAndHideEffect',
-		'$(".fade-message").animate({opacity: 1.0}, 15000).fadeOut("slow");'
+		'$(".fade-message").animate({opacity: 1.0}, 30000).fadeOut("slow");'
     );
 ?>
 
@@ -36,30 +37,30 @@
             'items' => array(
                 array(
                     'class' => 'bootstrap.widgets.TbNav',
+                    'encodeLabel' => false,
                     'items' => array(
-                        array('label' => 'Home', 'url' => array('/site/index')),
-                        array('label' => 'About', 'url' => array('/site/page', 'view' => 'about')),
-                        array('label' => 'Contact', 'url' => array('/site/contact')),
+                        array('label' => '<i class="icon-home"></i> Home', 'url' => array('/site/index')),
+                        array('label' => '<i class="icon-info-sign"></i> About', 'url' => array('/site/page', 'view' => 'about')),
+                        array('label' => '<i class="icon-envelope"></i> Contact', 'url' => array('/site/contact')),
                     ),
                 ),
                 array(
                     'class' => 'bootstrap.widgets.TbNav',
                     'htmlOptions'=>array('class' => 'pull-right'),
+                    'encodeLabel' => false,
                     'items' => array(
                         array(
-                            'label'=> "Login",
+                            'label'=> '<i class="icon-user"></i> Login',
                             'url' => array('/site/login'),
                             'visible'=> Yii::app()->user->isGuest
                         ),
                         array(
-                            'label'=> "Register",
+                            'label'=> '<i class="icon-plus-sign"></i> Register',
                             'url' => array('/site/register'),
                             'visible'=> Yii::app()->user->isGuest
                         ),
                         array(
-                            'label'=> $fullName,
-//                            'label'=> Yii::app()->user->name,
-                            //'url' => Yii::app()->getModule('user')->profileUrl,
+                            'label'=> '<i class="icon-user"></i> ' . Yii::app()->user->fullName,
                             'visible'=> !Yii::app()->user->isGuest,
                             'items' => array(
                                 array('label' => 'Profile'),
@@ -80,7 +81,7 @@
                                 ),
                                 TbHtml::menuDivider(),
                                 array(
-                                    'label' => 'Logout',
+                                    'label' => '<i class="icon-minus-sign"></i> Logout',
                                     'url' => array('/site/logout'),
                                     'visible'=> !Yii::app()->user->isGuest,
                                 ),
@@ -132,26 +133,37 @@
             ),
 )); ?>
 
-<div class="container" id="page">
+<div class="container-fluid" id="page">
+    <div class="row-fluid">
+        <div class="span12">
+            <?php if(isset($this->breadcrumbs)):?>
+                <?php 
+                    $this->widget(
+                            'bootstrap.widgets.TbBreadcrumb',
+                            array(
+                                'links' => $this->breadcrumbs,
+                            )
+                    );
+                ?><!-- breadcrumbs -->
+            <?php endif?>
+        </div>
+    </div>
 
-	<?php if(isset($this->breadcrumbs)):?>
-		<?php $this->widget('bootstrap.widgets.TbBreadcrumb', array(
-			'links' => $this->breadcrumbs,
-		)); ?><!-- breadcrumbs -->
-	<?php endif?>
+    <?php echo $content; ?>
 
-	<?php echo $content; ?>
+    <div class="clear"></div>
 
-	<div class="clear"></div>
-
-	<div id="footer">
-		Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
+    <div class="row-fluid">
+        <div class="span12">
+            <footer id="footer">
+                Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
                 All Rights Reserved.<br/>
                 <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> 
                 <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?>
                 <br />
-	</div><!-- footer -->
-
+            </footer><!-- footer -->
+        </div>
+    </div>
 </div><!-- page -->
 
 </body>

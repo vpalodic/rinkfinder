@@ -89,7 +89,6 @@ If you have business inquiries or other questions, please fill out the following
                         'size' => 'large',
                         'offColor' => 'warning',
                         'htmlOptions' => array(
-                            'class' => 'span5',
                         ),
                     ),
                     true
