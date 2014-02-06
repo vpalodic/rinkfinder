@@ -37,15 +37,24 @@ $this->menu=array(
                                 "id" => $data->id
                             )
                         )',
+                        'htmlOptions' => array(
+                            'style' => 'word-break:break-all;word-wrap:break-word',
+                        )
                     ),
                     array(
                         'name' => 'fullName',
                         'type'=>'raw',
+                        'htmlOptions' => array(
+                            'style' => 'word-break:break-all;word-wrap:break-word',
+                        )
                     ),
                     array(
                         'name' => 'email',
                         'type'=>'raw',
                         'value' => 'TbHtml::mailto($data->email)',
+                        'htmlOptions' => array(
+                            'style' => 'word-break:break-all;word-wrap:break-word',
+                        )
                     ),
                     array(
                         'name' => 'status_id',
@@ -86,12 +95,12 @@ $this->menu=array(
                                 "id" => $data->created_by_id
                             )
                         )',
-                   ),*/
+                   ),
                     array(
                         'name' => 'updated_on',
                         'value' => 'date_format(date_create_from_format("Y-m-d H:i:s", $data->updated_on), "m-d-Y H:i:s")',
                     ),
-/*                    array(
+                    array(
                         'name' => 'updated_by_id',
                         'type'=>'raw',
                         'value' => 'TbHtml::link(

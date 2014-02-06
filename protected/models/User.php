@@ -277,6 +277,15 @@ class User extends RinkfinderActiveRecord
         );
     }
 
+    /**
+     * Retrieve either a lable or indexed list
+     * @param string $type The type of the list you wish to access
+     * @param integer $code If null, returns the list that is usable in
+     * a Drop-Down list, otherwise, it is the numeric code for the text label
+     * @return mixed If no code is provided, it is an array indexed by the
+     * code values. If a valid type and code are provided, then it is the
+     * label for the code.
+     */
     public static function itemAlias($type, $code = NULL)
     {
         $_items = array(
