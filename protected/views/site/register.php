@@ -230,10 +230,10 @@
                                     'site/page', 'view' => 'terms_of_use'
                                 ),
                                 array(
-                                    'target' => '_blank'
+                                    'id' => 'terms_of_use'
                                 )
                         );
-                    ?> 
+                    ?>
                     and the 
                     <?php
                         echo CHtml::link(
@@ -242,7 +242,7 @@
                                     'site/page', 'view' => 'privacy_policy'
                                 ),
                                 array(
-                                    'target' => '_blank'
+                                    'id' => 'privacy_policy'
                                 )
                         );
                     ?> 
@@ -264,4 +264,22 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<?php
+    $this->widget(
+            'ext.magnific-popup.EMagnificPopup',
+            array(
+                'target' => '#terms_of_use',
+                'type' => 'iframe',
+            )
+    );
+?>
+<?php
+    $this->widget(
+            'ext.magnific-popup.EMagnificPopup',
+            array(
+                'target' => '#privacy_policy',
+                'type' => 'iframe',
+            )
+    );
+?>
 <?php endif; ?>
