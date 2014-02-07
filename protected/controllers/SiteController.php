@@ -73,15 +73,8 @@ class SiteController extends Controller
 
         // Preload the form if the user is logged in!
         if(!Yii::app()->user->isGuest) {
-            if(($names = Yii::app()->user->getState('_names')) !== null) {
-                if(isset($names['fullName'])) {
-                    $model->name = $names['fullName'];
-                }
-            }
-            
-            if(($email = Yii::app()->user->getState('_email')) !== null) {
-                $model->email = $email;
-            }
+            $model->name = Yii::app()->user->fullName;
+            $model->email = Yii::app()->user->email;
         }
 
         $this->render(
@@ -410,12 +403,12 @@ class SiteController extends Controller
                     )
             );
         } else {
-            $message = 'Please enter the E-mail Address you registered with to begin the Account Recovery process.';
+/*            $message = 'Please enter the E-mail Address you registered with to begin the Account Recovery process.';
             Yii::app()->user->setFlash(
                     TbHtml::ALERT_COLOR_WARNING,
                     $message
             );
-
+*/
             // Display the reset account form
             $this->render(
                     'resetAccount',

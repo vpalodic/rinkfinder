@@ -69,17 +69,17 @@
             echo TbHtml::hiddenField('sendEmail', 1);
         ?>
     </fieldset>
-    <div class="form-actions">
-        <?php
-            echo TbHtml::submitButton(
-                    'Begin Account Recovery',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                    )
+    <?php
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Begin Account Recovery',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
             );
-        ?>
-    </div>
+    ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php elseif(!isset($model) && (isset($email) && !empty($email)) && (!isset($user_key) || empty($user_key))) : ?>
@@ -142,17 +142,17 @@
             );
         ?>
     </fieldset>
-    <div class="form-actions">
-        <?php
-            echo TbHtml::submitButton(
-                    'Continue Account Recovery',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                    )
+    <?php
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Continue Account Recovery',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
             );
-        ?>
-    </div>
+    ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php elseif(isset($model)) : ?>
@@ -208,17 +208,17 @@
             );
         ?>
     </fieldset>
-    <div class="form-actions">
-        <?php
-            echo TbHtml::submitButton(
-                    'Finish Account Recovery',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                    )
+    <?php
+        echo TbHtml::formActions(
+                TbHtml::submitButton(
+                        'Finish Account Recovery',
+                        array(
+                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
+                            'size' => TbHtml::BUTTON_SIZE_LARGE,
+                        )
+                )
             );
-        ?>
-    </div>
+    ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php endif; ?>

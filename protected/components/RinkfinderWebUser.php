@@ -25,33 +25,73 @@ class RinkfinderWebUser extends CWebUser
      */
     public function getFirstName(){
         Yii::trace('getFirstName()', 'application.components.RinkfinderWebUser');
-	$user = $this->loadUser(Yii::app()->user->id);
-        $firstName = ($user !== null) ? $user->firstName : '';
-	return $firstName;
+	return $this->getState('__firstName');
+    }
+    
+    /**
+     * Sets first name of the user.
+     * @param string $value The user's first name
+     */
+    public function setFirstName($value){
+        Yii::trace('setFirstName()', 'application.components.RinkfinderWebUser');
+	$this->setState('__firstName', $value);
     }
     
     /**
      * Return last name of the user.
      * access it by Yii::app()->user->lastName
-     * @return string The user's last name or ''
+     * @return string The user's last name
      */
     public function getLastName(){
         Yii::trace('getLastName()', 'application.components.RinkfinderWebUser');
-	$user = $this->loadUser(Yii::app()->user->id);
-        $lastName = ($user !== null) ? $user->lastName : '';
-	return $lastName;
+	return $this->getState('__lastName');
+    }
+    
+    /**
+     * Sets last name of the user.
+     * @param string $value The user's last name
+     */
+    public function setLastName($value){
+        Yii::trace('setLastName()', 'application.components.RinkfinderWebUser');
+	$this->setState('__lastName', $value);
     }
     
     /**
      * Return full name of the user.
      * access it by Yii::app()->user->fullName
-     * @return string The user's full name or ''
+     * @return string The user's full name
      */
     public function getFullName(){
         Yii::trace('getFullName()', 'application.components.RinkfinderWebUser');
-	$user = $this->loadUser(Yii::app()->user->id);
-        $fullName = ($user !== null) ? $user->fullName : '';
-	return $fullName;
+	return $this->getState('__fullName');
+    }
+    
+    /**
+     * Sets full name of the user.
+     * @param string $value The user's full name
+     */
+    public function setFullName($value){
+        Yii::trace('setFullName()', 'application.components.RinkfinderWebUser');
+	$this->setState('__fullName', $value);
+    }
+    
+    /**
+     * Return email address of the user.
+     * access it by Yii::app()->user->email
+     * @return string The user's email address
+     */
+    public function getEmail(){
+        Yii::trace('getEmail()', 'application.components.RinkfinderWebUser');
+	return $this->getState('__email');
+    }
+    
+    /**
+     * Sets email address of the user.
+     * @param string $value The user's email address
+     */
+    public function setEmail($value){
+        Yii::trace('setEmail()', 'application.components.RinkfinderWebUser');
+	$this->setState('__email', $value);
     }
     
     /**
@@ -172,4 +212,34 @@ class RinkfinderWebUser extends CWebUser
 
         return $this->_model;
     }
+    
+    /**
+     * Logs in a user.
+     *
+     * The user identity information will be saved in storage that is
+     * persistent during the user session. By default, the storage is simply
+     * the session storage. If the duration parameter is greater than 0,
+     * a cookie will be sent to prepare for cookie-based login in future.
+     *
+     * Note, you have to set {@link allowAutoLogin} to true
+     * if you want to allow user to be authenticated based on the cookie information.
+     *
+     * @param IUserIdentity $identity the user identity (which should already be authenticated)
+     * @param integer $duration number of seconds that the user can remain in logged-in status. Defaults to 0, meaning login till the user closes the browser.
+     * If greater than 0, cookie-based login will be used. In this case, {@link allowAutoLogin}
+     * must be set true, otherwise an exception will be thrown.
+     * @return boolean whether the user is logged in
+     */
+    public function login($identity, $duration = 0)
+    {
+        if(parent::login($identity, $duration)) {
+            $this->setFirstName($identity->getFirstName());
+            $this->setLastName($identity->getLastName());
+            $this->setFullName($identity->getFullName());
+            $this->setEmail($identity->getEmail());
+        }
+        
+        return !$this->getIsGuest();
+    }
+
 }

@@ -40,22 +40,27 @@ If you have business inquiries or other questions, please fill out the following
         </p>
         <?php echo $form->errorSummary($model); ?>
         <?php
+            $htmlOptions = array(
+                        'span' => 5,
+            );
+            
+            if(!Yii::app()->user->isGuest) {
+                $htmlOptions['readonly'] = true;
+            }
+            
             echo $form->textFieldControlGroup(
                     $model,
                     'name',
-                    array(
-                        'span' => 5,
-                    )
+                    $htmlOptions
             );
         ?>
         <?php
+            $htmlOptions['maxlength'] = 128;
+            
             echo $form->emailFieldControlGroup(
                     $model,
                     'email',
-                    array(
-                        'maxlength' => 128,
-                        'span' => 5,
-                    )
+                    $htmlOptions
             );
         ?>
         <?php
@@ -108,10 +113,12 @@ If you have business inquiries or other questions, please fill out the following
             echo '</div>';
             echo '</div>';
         ?>
-        <?php if(Yii::app()->doCaptcha('contact')) : ?>
-            <div class="controls">
-                <?php $this->widget('CCaptcha'); ?>
-            </div>
+	<?php if(Yii::app()->doCaptcha('registration')): ?>
+            <div class="control-group">
+                <div class="controls">
+                    <?php $this->widget('CCaptcha'); ?>
+                </div>
+            </div>                
             <?php
                 echo $form->textFieldControlGroup(
                         $model,
@@ -121,11 +128,13 @@ If you have business inquiries or other questions, please fill out the following
                         )
                 );
             ?>
-            <div class="controls">
-                <p class="hint">
-                    Please enter the letters as they are shown in the image above.<br />
-                    Letters are not case-sensitive.
-                </p>
+            <div class="control-group">
+                <div class="controls">
+                    <span class="hint">
+                        Please enter the letters as they are shown in the image above.
+                        Letters are not case-sensitive.
+                    </span>
+                </div>
             </div>
         <?php endif; ?>
     </fieldset>

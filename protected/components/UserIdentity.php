@@ -19,6 +19,26 @@ class UserIdentity extends CUserIdentity
     const ERROR_STATUS_UNKNOWN = 99;
 
     /**
+     * @var string Holds the user's first name
+     */
+    private $_firstName;
+
+    /**
+     * @var string Holds the user's last name
+     */
+    private $_lastName;
+
+    /**
+     * @var string Holds the user's full name
+     */
+    private $_fullName;
+
+    /**
+     * @var string Holds the user's email address
+     */
+    private $_email;
+
+    /**
      * @var integer Holds the user id
      */
     private $_id;
@@ -33,6 +53,42 @@ class UserIdentity extends CUserIdentity
      */
     private $_useemail;
     
+    /**
+     * Returns the first name of the user
+     * @return string
+     */
+    public function getFirstName()
+    {
+        return $this->_firstName;
+    }
+
+    /**
+     * Returns the last name of the user
+     * @return string
+     */
+    public function getLastName()
+    {
+        return $this->_lastName;
+    }
+
+    /**
+     * Returns the full name of the user
+     * @return string
+     */
+    public function getFullName()
+    {
+        return $this->_fullName;
+    }
+
+    /**
+     * Returns the email address of the user
+     * @return string
+     */
+    public function getEmail()
+    {
+        return $this->_email;
+    }
+
     /**
      * Returns the id of the user
      * @return integer
@@ -54,9 +110,9 @@ class UserIdentity extends CUserIdentity
 
         // Check for an existing user
         if($this->_useemail) {
-            $this->_user = User::model()->find('LOWER(email) = :username', array(':username' => $username));
+            $this->_user = User::model()->with('profile')->find('LOWER(email) = :username', array(':username' => $username));
         } else {
-            $this->_user = User::model()->find('LOWER(username) = :username', array(':username' => $username));
+            $this->_user = User::model()->with('profile')->find('LOWER(username) = :username', array(':username' => $username));
         }
     }
     
@@ -72,6 +128,10 @@ class UserIdentity extends CUserIdentity
             case User::STATUS_ACTIVE:
                 $this->_id = $this->_user->id;
                 $this->username = $this->_user->username;
+                $this->_firstName = $this->_user->firstName;
+                $this->_lastName = $this->_user->lastName;
+                $this->_fullName = $this->_user->fullName;
+                $this->_email = $this->_user->email;
                 $this->errorCode = self::ERROR_NONE;
                 $this->_user->loginSuccessful();
                 break;

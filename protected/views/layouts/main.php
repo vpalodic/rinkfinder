@@ -20,16 +20,6 @@
     );
 ?>
 
-<?php
-    $fullName = Yii::app()->user->name;
-    
-    if(($names = Yii::app()->user->getState('_names')) !== null) {
-        if(isset($names['fullName'])) {
-            $fullName = $names['fullName'];
-        }
-    }
-?>
-    
 <?php $this->widget('bootstrap.widgets.TbNavbar',array(
             'collapse' => true,
             'fluid' => true,

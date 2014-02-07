@@ -223,6 +223,7 @@
                     </span>
                 </div>
             </div>
+        <?php endif; ?>
             <div class="control-group">
                 <div class="controls">
                     <span class="hint">
@@ -255,7 +256,6 @@
                     </span>
                 </div>
             </div>
-        <?php endif; ?>
     </fieldset>
     <?php
         echo TbHtml::formActions(
