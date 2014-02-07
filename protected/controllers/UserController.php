@@ -181,6 +181,7 @@ class UserController extends Controller
     {
         if(Yii::app()->user->checkAccess('indexUser')) {
             $criteria = new CDbCriteria();
+            
             $criteria->with = array('profile', 'createdBy', 'updatedBy');
             $criteria->together = true;
             

@@ -337,13 +337,8 @@ class User extends RinkfinderActiveRecord
         $criteria->compare('created_on', $this->created_on, true);
         $criteria->compare('updated_by_id', $this->updated_by_id);
         $criteria->compare('updated_on', $this->updated_on, true);
-        
-        return new CActiveDataProvider(
-            $this,
-            array(
-                'criteria' => $criteria,
-            )
-        );
+
+        return $dataprovider;
     }
 
     /**

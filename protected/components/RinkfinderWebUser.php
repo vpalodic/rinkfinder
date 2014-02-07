@@ -66,48 +66,98 @@ class RinkfinderWebUser extends CWebUser
     {
         Yii::trace('checkAccess()', 'application.components.RinkfinderWebUser');
         // Site administrator can perform every action!
-        if($this->isSiteAdministrator()) {
-            Yii::trace('checkAccess() - isSiteAdministrator() returned true', 'application.components.RinkfinderWebUser');
+        if($this->isApplicationAdministrator()) {
+            Yii::trace('checkAccess() - isApplicationAdministrator() returned true', 'application.components.RinkfinderWebUser');
             return true;
         }
 
-        Yii::trace('checkAccess() - isSiteAdministrator() returned false', 'application.components.RinkfinderWebUser');
+        Yii::trace('checkAccess() - isApplicationAdministrator() returned false', 'application.components.RinkfinderWebUser');
         return parent::checkAccess($operation, $params, $allowCaching);
     }
     
     public function isSiteAdministrator($id = null) {
         Yii::trace('isSiteAdministrator()', 'application.components.RinkfinderWebUser');
+
+        if($id === null) {
+            $id = $this->id;
+        }
+        
         return Yii::app()->authManager->isAssigned(
-                'Administrator',
-                ($id !== null ? $id : $this->id));
+                'Administrator', $id);
     }
     
     public function isApplicationAdministrator($id = null) {
         Yii::trace('isApplicationAdministrator()', 'application.components.RinkfinderWebUser');
-        return Yii::app()->authManager->isAssigned(
-                'ApplicationAdministrator',
-                ($id ? $id : $this->id));
+
+        if($id === null) {
+            $id = $this->id;
+        }
+        
+        return Yii::app()->db->createCommand()
+        ->select('itemname')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2) AND userid=:userid', array(
+            ':itemname1' => 'Administrator',
+            ':itemname2' => 'ApplicationAdministrator',
+            ':userid' => $id))
+        ->queryScalar() !== false;
     }
     
     public function isArenaManager($id = null) {
         Yii::trace('isArenaManager()', 'application.components.RinkfinderWebUser');
-        return Yii::app()->authManager->isAssigned(
-                'Manager',
-                ($id ? $id : $this->id));
+
+        if($id === null) {
+            $id = $this->id;
+        }
+        
+        return Yii::app()->db->createCommand()
+        ->select('itemname')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2, :itemname3) AND userid=:userid', array(
+            ':itemname1' => 'Administrator',
+            ':itemname2' => 'ApplicationAdministrator',
+            ':itemname3' => 'Manager',
+            ':userid' => $id))
+        ->queryScalar() !== false;
     }
     
     public function isRestrictedArenaManager($id = null) {
         Yii::trace('isRestrictedArenaManager()', 'application.components.RinkfinderWebUser');
-        return Yii::app()->authManager->isAssigned(
-                'RestrictedManager',
-                ($id ? $id : $this->id));
+
+        if($id === null) {
+            $id = $this->id;
+        }
+        
+        return Yii::app()->db->createCommand()
+        ->select('itemname')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2, :itemname3, :itemname4) AND userid=:userid', array(
+            ':itemname1' => 'Administrator',
+            ':itemname2' => 'ApplicationAdministrator',
+            ':itemname3' => 'Manager',
+            ':itemname4' => 'RestrictedManager',
+            ':userid' => $id))
+        ->queryScalar() !== false;
     }
     
     public function isSiteUser($id = null) {
         Yii::trace('isSiteUser()', 'application.components.RinkfinderWebUser');
-        return Yii::app()->authManager->isAssigned(
-                'User',
-                ($id ? $id : $this->id));
+
+        if($id === null) {
+            $id = $this->id;
+        }
+        
+        return Yii::app()->db->createCommand()
+        ->select('itemname')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2, :itemname3, :itemname4, itemname5) AND userid=:userid', array(
+            ':itemname1' => 'Administrator',
+            ':itemname2' => 'ApplicationAdministrator',
+            ':itemname3' => 'Manager',
+            ':itemname4' => 'RestrictedManager',
+            ':itemname5' => 'User',
+            ':userid' => $id))
+        ->queryScalar() !== false;
     }
     
     // Load user model.

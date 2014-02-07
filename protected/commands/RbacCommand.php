@@ -105,16 +105,30 @@ class RbacCommand extends CConsoleCommand
 
     protected function getManagerBizRule()
     {
-        $bizRule = 'return isset($params["arena"]) && isset($params["user"]) && ';
-        $bizRule .= '$params["user"]->isArenaManager($params["arena"]->id);';
+        $bizRule = 'return Yii::app()->user->isArenaManager();';
+
+        return $bizRule;
+    }
+
+    protected function getManagerWithArenaBizRule()
+    {
+        $bizRule = 'return Yii::app()->user->isArenaManager() && isset($params["arena"])';
+        $bizRule .= ' && $params["arena"]->isArenaManager(Yii::app()->user->id);';
 
         return $bizRule;
     }
 
     protected function getRestrictedManagerBizRule()
     {
-        $bizRule = 'return isset($params["arena"]) && isset($params["user"]) && ';
-        $bizRule .= '$params["user"]->isArenaRestrictedManager($params["arena"]->id);';
+        $bizRule = 'return Yii::app()->user->isRestrictedArenaManager();';
+
+        return $bizRule;
+    }
+
+    protected function getRestrictedManagerWithArenaBizRule()
+    {
+        $bizRule = 'return Yii::app()->user->isRestrictedArenaManager() && isset($params["arena"])';
+        $bizRule .= '$params["arena"]->isRestrictedArenaManager(Yii::app()->user->id);';
 
         return $bizRule;
     }
