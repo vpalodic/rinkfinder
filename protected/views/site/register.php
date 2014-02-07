@@ -201,9 +201,11 @@
             }
         ?>
 	<?php if(Yii::app()->doCaptcha('registration')): ?>
-            <div class="controls">
-                <?php $this->widget('CCaptcha'); ?>
-            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <?php $this->widget('CCaptcha'); ?>
+                </div>
+            </div>                
             <?php
                 echo $form->textFieldControlGroup(
                         $model,
@@ -213,41 +215,45 @@
                         )
                 );
             ?>
-            <div class="controls">
-                <p class="hint">
-                    Please enter the letters as they are shown in the image above.<br />
-                    Letters are not case-sensitive.
-                </p>
+            <div class="control-group">
+                <div class="controls">
+                    <span class="hint">
+                        Please enter the letters as they are shown in the image above.
+                        Letters are not case-sensitive.
+                    </span>
+                </div>
             </div>
-            <div class="controls span5">
-                <h4 class="hint">
-                    By clicking on the "Register" button below, you agree you have read 
-                    and agree to both the
-                    <?php
-                        echo CHtml::link(
-                                'Terms of Use',
-                                array(
-                                    'site/page', 'view' => 'terms_of_use'
-                                ),
-                                array(
-                                    'id' => 'terms_of_use'
-                                )
-                        );
-                    ?>
-                    and the 
-                    <?php
-                        echo CHtml::link(
-                                'Privacy Policy',
-                                array(
-                                    'site/page', 'view' => 'privacy_policy'
-                                ),
-                                array(
-                                    'id' => 'privacy_policy'
-                                )
-                        );
-                    ?> 
-                    of this site and that you are over the age of thirteen (13). 
-                </h4>
+            <div class="control-group">
+                <div class="controls">
+                    <span class="hint">
+                        By clicking on the "Register" button below, you agree you have read 
+                        and agree to both the
+                        <?php
+                            echo CHtml::link(
+                                    'Terms of Use',
+                                    array(
+                                        'site/page', 'view' => 'terms_of_use'
+                                    ),
+                                    array(
+                                        'id' => 'terms_of_use'
+                                    )
+                            );
+                        ?>
+                        and the 
+                        <?php
+                            echo CHtml::link(
+                                    'Privacy Policy',
+                                    array(
+                                        'site/page', 'view' => 'privacy_policy'
+                                    ),
+                                    array(
+                                        'id' => 'privacy_policy'
+                                    )
+                            );
+                        ?> 
+                        of this site and that you are over the age of thirteen (13). 
+                    </span>
+                </div>
             </div>
         <?php endif; ?>
     </fieldset>
@@ -269,7 +275,7 @@
             'ext.magnific-popup.EMagnificPopup',
             array(
                 'target' => '#terms_of_use',
-                'type' => 'ajax',
+                'type' => 'iframe',
             )
     );
 ?>
@@ -278,7 +284,7 @@
             'ext.magnific-popup.EMagnificPopup',
             array(
                 'target' => '#privacy_policy',
-                'type' => 'ajax',
+                'type' => 'iframe',
             )
     );
 ?>

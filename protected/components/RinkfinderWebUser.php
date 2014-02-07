@@ -24,6 +24,7 @@ class RinkfinderWebUser extends CWebUser
      * @return string The user's first name or ''
      */
     public function getFirstName(){
+        Yii::trace('getFirstName()', 'application.components.RinkfinderWebUser');
 	$user = $this->loadUser(Yii::app()->user->id);
         $firstName = ($user !== null) ? $user->firstName : '';
 	return $firstName;
@@ -35,6 +36,7 @@ class RinkfinderWebUser extends CWebUser
      * @return string The user's last name or ''
      */
     public function getLastName(){
+        Yii::trace('getLastName()', 'application.components.RinkfinderWebUser');
 	$user = $this->loadUser(Yii::app()->user->id);
         $lastName = ($user !== null) ? $user->lastName : '';
 	return $lastName;
@@ -46,6 +48,7 @@ class RinkfinderWebUser extends CWebUser
      * @return string The user's full name or ''
      */
     public function getFullName(){
+        Yii::trace('getFullName()', 'application.components.RinkfinderWebUser');
 	$user = $this->loadUser(Yii::app()->user->id);
         $fullName = ($user !== null) ? $user->fullName : '';
 	return $fullName;
@@ -61,44 +64,47 @@ class RinkfinderWebUser extends CWebUser
      */
     public function checkAccess($operation, $params = array(), $allowCaching = true)
     {
-        Yii::trace('checkAccess - enter', 'application.components.RinkfinderWebUser');
-        
+        Yii::trace('checkAccess()', 'application.components.RinkfinderWebUser');
         // Site administrator can perform every action!
         if($this->isSiteAdministrator()) {
-            Yii::trace('checkAccess - isSiteAdministrator() returned true', 'application.components.RinkfinderWebUser');
+            Yii::trace('checkAccess() - isSiteAdministrator() returned true', 'application.components.RinkfinderWebUser');
             return true;
         }
 
-        Yii::trace('checkAccess - isSiteAdministrator() returned false', 'application.components.RinkfinderWebUser');
+        Yii::trace('checkAccess() - isSiteAdministrator() returned false', 'application.components.RinkfinderWebUser');
         return parent::checkAccess($operation, $params, $allowCaching);
     }
     
     public function isSiteAdministrator($id = null) {
-        Yii::trace('isSiteAdministrator', 'application.components.RinkfinderWebUser');
+        Yii::trace('isSiteAdministrator()', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'Administrator',
                 ($id !== null ? $id : $this->id));
     }
     
     public function isApplicationAdministrator($id = null) {
+        Yii::trace('isApplicationAdministrator()', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'ApplicationAdministrator',
                 ($id ? $id : $this->id));
     }
     
     public function isArenaManager($id = null) {
+        Yii::trace('isArenaManager()', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'Manager',
                 ($id ? $id : $this->id));
     }
     
     public function isRestrictedArenaManager($id = null) {
+        Yii::trace('isRestrictedArenaManager()', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'RestrictedManager',
                 ($id ? $id : $this->id));
     }
     
     public function isSiteUser($id = null) {
+        Yii::trace('isSiteUser()', 'application.components.RinkfinderWebUser');
         return Yii::app()->authManager->isAssigned(
                 'User',
                 ($id ? $id : $this->id));
@@ -107,6 +113,7 @@ class RinkfinderWebUser extends CWebUser
     // Load user model.
     protected function loadUser($id = null)
     {
+        Yii::trace('loadUser()', 'application.components.RinkfinderWebUser');
         if($this->_model === null) {
 	    if($id !== null) {
                 $this->_model = User::model()->with('profile')->findByPk($id);

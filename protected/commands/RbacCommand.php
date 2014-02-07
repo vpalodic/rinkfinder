@@ -91,16 +91,14 @@ class RbacCommand extends CConsoleCommand
 
     protected function getSiteAdministratorBizRule()
     {
-        $bizRule = 'return isset($params["user"]) && ';
-        $bizRule .= '$params["user"]->isSiteAdministrator();';        
+        $bizRule = 'return Yii::app()->user->isSiteAdministrator();';        
 
         return $bizRule;
     }
 
     protected function getApplicationAdministratorBizRule()
     {
-        $bizRule = 'return isset($params["user"]) && ';
-        $bizRule .= '$params["user"]->isApplicationAdministrator();';        
+        $bizRule = 'return Yii::app()->user->isApplicationAdministrator();';        
 
         return $bizRule;
     }
