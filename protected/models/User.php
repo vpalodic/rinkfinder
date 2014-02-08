@@ -460,7 +460,7 @@ class User extends RinkfinderActiveRecord
      * requirements before hashing and storing the password. This
      * function also generates a new user key.
      * @param string $password
-     * @return bool
+     * @return bool True if the password was saved to the database
      */
     public function setPassword($password)
     {
@@ -468,7 +468,11 @@ class User extends RinkfinderActiveRecord
         $this->user_key = hash('sha256', microtime() . $password);
         $this->password = $this->hashPassword($password);
         
-        return $this->saveAttributes(array('user_key', 'password'));
+        if(!$this->isNewRecord) {
+            return $this->saveAttributes(array('user_key', 'password'));
+        } else {
+            return false;
+        }
     }
 
     /**
