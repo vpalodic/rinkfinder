@@ -103,7 +103,7 @@ class SiteController extends Controller
         }
         
         // If user is already logged in, send them to their profile page!!!
-        if(Yii::app()->user->id) {
+        if(!Yii::app()->user->isGuest) {
             $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
         } else {
             // collect user input data
@@ -266,7 +266,7 @@ class SiteController extends Controller
     function actionResetAccount()
     {
         // If the user is logged in, then no need to be here!
-        if(Yii::app()->user->id) {
+        if(!Yii::app()->user->isGuest) {
             $this->redirect(Yii::app()->user->returnUrl);
         }
                 
@@ -301,6 +301,8 @@ class SiteController extends Controller
                                         TbHtml::ALERT_COLOR_SUCCESS,
                                         $message
                                 );
+                                
+                                $this->sendRecoveryCompleteEmail($user);
                             } else {
                                 $message = '<h4>Error saving password!</h4>';
                                 $message .= 'Your new password has not been saved. Please restart the process.';
@@ -435,17 +437,22 @@ class SiteController extends Controller
             Yii::app()->end();
         }
 
-        // collect user input data
-        if(isset($_POST['LoginForm']))
-        {
-            $model->attributes = $_POST['LoginForm'];
-            // validate user input and redirect to the previous page if valid
-            if($model->validate()) {
-                if($model->login()) {
-                    $this->redirect(Yii::app()->user->returnUrl);
-                } else {
-                    // Let's find our why we didn't login!
-                    
+        // If user is already logged in, send them to their profile page!!!
+        if(!Yii::app()->user->isGuest) {
+            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
+        } else {
+            // collect user input data
+            if(isset($_POST['LoginForm']))
+            {
+                $model->attributes = $_POST['LoginForm'];
+                // validate user input and redirect to the previous page if valid
+                if($model->validate()) {
+                    if($model->login()) {
+                        $this->redirect(Yii::app()->user->returnUrl);
+                    } else {
+                        // Let's find our why we didn't login!
+                        
+                    }
                 }
             }
         }
@@ -629,6 +636,47 @@ class SiteController extends Controller
                 $subject,
                 $data,
                 'account_recovery'
+        );
+        
+        return $mailSent;
+    }
+    
+    /**
+     * Sends the account recovery complete e-mail to the user
+     * @param User $user
+     * @return mixed True if mail was sent, otherwise the error information
+     */
+    protected function sendRecoveryCompleteEmail($user)
+    {
+        $data = array();
+        $data['fullName'] = $user->fullName;
+        $data['recoveryUrl'] = $this->createAbsoluteUrl(
+                'site/resetAccount',
+                array(
+                    'user_key' => $user->user_key,
+                    'email' => $user->email
+                )
+        );
+        $data['manualUrl'] = $this->createAbsoluteUrl(
+                'site/resetAccount',
+                array(
+                    'email' => $user->email
+                )
+        );
+        $data['username'] = $user->username;
+        $data['email'] = $user->email;
+        $data['user_key'] = $user->user_key;
+        
+        $to = array($user->email => $user->fullName);
+        $subject = CHtml::encode(Yii::app()->name) . ': Account Recovery Completed';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'account_recovery_complete'
         );
         
         return $mailSent;

@@ -232,11 +232,9 @@
                         <?php
                             echo CHtml::link(
                                     'Terms of Use',
+                                    '#terms-of-use',
                                     array(
-                                        'site/page', 'view' => 'terms_of_use'
-                                    ),
-                                    array(
-                                        'id' => 'terms_of_use'
+                                        'class' => 'open-popup-link'
                                     )
                             );
                         ?>
@@ -244,11 +242,9 @@
                         <?php
                             echo CHtml::link(
                                     'Privacy Policy',
+                                    '#privacy-policy',
                                     array(
-                                        'site/page', 'view' => 'privacy_policy'
-                                    ),
-                                    array(
-                                        'id' => 'privacy_policy'
+                                        'class' => 'open-popup-link'
                                     )
                             );
                         ?> 
@@ -270,21 +266,18 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<div id="terms-of-use" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;height:auto;max-height: 90%;width: auto;max-width: 90%;margin: 20px auto;">
+  <?php $this->renderPartial('pages/terms_of_use'); ?>
+</div>
+<div id="privacy-policy" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;height:auto;max-height: 90%;width: auto;max-width: 90%;margin: 20px auto;">
+  <?php $this->renderPartial('pages/privacy_policy'); ?>
+</div>
 <?php
     $this->widget(
             'ext.magnific-popup.EMagnificPopup',
             array(
-                'target' => '#terms_of_use',
-                'type' => 'iframe',
-            )
-    );
-?>
-<?php
-    $this->widget(
-            'ext.magnific-popup.EMagnificPopup',
-            array(
-                'target' => '#privacy_policy',
-                'type' => 'iframe',
+                'target' => '.open-popup-link',
+                'type' => 'inline',
             )
     );
 ?>
