@@ -29,7 +29,7 @@
             <h4>How We Use The Information</h4>
         </li>
         <li>
-            <h4>With Whom The Information May Be Shared/h4>
+            <h4>With Whom The Information May Be Shared</h4>
         </li>
         <li>
             <h4>Collection Of Information By Third-Party Sites And Sponsors</h4>

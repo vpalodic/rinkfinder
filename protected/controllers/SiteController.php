@@ -303,6 +303,7 @@ class SiteController extends Controller
                                 );
                                 
                                 $this->sendRecoveryCompleteEmail($user);
+                                $this->redirect(array('site/login'));
                             } else {
                                 $message = '<h4>Error saving password!</h4>';
                                 $message .= 'Your new password has not been saved. Please restart the process.';

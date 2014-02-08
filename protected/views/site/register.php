@@ -223,35 +223,36 @@
                     </span>
                 </div>
             </div>
-        <?php endif; ?>
-            <div class="control-group">
-                <div class="controls">
-                    <span class="hint">
-                        By clicking on the "Register" button below, you agree you have read 
-                        and agree to both the
-                        <?php
-                            echo CHtml::link(
-                                    'Terms of Use',
-                                    '#terms-of-use',
-                                    array(
-                                        'class' => 'open-popup-link'
-                                    )
-                            );
-                        ?>
-                        and the 
-                        <?php
-                            echo CHtml::link(
-                                    'Privacy Policy',
-                                    '#privacy-policy',
-                                    array(
-                                        'class' => 'open-popup-link'
-                                    )
-                            );
-                        ?> 
-                        of this site and that you are over the age of thirteen (13). 
-                    </span>
-                </div>
-            </div>
+            <?php endif; ?>
+            <?php
+                $widget = $this->widget(
+                        'yiiwheels.widgets.switch.WhSwitch',
+                        array(
+                            'model' => $model,
+                            'attribute' => 'acceptTerms',
+                            'onLabel' => 'Yes',
+                            'offLabel' => 'No',
+                            'size' => 'large',
+                            'offColor' => 'warning',
+                            'htmlOptions' => array(
+                            ),
+                        ),
+                        true
+                );
+            
+                echo '<div class="control-group">';
+                echo '<div class="controls">';
+                echo $form->labelEx(
+                        $model,
+                        'acceptTerms',
+                        array(
+                            )
+                    );
+                echo $widget;
+                echo $form->error($model, 'acceptTerms');
+                echo '</div>';
+                echo '</div>';
+            ?>
     </fieldset>
     <?php
         echo TbHtml::formActions(
@@ -266,10 +267,10 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
-<div id="terms-of-use" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;height:auto;max-height: 90%;width: auto;max-width: 90%;margin: 20px auto;">
+<div id="terms-of-use" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
   <?php $this->renderPartial('pages/terms_of_use'); ?>
 </div>
-<div id="privacy-policy" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;height:auto;max-height: 90%;width: auto;max-width: 90%;margin: 20px auto;">
+<div id="privacy-policy" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
   <?php $this->renderPartial('pages/privacy_policy'); ?>
 </div>
 <?php

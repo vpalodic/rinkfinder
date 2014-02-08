@@ -59,6 +59,12 @@ class User extends RinkfinderActiveRecord
     public $verifyCode;
     
     /**
+     * Holds the user's acceptance of TOU, PP, and Over 13!
+     * @var string
+     */
+    public $acceptTerms;
+    
+    /**
      * @return string the associated database table name
      */
     public function tableName()
@@ -158,6 +164,24 @@ class User extends RinkfinderActiveRecord
             array(
                 'last_visited_on, activated_on, verifyCode',
                 'safe',
+            ),
+            array(
+                'acceptTerms',
+                'required',
+                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are over the age of thirteen (13).',
+                'on' => 'registration'
+            ),
+            array(
+                'acceptTerms',
+                'boolean',
+                'on' => 'registration'
+            ),
+            array(
+                'acceptTerms',
+                'compare',
+                'compareValue' => true,
+                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are over the age of thirteen (13).',
+                'on' => 'registration'
             ),
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
@@ -274,6 +298,19 @@ class User extends RinkfinderActiveRecord
             'created_on' => 'Registered On',
             'updated_by_id' => 'Updated By',
             'updated_on' => 'Updated On',
+            'acceptTerms' => 'You have read and agree to both the ' . CHtml::link(
+                                    'Terms of Use',
+                                    '#terms-of-use',
+                                    array(
+                                        'class' => 'open-popup-link'
+                                    )
+                            ) . ' and the ' . CHtml::link(
+                                    'Privacy Policy',
+                                    '#privacy-policy',
+                                    array(
+                                        'class' => 'open-popup-link'
+                                    )
+                            ) . ' of this site and that you are over the age of thirteen (13).'
         );
     }
 
