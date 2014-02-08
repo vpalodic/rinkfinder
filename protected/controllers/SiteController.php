@@ -188,6 +188,8 @@ class SiteController extends Controller
                                 TbHtml::ALERT_COLOR_SUCCESS,
                                 $message
                         );
+                        
+                        $this->redirect(array('site/login'));
                     } elseif($user->isNotActivated()) {
                         // Oops, something went wrong!!!
                         $message = '<h4>Account Not Activated!</h4>';
