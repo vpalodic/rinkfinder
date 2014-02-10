@@ -168,7 +168,7 @@ class User extends RinkfinderActiveRecord
             array(
                 'acceptTerms',
                 'required',
-                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are over the age of thirteen (13).',
+                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are thirteen (13) years of age or older.',
                 'on' => 'registration'
             ),
             array(
@@ -180,7 +180,7 @@ class User extends RinkfinderActiveRecord
                 'acceptTerms',
                 'compare',
                 'compareValue' => true,
-                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are over the age of thirteen (13).',
+                'message' => 'You must agree to the Terms of Use, Privacy Policy, and that you are thirteen (13) years of age or older.',
                 'on' => 'registration'
             ),
             // The following rule is used by search().
@@ -310,7 +310,7 @@ class User extends RinkfinderActiveRecord
                                     array(
                                         'class' => 'open-popup-link'
                                     )
-                            ) . ' of this site and that you are over the age of thirteen (13).'
+                            ) . ' of this site and that you are thirteen (13) years of age or older.'
         );
     }
 

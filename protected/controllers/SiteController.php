@@ -164,6 +164,10 @@ class SiteController extends Controller
         $activated = false;
         $message = '';
         
+        if(!Yii::app()->user->isGuest) {
+            $email = Yii::app()->user->email;
+        }
+        
         if($email) {
             $email = strtolower($email);
             
