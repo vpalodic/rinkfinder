@@ -57,7 +57,7 @@ class UserChangePassword extends CFormModel {
     public function attributeLabels()
     {
         return array(
-            'passwordSave' => "Password",
+            'passwordSave' => "New Password",
             'passwordRepeat' => "Confirm Password",
         );
     }

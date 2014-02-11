@@ -110,9 +110,9 @@ class UserIdentity extends CUserIdentity
 
         // Check for an existing user
         if($this->_useemail) {
-            $this->_user = User::model()->with('profile')->find('LOWER(email) = :username', array(':username' => $username));
+            $this->_user = User::model()->forLogin()->with(array('profile' => array('together' => true)))->find('LOWER(email) = :username', array(':username' => $username));
         } else {
-            $this->_user = User::model()->with('profile')->find('LOWER(username) = :username', array(':username' => $username));
+            $this->_user = User::model()->forLogin()->with(array('profile' => array('together' => true)))->find('LOWER(username) = :username', array(':username' => $username));
         }
     }
     

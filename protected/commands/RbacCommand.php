@@ -118,6 +118,25 @@ class RbacCommand extends CConsoleCommand
         return $bizRule;
     }
 
+    protected function getManagerWithArenaAndUserBizRule()
+    {
+        $bizRule = 'return Yii::app()->user->isArenaManager() && isset($params["arena"])';
+        $bizRule .= ' isset($params["user"])';
+        $bizRule .= ' && $params["arena"]->isArenaManager(Yii::app()->user->id)';
+        $bizRule .= ' && $params["arena"]->isUserAssigned($params["user"]->id);';
+
+        return $bizRule;
+    }
+
+    protected function getManagerWithArenaAndRoleBizRule()
+    {
+        $bizRule = 'return Yii::app()->user->isArenaManager() && isset($params["role"])';
+        $bizRule .= ' && isset($params["arena"]) && $params["role"] == "RestrictedManager" ;';
+        $bizRule .= ' && $params["arena"]->isArenaManager(Yii::app()->user->id)';
+
+        return $bizRule;
+    }
+
     protected function getRestrictedManagerBizRule()
     {
         $bizRule = 'return Yii::app()->user->isRestrictedArenaManager();';
@@ -163,13 +182,13 @@ class RbacCommand extends CConsoleCommand
         $this->_authManager->createOperation("indexUser", "List user(s).");
         $this->_authManager->createOperation("adminUser", "Manage all users.");
 
-        $task = $this->_authManager->createTask("manageAssignedUsers", "Manage all users assigned to the arena.", $this->managerBizRule);
+        $task = $this->_authManager->createTask("manageAssignedUsers", "Manage all users assigned to the arena.", $this->managerWithArenaAndUserBizRule);
         $task->addChild('viewUser');
         $task->addChild('updateUser');
         $task->addChild('removeUser');
         $task->addChild('indexUser');
 
-        $task = $this->_authManager->createTask("assignRestrictedManager", "Assign a sub manager to the arena.", $this->managerBizRule);
+        $task = $this->_authManager->createTask("assignRestrictedManager", "Assign a restricted manager to the arena.", $this->managerWithArenaAndRoleBizRule);
         $task->addChild('createUser');
         $task->addChild('assignUser');
 

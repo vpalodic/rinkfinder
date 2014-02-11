@@ -173,7 +173,7 @@ class SiteController extends Controller
             
             // Both $email and $user_key must be valid but, we will only
             // search by $email to find the account
-            $user = User::model()->find(
+            $user = User::model()->forActivation()->find(
                     'LOWER(email) = :email',
                     array(
                         ':email' => $email,
@@ -286,7 +286,7 @@ class SiteController extends Controller
             $email = strtolower($email);
             
             // We will only search by $email to find the account
-            $user = User::model()->find(
+            $user = User::model()->forRecovery()->find(
                     'LOWER(email) = :email',
                     array(
                         ':email' => $email,
@@ -297,6 +297,7 @@ class SiteController extends Controller
                 $model = new UserChangePassword;
                 if(isset($_POST['UserChangePassword'])) {
                     $model->attributes = $_POST['UserChangePassword'];
+                    $model->scenario = 'changePassword';
                     if($model->validate()) {
                         if($user->activateAccount($user_key)) {
                             if($user->setPassword($model->passwordSave)) {
@@ -353,7 +354,7 @@ class SiteController extends Controller
             $email = strtolower($email);
             
             // We will only search by $email to find the account
-            $user = User::model()->find(
+            $user = User::model()->forRecovery()->find(
                     'LOWER(email) = :email',
                     array(
                         ':email' => $email,

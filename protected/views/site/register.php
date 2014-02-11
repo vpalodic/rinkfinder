@@ -223,7 +223,7 @@
                     </span>
                 </div>
             </div>
-            <?php endif; ?>
+        <?php endif; ?>
             <?php
                 $widget = $this->widget(
                         'yiiwheels.widgets.switch.WhSwitch',

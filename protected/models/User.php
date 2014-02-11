@@ -315,6 +315,72 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
+     * Returns the declaration of named scopes.
+     * A named scope represents a query criteria that can be chained together with
+     * other named scopes and applied to a query. This method should be overridden
+     * by child classes to declare named scopes for the particular AR classes.
+     * For example, the following code declares two named scopes: 'recently' and
+     * 'published'.
+     * <pre>
+     * return array(
+     *     'published'=>array(
+     *           'condition'=>'status=1',
+     *     ),
+     *     'recently'=>array(
+     *           'order'=>'create_time DESC',
+     *           'limit'=>5,
+     *     ),
+     * );
+     * </pre>
+     * If the above scopes are declared in a 'Post' model, we can perform the following
+     * queries:
+     * <pre>
+     * $posts=Post::model()->published()->findAll();
+     * $posts=Post::model()->published()->recently()->findAll();
+     * $posts=Post::model()->published()->with('comments')->findAll();
+     * </pre>
+     * Note that the last query is a relational query.
+     *
+     * @return array the scope definition. The array keys are scope names; the array
+     * values are the corresponding scope definitions. Each scope definition is represented
+     * as an array whose keys must be properties of {@link CDbCriteria}.
+     */
+    public function scopes()
+    {
+        return array(
+            'forLogin' => array(
+//                'select' => 'id, username, email, password, failed_logins, status_id, lock_version',
+                'select' => 'password',
+            ),
+            'forRecovery' => array(
+                'select' => 'user_key',
+            ),
+            'forActivation' => array(
+                'select' => 'user_key',
+            ),
+            'sort' => array(
+                'order' => 'created_on DESC 1',
+            ),
+        );
+    }
+
+    /**
+     * Returns the default named scope that should be implicitly applied to all queries for this model.
+     * Note, default scope only applies to SELECT queries. It is ignored for INSERT, UPDATE and DELETE queries.
+     * The default implementation simply returns an empty array. You may override this method
+     * if the model needs to be queried with some default criteria (e.g. only active records should be returned).
+     * @return array the query criteria. This will be used as the parameter to the constructor
+     * of {@link CDbCriteria}.
+     */
+    public function defaultScope()
+    {
+        return array(
+            'select' => 'id, username, email, failed_logins, status_id, activated_on, last_visited_on, last_visited_from, lock_version, created_on, created_by_id, updated_on, updated_by_id',
+            'order' => $this->getTableAlias(false, false) . '.created_on DESC',
+        );
+    }
+
+    /**
      * Retrieve either a lable or indexed list
      * @param string $type The type of the list you wish to access
      * @param integer $code If null, returns the list that is usable in
@@ -375,7 +441,12 @@ class User extends RinkfinderActiveRecord
         $criteria->compare('updated_by_id', $this->updated_by_id);
         $criteria->compare('updated_on', $this->updated_on, true);
 
-        return $dataprovider;
+        return new CActiveDataProvider(
+                $this,
+                array(
+                    'criteria' => $criteria,
+                )
+        );
     }
 
     /**
@@ -400,7 +471,7 @@ class User extends RinkfinderActiveRecord
            (!empty($this->passwordSave) && 
             !empty($this->passwordRepeat) && 
             ($this->passwordSave === $this->passwordRepeat))) {
-            $this->setPassword($this->passwordSave);
+            $this->setPassword($this->passwordSave, false);
         }
         return parent::beforeSave();;
     }
@@ -460,15 +531,16 @@ class User extends RinkfinderActiveRecord
      * requirements before hashing and storing the password. This
      * function also generates a new user key.
      * @param string $password
+     * @param boolean $save
      * @return bool True if the password was saved to the database
      */
-    public function setPassword($password)
+    public function setPassword($password, $save = true)
     {
         // We set the user key first
         $this->user_key = hash('sha256', microtime() . $password);
         $this->password = $this->hashPassword($password);
         
-        if(!$this->isNewRecord) {
+        if($save == true) {
             return $this->saveAttributes(array('user_key', 'password'));
         } else {
             return false;
@@ -765,16 +837,45 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
+     * Marks the user's account as deleted if it isn't banned or deleted
+     * @return bool true if the account was deleted
+     */
+    public function deleteAccount()
+    {
+        if(($this->status_id == self::STATUS_NOTACTIVATED ||
+            $this->status_id == self::STATUS_ACTIVE ||
+            $this->status_id == self::STATUS_LOCKED ||
+            $this->status_id == self::STATUS_RESET ||
+            $this->status_id == self::STATUS_INACTIVE)) {
+            // Mark the user as deleted
+            $this->status_id = self::STATUS_DELETED;
+
+            $attributes = array('status_id', 'updated_by_id', 'updated_on');
+
+            // We call the before save function to set the updated attributes
+            $this->beforeSave();
+            
+            return $this->saveAttributes($attributes);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Prepares a new user account from self-registration prior to them
      * being added to the system.
      * Sets the status_id to not activated and records the user's
      * ip address.
+     * @param integer $status_id The status to assign to the user.
      * @return bool true if the user was setup successfully
      */
-    public function preRegisterNewUser()
+    public function preRegisterNewUser($status_id = self::STATUS_NOTACTIVATED)
     {
-        $this->status_id = self::STATUS_NOTACTIVATED;
+        $this->status_id = $status_id;
         $this->last_visited_from = Yii::app()->request->userHostAddress;
+        if($status_id == self::STATUS_ACTIVE) {
+            $this->activated_on = date('Y-m-d H:i:s');
+        }
         
         return true;
     }
@@ -784,12 +885,13 @@ class User extends RinkfinderActiveRecord
      * been added to the system. Add thems to the "User" role.
      * Sets the status_id to not activated and records the user's
      * ip address.
+     * @param string $role The role to be assigned to the user.
      * @return bool true if the user was setup successfully
      */
-    public function postRegisterNewUser()
+    public function postRegisterNewUser($role = 'User')
     {
         // First add them to the User role
-        Yii::app()->authManager->assign('User', $this->id);
+        Yii::app()->authManager->assign($role, $this->id);
         
         // Next, update the created_by_id and updated_by_id
         if(Yii::app()->user->isGuest) {

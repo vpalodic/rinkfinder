@@ -6,7 +6,7 @@ class UserController extends Controller
      * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
      * using two-column layout. See 'protected/views/layouts/column2.php'.
      */
-    public $layout='//layouts/column2';
+    public $layout='//layouts/column1';
 
     /**
      * @return array action filters
@@ -34,6 +34,7 @@ class UserController extends Controller
                     'view',
                     'create',
                     'update',
+                    'changePassword',
                 ),
                 'users' => array('@'),
             ),
@@ -76,21 +77,76 @@ class UserController extends Controller
     }
 
     /**
-     * Creates a new model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
+     * Creates a new user with the specified role.
+     * If creation is successful, the form will be reset so that another user
+     * can be added
+     * @param string $role the name of the user type to create
+     * @param string $arenaId the ID of the Arena this new use will be assigned to.
      */
-    public function actionCreate()
+    public function actionCreate($role, $arenaId = null)
     {
         $model = new User;
-
-        if(Yii::app()->user->checkAccess('createUser')) {
+        $profile = new Profile;
+        
+        $roles = Yii::app()->authManager->getRoles();
+        $roleKeys = array_keys($roles);
+        
+        if(!in_array($role, $roleKeys) || (isset($arenaId) && $arenaId <= 0)) {
+            throw new CHttpException(
+                    400,
+                    'Bad request. The parameters are invalid!'
+            );
+        }
+        
+        $description = $roles[$role]->description;
+        $user = $this->loadModel(Yii::app()->user->id);
+        $arena = (isset($arenaId) && $arenaId > 0) ? Arena::model()->findByPk($arenaId) : null;
+        
+        if(Yii::app()->user->checkAccess('createUser', array('user' => $user, 'arena' => $arena, 'role' => $role))) {
             // Uncomment the following line if AJAX validation is needed
-            // $this->performAjaxValidation($model);
+            $this->performAjaxValidation($model, $profile);
 
             if(isset($_POST['User'])) {
-                $model->attributes=$_POST['User'];
-                if($model->save()) {
-                    $this->redirect(array('view','id'=>$model->id));
+                $model->attributes = $_POST['User'];
+                $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
+                
+                if($model->validate() && $profile->validate()) {
+                    // Preregister the new user!!!
+                    $model->preRegisterNewUser($model->status_id);
+                
+                    // Register the account!!!!
+                    if($model->save()) {
+                        $model->postRegisterNewUser($role);
+                    
+                        $profile->user_id = $model->id;
+                        $profile->save();
+                        $profile->postRegisterNewUser();
+                    
+                        $emailSent = $this->sendNewUserEmail($model);
+                    
+                        $message = '<h4>New User Created Successfully!</h4>';
+                        
+                        if($emailSent === true) {
+                            $message .= 'The new user has been e-mailed instructions on how to login to their account. ';
+                        } else {
+                            $message .= 'We attempted to e-mail the new user their account information and login instructions ';
+                            $message .= 'but an error prevented us from doing so. Please besure to provide them with their ';
+                            $message .= 'credentials. <br /><br /> <b>E-mail Error:</b><br /><br />' . $emailSent;
+                        }
+                        
+                        Yii::app()->user->setFlash(
+                                TbHtml::ALERT_COLOR_SUCCESS,
+                                $message
+                        );
+                        
+                        // Reset the models!
+                        $model->unsetAttributes();
+                        unset($model->passwordSave);
+                        unset($model->passwordRepeat);
+                        $profile->unsetAttributes();
+                    }
+                } else {
+                    $profile->validate();
                 }
             }
 
@@ -98,6 +154,9 @@ class UserController extends Controller
                     'create',
                     array(
                         'model' => $model,
+                        'profile' => $profile,
+                        'role' => $role,
+                        'description' => $description,
                     )
             );
         } else {
@@ -154,7 +213,7 @@ class UserController extends Controller
         if(Yii::app()->user->checkAccess('deleteUser', array('user' => $model))) {
             if(Yii::app()->request->isPostRequest) {
                 // we only allow deletion via POST request
-                $model->delete();
+                $model->deleteAccount();
                 
                 // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
                 if(!isset($_GET['ajax'])) {
@@ -198,6 +257,8 @@ class UserController extends Controller
                         'dataProvider' => $dataProvider,
                     )
             );
+        } elseif(!Yii::app()->user->isGuest) {
+            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
         } else {
             throw new CHttpException(
                     403,
@@ -234,6 +295,49 @@ class UserController extends Controller
     }
 
     /**
+     * Updates a particular model's password.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id the ID of the model to be updated
+     */
+    public function actionChangePassword($id)
+    {
+        $model = $this->loadModel($id);
+
+        if(Yii::app()->user->checkAccess('updateUser', array('user' => $model))) {
+            $model->scenario = 'changePassword';
+            // Uncomment the following line if AJAX validation is needed
+            //$this->performAjaxValidation($model);
+
+            if(isset($_POST['User'])) {
+                $model->attributes = $_POST['User'];
+                if($model->save()) {
+                    $message = '<h4>New password has been saved!</h4>';
+                    $message .= 'The next time you login, please use your new password.';
+                    
+                    Yii::app()->user->setFlash(
+                            TbHtml::ALERT_COLOR_SUCCESS,
+                            $message
+                    );
+                    
+                    $this->redirect(array('profile/view', 'id' => $model->id));
+                }
+            }
+
+            $this->render(
+                    'changePassword',
+                    array(
+                        'model' => $model,
+                    )
+            );
+        } else {
+            throw new CHttpException(
+                    403,
+                    'Permission denied. You are not authorized to perform this action.'
+            );
+        }
+    }
+
+    /**
      * Returns the data model based on the primary key given in the GET variable.
      * If the data model is not found, an HTTP exception will be raised.
      * @param integer $id the ID of the model to be loaded
@@ -242,7 +346,7 @@ class UserController extends Controller
      */
     public function loadModel($id)
     {
-        $model = User::model()->with('profile')->findByPk($id);
+        $model = User::model()->with(array('profile' => array('together' => true)))->findByPk($id);
         
         if($model === null) {
             throw new CHttpException(
@@ -257,11 +361,50 @@ class UserController extends Controller
      * Performs the AJAX validation.
      * @param User $model the model to be validated
      */
-    protected function performAjaxValidation($model)
+    protected function performAjaxValidation($model, $profile)
     {
         if(isset($_POST['ajax']) && $_POST['ajax'] === 'user-form') {
-            echo CActiveForm::validate($model);
+            echo CActiveForm::validate(array($model, $profile));
             Yii::app()->end();
         }
     }
+    
+    /**
+     * Sends the new user e-mail to the user
+     * @param User $user
+     * @return mixed True if mail was sent, otherwise the error information
+     */
+    protected function sendNewUserEmail($user)
+    {
+        $data = array();
+        $data['fullName'] = $user->fullName;
+        $data['activationUrl'] = $this->createAbsoluteUrl(
+                'site/activateAccount',
+                array(
+                    'user_key' => $user->user_key,
+                    'email' => $user->email
+                )
+        );
+        $data['manualUrl'] = $this->createAbsoluteUrl('site/activateAccount');
+        $data['username'] = $user->username;
+        $data['email'] = $user->email;
+        $data['password'] = $user->passwordSave;
+        $data['user_key'] = $user->user_key;
+        
+        $to = array($user->email => $user->fullName);
+
+        $subject = 'Welcome ' . CHtml::encode($user->fullName) . ' to ' . CHtml::encode(Yii::app()->name . '(Account Information Enclosed)');
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'new_user'
+        );
+        
+        return $mailSent;
+    }
+    
 }

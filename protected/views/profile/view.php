@@ -20,6 +20,10 @@ $this->menu=array(
 
 <h1>View Profile #<?php echo $model->user_id; ?></h1>
 
+<?php
+    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
+?>
+
 <?php $this->widget('zii.widgets.CDetailView',array(
     'htmlOptions' => array(
         'class' => 'table table-striped table-condensed table-hover',

@@ -2,14 +2,12 @@
     /* @var $this UserController */
     /* @var $model User */
     /* @var $profile Profile */
-    /* @var $role string */
-    /* @var $description string */
 ?>
 
 <?php
 $this->breadcrumbs = array(
 	'Users' => array('index'),
-	'Create ' . $role,
+	'Create Restricted Arena Manager',
 );
 
 $this->menu = array(
@@ -18,15 +16,10 @@ $this->menu = array(
 );
 ?>
 
-<h2 class="sectionHeader">Create <?php echo $role; ?></h2>
-
-<?php
-    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
-?>
-
+<h2 class="sectionHeader">Create Restricted Arena Manager</h2>
 <p class="sectionSubHeaderContent">
-    Use the form below to create a new <b><?php echo $role; ?>:</b>
-    <?php echo $description ?>
+    Use the form below to create a Restricted Arena Manager. This user can
+    perform all actions except for creating additional managers.
 </p>
 <?php
     $this->renderPartial(
