@@ -85,27 +85,57 @@ class UserController extends Controller
      */
     public function actionCreate($role, $arenaId = null)
     {
-        $model = new User;
-        $profile = new Profile;
-        
-        $roles = Yii::app()->authManager->getRoles();
-        $roleKeys = array_keys($roles);
-        
-        if(!in_array($role, $roleKeys) || (isset($arenaId) && $arenaId <= 0)) {
-            throw new CHttpException(
-                    400,
-                    'Bad request. The parameters are invalid!'
-            );
-        }
-        
-        $description = $roles[$role]->description;
-        $user = $this->loadModel(Yii::app()->user->id);
         $arena = (isset($arenaId) && $arenaId > 0) ? Arena::model()->findByPk($arenaId) : null;
         
-        if(Yii::app()->user->checkAccess('createUser', array('user' => $user, 'arena' => $arena, 'role' => $role))) {
+        if(Yii::app()->user->checkAccess('createUser', array('arena' => $arena, 'role' => $role))) {
+            $roles = Yii::app()->authManager->getRoles();
+            $roleKeys = array_keys($roles);
+        
+            if(!in_array($role, $roleKeys) || (isset($arenaId) && $arenaId <= 0)) {
+                throw new CHttpException(
+                        400,
+                        'Bad request. The parameters are invalid!'
+                );
+            }
+        
+            // Arena should only be specified if we are creating a Manager
+            // or Restricted Manager
+            if($role != 'Manager' && $role != 'RestrictedManager' && $arenaId !== null) {
+                throw new CHttpException(
+                        400,
+                        'Bad request. Only Arena Managers and Restricted Arena Managers can be assigned to an Arena'
+                );
+            }
+
+            $model = new User;
+            $profile = new Profile;
+            
             // Uncomment the following line if AJAX validation is needed
             $this->performAjaxValidation($model, $profile);
 
+            switch($role) {
+                case 'ApplicationAdministrator':
+                    $displayRole = 'Application Administrator';
+                    break;
+                case 'Administrator':
+                    $displayRole = 'Site Administrator';
+                    break;
+                case 'Manager':
+                    $displayRole = 'Arena Manager';
+                    break;
+                case 'RestrictedManager':
+                    $displayRole = 'Restricted Arena Manager';
+                    break;
+                case 'User':
+                    $displayRole = 'Site User';
+                    break;
+                default:
+                    $displayRole = 'Unknown Role';
+                    break;
+            }
+        
+            $description = $roles[$role]->description;
+        
             if(isset($_POST['User'])) {
                 $model->attributes = $_POST['User'];
                 $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
@@ -121,6 +151,10 @@ class UserController extends Controller
                         $profile->user_id = $model->id;
                         $profile->save();
                         $profile->postRegisterNewUser();
+                        
+                        if($arena !== null) {
+                            $arena->assignUser($model->id);
+                        }
                     
                         $emailSent = $this->sendNewUserEmail($model);
                     
@@ -139,11 +173,14 @@ class UserController extends Controller
                                 $message
                         );
                         
-                        // Reset the models!
-                        $model->unsetAttributes();
-                        unset($model->passwordSave);
-                        unset($model->passwordRepeat);
-                        $profile->unsetAttributes();
+                        // Do not completely reset the models!
+                        // Allows many users to be created quickly!
+                        $model->username = '';
+                        $model->email = '';
+                        $model->passwordSave = '';
+                        $model->passwordRepeat = '';
+                        $profile->first_name = '';
+                        $profile->last_name = '';
                     }
                 } else {
                     $profile->validate();
@@ -156,6 +193,8 @@ class UserController extends Controller
                         'model' => $model,
                         'profile' => $profile,
                         'role' => $role,
+                        'arena' => $arena,
+                        'displayRole' => $displayRole,
                         'description' => $description,
                     )
             );
@@ -393,7 +432,7 @@ class UserController extends Controller
         
         $to = array($user->email => $user->fullName);
 
-        $subject = 'Welcome ' . CHtml::encode($user->fullName) . ' to ' . CHtml::encode(Yii::app()->name . '(Account Information Enclosed)');
+        $subject = 'Welcome ' . CHtml::encode($user->fullName) . ' to ' . CHtml::encode(Yii::app()->name . ' (Account Information Enclosed)');
         
         $mailSent = Yii::app()->sendMail(
                 '',

@@ -187,4 +187,63 @@ class Arena extends RinkfinderActiveRecord
 	{
 		return parent::model($className);
 	}
+        
+    /**
+     * Checks if the passed in user is assigned to the arena.
+     * @param integer $uid The id of the user to check.
+     * @return boolean True if the user is already assigned to the arena.
+     */
+    public function isUserAssigned($uid)
+    {
+        Yii::trace(
+                'isUserAssigned()',
+                'application.models.Arena'
+        );
+        
+        $sql = "SELECT user_id FROM arena_user_assignment ";
+        $sql .= "WHERE arena_id = :arenaId AND user_id = :userId";
+
+        $command = Yii::app()->db->createCommand($sql);
+		
+        $command->bindValue(
+                ':arenaId',
+                $this->id,
+                PDO::PARAM_INT
+        );
+
+        $command->bindValue(
+                ':userId',
+                $uid,
+                PDO::PARAM_INT
+        );
+
+        return $command->execute() == 1;
+    }
+    
+    /**
+     * Assigns the user to the arena.
+     * @param integer $uid The id of the user to be assigned.
+     * @return boolean True if the user has been assigned to the arena.
+     */
+    public function assignUser($uid)
+    {
+        Yii::trace(
+                'assignUser()',
+                'application.models.Arena'
+        );
+        
+        $command = Yii::app()->db->createCommand();
+        
+        return $command->insert(
+                'arena_user_assignment',
+                array(
+                    'user_id' => $uid,
+                    'arena_id' => $this->id,
+                    'created_by_id' => Yii::app()->user->id,
+                    'updated_by_id' => Yii::app()->user->id,
+                    'created_on' => new CDbExpression('NOW()'),
+                    'updated_on' => new CDbExpression('NOW()'),
+                )
+        ) == 1;
+    }
 }

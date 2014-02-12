@@ -2,6 +2,8 @@
     /* @var $this UserController */
     /* @var $model User */
     /* @var $profile Profile */
+    /* @var $arena Arena */
+    /* @var $role string */
     /* @var $form TbActiveForm */
 ?>
 
