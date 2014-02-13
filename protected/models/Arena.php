@@ -246,4 +246,28 @@ class Arena extends RinkfinderActiveRecord
                 )
         ) == 1;
     }
+    
+    /**
+     * Removes the user from the arena.
+     * @param integer $uid The id of the user to be removed.
+     * @return boolean True if the user has been removed from the arena.
+     */
+    public function removeUser($uid)
+    {
+        Yii::trace(
+                'removeUser()',
+                'application.models.Arena'
+        );
+        
+        $command = Yii::app()->db->createCommand();
+        
+        return $command->delete(
+                'arena_user_assignment',
+                'user_id = :userId AND arena_id = :arenaId',
+                array(
+                    ':userId' => $uid,
+                    ':arenaId' => $this->id
+                )
+        ) == 1;
+    }
 }
