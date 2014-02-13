@@ -906,4 +906,51 @@ class User extends RinkfinderActiveRecord
         
         return $this->saveAttributes($attributes);
     }
+    
+    /**
+     * Removes the user from all arenas.
+     * @return integer The number of arenas the user has been removed from.
+     */
+    public function removeUserFromAllArenas()
+    {
+        Yii::trace(
+                'removeUserFromAllArenas()',
+                'application.models.User'
+        );
+        
+        $command = Yii::app()->db->createCommand();
+        
+        return $command->delete(
+                'arena_user_assignment',
+                'user_id = :userId',
+                array(
+                    ':userId' => $this->id,
+                )
+        );
+    }
+    
+    /**
+     * Assigns the user to multiple arenas.
+     * @param integer[] An array of Arena ids
+     * @return boolean The number of arenas the user has been assigned to.
+     */
+    public function assignUserToMultipleArenas($arenaIds)
+    {
+        $insertArray = array();
+        
+        foreach($array as $value) {
+            $insertArray[] = array(
+                'user_id' => $this->id,
+                'arena_id' => $value
+            );
+        }
+        
+        $builder = Yii::app()->db->schema->commandBuilder;
+        $command = $builder->createMultipleInsertCommand(
+                'arena_user_assignment',
+                $insertArray
+        );
+        
+        return $command->execute();
+    }
 }

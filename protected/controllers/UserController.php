@@ -446,4 +446,44 @@ class UserController extends Controller
         return $mailSent;
     }
     
+    public function buildBreadcrumbs($action, $displayRole, $arena = null)
+    {
+        switch($action) {
+            case 'create':
+                if($arena !== null) {
+                    $this->breadcrumbs = array(
+                        'Arena Management' => array(
+                            'arenaManagement/index'
+                        ),
+                        CHtml::encode($arena->name) => array(
+                            'arenaManagement/arenas/view',
+                            'aid' => $arena->id,
+                        ),
+                        'Managers' => array(
+                            'arenaManagement/managers/index',
+                            'aid' => $arena->id,
+                        ),
+                        'Create '. $displayRole,
+                    );
+                } else {
+                    $this->breadcrumbs = array(
+                        'Administration' => array(
+                            '/admin',
+                        ),
+                        'Users' => array(
+                            '/admin/users',
+                        ),
+                        'Create '. $displayRole,
+                    );
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    public function buildMenu($action, $arena = null)
+    {
+        
+    }
 }

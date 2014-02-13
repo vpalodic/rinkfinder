@@ -9,10 +9,7 @@
 ?>
 
 <?php
-$this->breadcrumbs = array(
-	'Users' => array('index'),
-	'Create ' . $displayRole,
-);
+    $this->buildBreadcrumbs('create', $displayRole, $arena);
 
 $this->menu = array(
 	array('label' => 'List User', 'url' => array('index')),
