@@ -8,16 +8,17 @@ class ArenaController extends Controller
 	 */
 	public $layout='//layouts/column2';
 
-	/**
-	 * @return array action filters
-	 */
-	public function filters()
-	{
-		return array(
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-		);
-	}
+    /**
+     * @return array action filters
+     */
+    public function filters()
+    {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+            'postOnly + delete', // we only allow deletion via POST request
+            'ajaxOnly + uploadArenasFile', // we only upload files via ajax!
+        );
+    }
 
 	/**
 	 * Specifies the access control rules.
@@ -32,7 +33,7 @@ class ArenaController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update'),
+				'actions'=>array('create','update', 'uploadArenas', 'uploadArenasFile'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -150,6 +151,47 @@ class ArenaController extends Controller
 		));
 	}
 
+	/**
+	 * Manages all models.
+	 */
+    public function actionUploadArenas()
+    {
+        $model = new ArenaUploadForm();
+                
+        $model->unsetAttributes();  // clear any default values
+		
+        if(isset($_POST['ArenaUploadForm'])) {
+            $model->attributes = $_POST['ArenaUploadForm'];
+        }
+
+        $this->render(
+                'uploadArenas',
+                array(
+                    'model' => $model,
+                )
+        );
+    }
+
+    public function actionUploadArenasFile()
+    {
+        // Here we define the paths where the files will be stored temporarily
+//        $path = realpath(dirname(Yii::app()->request->scriptFile) . Yii::app()->params['uploads']) . DIRECTORY_SEPARATOR;
+//        $publicPath = Yii::app()->getBaseUrl() . Yii::app()->params['uploads'] . "/";
+
+        // This is for IE which doens't handle 'Content-type: application/json' correctly
+        header('Vary: Accept');
+        if(isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+            header('Content-type: application/json');
+        } else {
+            header('Content-type: text/plain');
+        }
+        
+        echo json_encode(
+                array(
+                    "success" => true,
+                )
+        );        
+    }
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.
 	 * If the data model is not found, an HTTP exception will be raised.

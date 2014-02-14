@@ -1960,7 +1960,7 @@ qq.FineUploaderBasic.prototype = {
                 this._autoRetries[id] = 0;
             }
 
-            return this._autoRetries[id] < this._options.retry.maxAutoAttempts
+            return this._autoRetries[id] < this._options.retry.maxAutoAttempts;
         }
 
         return false;
