@@ -9,6 +9,13 @@
         'Upload Arenas'
     );
 ?>
+<?php
+    Yii::app()->clientScript->registerScript(
+            'uploadArenaCSVComplete',
+            '$("#ArenaUploadForm_fileName").on("complete", function(event, id, name, response, xhr) { alert(response); });',
+            CClientScript::POS_READY
+    );
+?>
 
 <h2 class="sectionHeader">Upload Arenas</h2>
 
@@ -41,9 +48,9 @@ Click the button below to select a CSV file that contains the arenas you wish to
                             'dragAndDrop' => array(
                                 'disableDefaultDropzone' => true,
                             ),
-                            'callbacks' => array(
-                                'onComplete' => 'function(id, fileName, response) { alert(response); }',
-                            ),
+//                            'callbacks' => array(
+//                                'onComplete' => new CJavaScriptExpression('function(id, name, responseJSON, xhr) { alert(response); }'),
+//                            ),
                             'text' => array(
                                 'uploadButton' => 'Select File',
                             ),
@@ -54,9 +61,6 @@ Click the button below to select a CSV file that contains the arenas you wish to
                                 'buttonHover' => '',
                                 'buttonFocus' => '',
                             )
-//                            'validation' => array(
-//                                'allowedExtensions' => array('csv')
-//                            )
                         ),
                         'htmlOptions' => array(
                             'class' => 'span5', //'btn btn-primary btn-large',
