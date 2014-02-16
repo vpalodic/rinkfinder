@@ -6,7 +6,7 @@ class ArenaController extends Controller
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-	public $layout='//layouts/column2';
+	public $layout='//layouts/column1';
 
     /**
      * @return array action filters
@@ -164,6 +164,10 @@ class ArenaController extends Controller
             $model->attributes = $_POST['ArenaUploadForm'];
         }
 
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        Yii::app()->clientScript->registerScriptFile($path.'/uploadArenas.js');
+        
         $this->render(
                 'uploadArenas',
                 array(
@@ -186,11 +190,132 @@ class ArenaController extends Controller
             header('Content-type: text/plain');
         }
         
-        echo json_encode(
-                array(
-                    "success" => true,
-                )
-        );        
+        $model = new ArenaUploadForm();
+        
+        $file = CUploadedFile::getInstance($model, 'fileName');
+        
+        if($file !== null) {
+            // The file has been uploaded.
+            // We need to save it so we can process it later!
+            $uploadDir = Yii::app()->params['uploads']['path'];
+            $uploadDir .= DIRECTORY_SEPARATOR;
+            $uploadDir .= Yii::app()->params['uploads']['directory'];
+            
+            // Each user gets it's own directory
+            $uploadDir .= DIRECTORY_SEPARATOR;
+            $uploadDir .= (string)Yii::app()->user->id;
+
+            // Each type gets it's own subdirectory
+            $uploadDir .= DIRECTORY_SEPARATOR;
+            $uploadDir .= (string)FileUpload::TYPE_ARENA_CSV;
+            
+            // Check if the path exists. If it doesn't, then create it!
+            if(!file_exists($uploadDir)) {
+                // Attempt to create the directory path
+                if(!mkdir($uploadDir, 0777, true)) {
+                    // Something went horribly wrong!
+                    echo json_encode(
+                            array(
+                                'success' => false,
+                                'error' => 'Failed to create upload path: ' . $uploadDir,
+                            )
+                    );
+                    
+                    Yii::app()->end(1);
+                }
+            }
+            
+            // Our path is valid, now we must save our temp file to it!
+            $uploadFile = $uploadDir . DIRECTORY_SEPARATOR;
+            $uploadFile .= $file->getName();
+            
+            // Check for an existing record
+            $fileUpload = FileUpload::model()->find(
+                    'upload_type_id = :upload_type_id AND name = :name',
+                    array(
+                        ':upload_type_id' => FileUpload::TYPE_ARENA_CSV,
+                        ':name' => $file->getName()
+                    )
+            );
+
+            if($fileUpload !== null) {
+                // Ok, we have an existing record, so we abort!
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'File already has been uploaded: ' . $uploadFile,
+                        )
+                );
+                    
+               Yii::app()->end();
+            }
+            
+            // Ok, we can safely save off the file!
+            if(!$file->saveAs($uploadFile)) {
+                // Something went horribly wrong!!!
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Unable to save the temp file to the filesystem: ' . $uploadFile,
+                        )
+                );
+                    
+                Yii::app()->end(1);
+            }
+            
+            // File has been saved, now we make a record of it!!
+            $fileUpload = new FileUpload();
+            $fileUpload->upload_type_id = FileUpload::TYPE_ARENA_CSV;
+            $fileUpload->user_id = Yii::app()->user->id;
+            $fileUpload->name = $file->getName();
+            $fileUpload->path = $uploadDir;
+            $fileUpload->extension = $file->getExtensionName();
+            $fileUpload->mime_type = $file->getType();
+            $fileUpload->size = $file->getSize();
+            $fileUpload->error_code = $file->getError();
+
+            if(!$fileUpload->save()) {
+                // Something went horribly wrong!!!
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Unable to save file details to the database: ' . $uploadDir,
+                        )
+                );
+                    
+                Yii::app()->end(1);
+            }
+            
+            // We are ready to process the file so let the UI know that we are ready for it!
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'fileUpload' => array(
+                            'uploadType' => FileUpload::itemAlias('UploadType', $fileUpload->upload_type_id),
+                            'id' => (integer)$fileUpload->id,
+                            'user' => Yii::app()->user->fullName,
+                            'name' => $fileUpload->name,
+                            'path' => $fileUpload->path,
+                            'extension' => $fileUpload->extension,
+                            'mimeType' => $fileUpload->mime_type,
+                            'size' => (integer)$fileUpload->size,
+                            'errorCode' => (integer)$fileUpload->error_code,
+                        ),
+                    )
+            );
+            
+            Yii::app()->end();
+        } else {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Failed to retrieve uploaded file.',
+                    )
+            );
+            
+            Yii::app()->end(1);
+        }
     }
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.

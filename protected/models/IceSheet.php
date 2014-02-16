@@ -28,6 +28,7 @@
  *
  * The followings are the available model relations:
  * @property Event[] $events
+ * @property FileUpload[] $fileUploads
  * @property Arena $arena
  * @property IceSheetType $type
  * @property IceSheetStatus $status
@@ -65,22 +66,61 @@ class IceSheet extends RinkfinderActiveRecord
 		);
 	}
 
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array(
-			'events' => array(self::HAS_MANY, 'Event', 'ice_sheet_id'),
-			'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
-			'type' => array(self::BELONGS_TO, 'IceSheetType', 'type_id'),
-			'status' => array(self::BELONGS_TO, 'IceSheetStatus', 'status_id'),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-		);
-	}
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        // NOTE: you may need to adjust the relation name and the related
+        // class name for the relations automatically generated below.
+        return array(
+            'events' => array(
+                self::HAS_MANY,
+                'Event',
+                'ice_sheet_id'
+            ),
+            'fileUploads' => array(
+                self::HAS_MANY,
+                'FileUpload',
+                'ice_sheet_id'
+            ),
+            'arena' => array(
+                self::BELONGS_TO,
+                'Arena',
+                'arena_id'
+            ),
+            'type' => array(
+                self::BELONGS_TO,
+                'IceSheetType',
+                'type_id'
+            ),
+            'status' => array(
+                self::BELONGS_TO,
+                'IceSheetStatus',
+                'status_id'
+            ),
+            'createdBy' => array(
+                self::BELONGS_TO,
+                'User',
+                'created_by_id',
+                'select' => array(
+                    'id',
+                    'username',
+                    'status_id',
+                ),
+            ),
+            'updatedBy' => array(
+                self::BELONGS_TO,
+                'User',
+                'updated_by_id',
+                'select' => array(
+                    'id',
+                    'username',
+                    'status_id',
+                ),
+            ),
+        );
+    }
 
 	/**
 	 * @return array customized attribute labels (name=>label)

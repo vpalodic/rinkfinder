@@ -2,3 +2,4 @@ runtime/
 www/assets/
 protected/config/
 nbproject/private/
+/www/uploads/

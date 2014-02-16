@@ -23,7 +23,7 @@ class m140120_065309_create_arena_reservation_policy_table extends CDbMigration
         $this->createTable('arena_reservation_policy', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
                 'arena_id' => 'INT(11) NOT NULL',
-                'days' => 'VARCHAR( 64 ) NOT NULL DEFAULT \'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday\'',
+                'days' => 'VARCHAR( 64 ) NOT NULL DEFAULT \'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday\'',
                 'cutoff_time' => 'TIME NULL',
                 'cutoff_day' => 'VARCHAR(16) NULL',
                 'notes' => 'TEXT NULL',

@@ -25,6 +25,7 @@
  * @property EventRequest[] $eventRequestsAcknowledged
  * @property EventRequest[] $eventRequestsAccepted
  * @property EventRequest[] $eventRequestsRejected
+ * @property FileUpload[] $fileUploads
  * @property Profile $profile
  * @property Reservation[] $reservations
  * @property User $createdBy
@@ -241,6 +242,11 @@ class User extends RinkfinderActiveRecord
                 self::HAS_MANY,
                 'EventRequest',
                 'rejector_id',
+            ),
+            'fileUploads' => array(
+                self::HAS_MANY,
+                'FileUpload',
+                'user_id'
             ),
             'profile' => array(
                 self::HAS_ONE,
@@ -558,7 +564,7 @@ class User extends RinkfinderActiveRecord
             $this->status_id == self::STATUS_ACTIVE ||
             $this->status_id == self::STATUS_RESET ||
             $this->status_id == self::STATUS_INACTIVE) &&
-           $this->failed_logins > Yii::app()->params['failedLoginsLimit']) {
+           $this->failed_logins > Yii::app()->params['user']['failedLoginsLimit']) {
             // Lock the user account!
             $this->status_id = self::STATUS_LOCKED;
             return true;
@@ -612,7 +618,7 @@ class User extends RinkfinderActiveRecord
             $this->status_id == self::STATUS_LOCKED ||
             $this->status_id == self::STATUS_RESET ||
             $this->status_id == self::STATUS_INACTIVE) &&
-           $dtiDays->days > Yii::app()->params['daysSinceLastVisitLimit']) {
+           $dtiDays->days > Yii::app()->params['user']['daysSinceLastVisitLimit']) {
             // Mark the user account inactive!
             $this->status_id = self::STATUS_INACTIVE;
             return true;

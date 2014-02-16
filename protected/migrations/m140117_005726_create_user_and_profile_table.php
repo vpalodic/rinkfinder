@@ -15,7 +15,6 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
     public function safeDown()
     {
         $this->dropProfileFieldTable();
-        $this->deleteSiteAdministrator();
         $this->dropProfileTable();
         $this->dropUserTable();
     }
@@ -565,17 +564,6 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         );
     }
     
-    private function deleteSiteAdministrator()
-    {
-        $this->delete('profile', 'user_id = :id', array(':id' => 1));
-        
-        // Must drop the Foreign Key constraints on the user and user_status tables!!!
-        $this->dropForeignKey('user_created_by_id_fk', 'user');
-        $this->dropForeignKey('user_updated_by_id_fk', 'user');
-        
-        $this->delete('user', 'id = :id', array(':id' => 1));
-    }
-    
     private function dropProfileFieldTable()
     {
         // First drop the Foreign Keys!
@@ -601,6 +589,10 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
     
     private function dropUserTable()
     {
+        // Must drop the Foreign Key constraints on the user table!!!
+        $this->dropForeignKey('user_created_by_id_fk', 'user');
+        $this->dropForeignKey('user_updated_by_id_fk', 'user');
+
         // At this point their should be no Foreign Keys
         // So truncate and drop the table
         $this->truncateTable('user');
