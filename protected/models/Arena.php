@@ -281,6 +281,34 @@ class Arena extends RinkfinderActiveRecord
     }
         
     /**
+     * Returns an array of attributes that can be imported
+     * @return string[] the array of attributes
+     */
+    public static function getImportAttributes()
+    {
+        return array(
+            'external_id' => 'External ID',
+            'name' => 'Name *',
+            'address_line1' => 'Address Line1 *',
+            'address_line2' => 'Address Line2',
+            'city' => 'City *',
+            'state' => 'State *',
+            'zip' => 'Zip *',
+            'lat' => 'Lattitude',
+            'lng' => 'Longitude',
+            'phone' => 'Phone',
+            'ext' => 'Ext',
+            'fax' => 'Fax',
+            'fax_ext' => 'Fax Ext',
+            'url' => 'Url',
+            'description' => 'Description',
+            'tags' => 'Tags',
+            'notes' => 'Notes',
+            'status_id' => 'Status',
+        );
+    }
+
+    /**
      * Checks if the passed in user is assigned to the arena.
      * @param integer $uid The id of the user to check.
      * @return boolean True if the user is already assigned to the arena.

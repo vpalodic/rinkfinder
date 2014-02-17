@@ -1623,7 +1623,7 @@ qq.FineUploaderBasic = function (o) {
             },
             onProgress: function (id, fileName, loaded, total) {
             },
-            onError: function (id, fileName, reason) {
+            onError: function (id, fileName, reason, xhr) {
             },
             onAutoRetry: function (id, fileName, attemptNumber) {
             },
@@ -1991,11 +1991,11 @@ qq.FineUploaderBasic.prototype = {
         //assuming no one will actually set the response code to something other than 200 and still set 'success' to true
         if (!response.success) {
             if (xhr && xhr.status !== 200 && !response.error) {
-                this._options.callbacks.onError(id, fileName, "XHR returned response code " + xhr.status);
+                this._options.callbacks.onError(id, fileName, "XHR returned response code " + xhr.status, xhr);
             }
             else {
                 var errorReason = response.error ? response.error : "Upload failure reason unknown";
-                this._options.callbacks.onError(id, fileName, errorReason);
+                this._options.callbacks.onError(id, fileName, errorReason, xhr);
             }
         }
     },
@@ -2086,7 +2086,7 @@ qq.FineUploaderBasic.prototype = {
         r('{sizeLimit}', this._formatSize(this._options.validation.sizeLimit));
         r('{minSizeLimit}', this._formatSize(this._options.validation.minSizeLimit));
 
-        this._options.callbacks.onError(null, fileName, message);
+        this._options.callbacks.onError(null, fileName, message, null);
 
         return message;
     },

@@ -16,35 +16,59 @@ class ArenaController extends Controller
         return array(
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
-            'ajaxOnly + uploadArenasFile', // we only upload files via ajax!
+            'ajaxOnly + uploadArenasFile actionUploadArenasFileDelete', // we only upload and delete files via ajax!
         );
     }
 
-	/**
-	 * Specifies the access control rules.
-	 * This method is used by the 'accessControl' filter.
-	 * @return array access control rules
-	 */
-	public function accessRules()
-	{
-		return array(
-			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('index','view'),
-				'users'=>array('*'),
-			),
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update', 'uploadArenas', 'uploadArenasFile'),
-				'users'=>array('@'),
-			),
-			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('admin','delete'),
-				'users'=>array('admin'),
-			),
-			array('deny',  // deny all users
-				'users'=>array('*'),
-			),
-		);
-	}
+    /**
+     * Specifies the access control rules.
+     * This method is used by the 'accessControl' filter.
+     * @return array access control rules
+     */
+    public function accessRules()
+    {
+        return array(
+            array(
+                'allow',  // allow all users to perform 'index' and 'view' actions
+                'actions' => array(
+                    'index',
+                    'view'
+                ),
+                'users' => array(
+                    '*'
+                ),
+            ),
+            array(
+                'allow', // allow authenticated user to perform 'create' and 'update' actions
+                'actions' => array(
+                    'create',
+                    'update',
+                    'uploadArenas',
+                    'uploadArenasFile',
+                    'uploadArenasFileDelete',
+                ),
+                'users' => array(
+                    '@'
+                ),
+            ),
+            array(
+                'allow', // allow admin user to perform 'admin' and 'delete' actions
+                'actions' => array(
+                    'admin',
+                    'delete'
+                ),                
+                'users' => array(
+                    'admin'
+                ),
+            ),
+            array(
+                'deny',  // deny all users
+                'users' => array(
+                    '*'
+                ),
+            ),
+        );
+    }
 
 	/**
 	 * Displays a particular model.
@@ -178,170 +202,210 @@ class ArenaController extends Controller
 
     public function actionUploadArenasFile()
     {
-        // Here we define the paths where the files will be stored temporarily
-//        $path = realpath(dirname(Yii::app()->request->scriptFile) . Yii::app()->params['uploads']) . DIRECTORY_SEPARATOR;
-//        $publicPath = Yii::app()->getBaseUrl() . Yii::app()->params['uploads'] . "/";
+        $this->sendJSONHeaders();
+        
+        $model = new ArenaUploadForm();
+        
+        $instanceRetrieved = $model->getUploadFileInstance();
+        
+        if($instanceRetrieved !== true) {
+            echo $instanceRetrieved;
+            Yii::app()->end();
+        }
+        
+        // The file has been uploaded.
+        // Before we save it off, validate with what the uploader sent
+        $model->fileSize = isset($_GET['qqtotalfilesize']) ? (integer)$_GET['qqtotalfilesize'] : 0;
+        $model->fileName = isset($_GET['ArenaUploadForm']['fileName']) ? $_GET['ArenaUploadForm']['fileName'] : '';
 
+        $isValid = $model->isValidUploadedFile();
+            
+        if($isValid !== true) {
+            // What was suppose to be uploaded doesn't match what we got
+            echo $isValid;                
+            Yii::app()->end();
+        }
+
+        $isDirPrepared = $model->prepareUploadDirectory(
+                FileUpload::TYPE_ARENA_CSV,
+                Yii::app()->user->id
+        );
+
+        if($isDirPrepared !== true) {
+            // Unable to prepare the upload directory
+            echo $isDirPrepared;                
+            Yii::app()->end();
+        }
+
+        $hasExistingRecord = $model->getHasFileRecord(
+                $this->createUrl('arena/uploadArenasFileDelete')
+        );
+            
+        if($hasExistingRecord !== false) {
+            // Ok, we have an existing record, so we abort!
+            echo $hasExistingRecord;                    
+            Yii::app()->end();
+        }
+
+        // We need to save it so we can process it later!
+        // Our path is valid, now we must save our temp file to it!
+        $fileSaved = $model->saveUploadedFile();
+            
+        // Ok, we can safely save off the file!
+        if($fileSaved !== true) {
+            // Something went horribly wrong!!!
+            echo $fileSaved;                    
+            Yii::app()->end();
+        }
+
+        // File has been saved, now we make a record of it!!
+        $fileRecordSaved = $model->saveUploadedFileRecord();
+
+        if($fileRecordSaved !== true) {
+            // Something went horribly wrong!!!
+            echo $fileRecordSaved;
+            Yii::app()->end();
+        }
+
+        // We are ready to process the file so let the UI know that we are ready for it!
+        echo $model->getJsonSuccessResponse(
+                $this->createUrl('arena/uploadArenasFileDelete')
+        );
+        Yii::app()->end();
+    }
+    
+    public function actionUploadArenasFileDelete()
+    {
+        $this->sendJSONHeaders();
+        
+        $isDeleteMethod = $this->isDeleteMethod();
+        
+        // This needs to come through as an actual DELETE request!!!
+        if($isDeleteMethod !== true) {
+            echo $isDeleteMethod;
+            Yii::app()->end();
+        }
+        
+        $paramstr =  $this->getParamsFromPhp();
+
+        if($paramstr === false) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Unable to read the parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // explode the parameters!
+        parse_str($paramstr);
+        
+        // We expect the database id of the file_upload record (fid)
+        // to be sent in the delete request. We also expect the file name
+        // (name) to be sent in the delete request.
+
+        if(!isset($fid) || !isset($name)) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Missing expected parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Delete the file and send the response!
+        echo RinkfinderUploadForm::deleteUploadedFile($fid, $name, FileUpload::TYPE_ARENA_CSV);
+        Yii::app()->end();
+    }
+    
+    /**
+     * Returns the data model based on the primary key given in the GET variable.
+     * If the data model is not found, an HTTP exception will be raised.
+     * @param integer $id the ID of the model to be loaded
+     * @return Arena the loaded model
+     * @throws CHttpException
+     */
+    public function loadModel($id)
+    {
+        $model = Arena::model()->findByPk($id);
+
+        if($model === null) {
+            throw new CHttpException(
+                    404,
+                    'The requested page does not exist.'
+            );
+        }
+        
+        return $model;
+    }
+
+    /**
+     * Sends the headers
+     */
+    protected function sendJSONHeaders()
+    {
         // This is for IE which doens't handle 'Content-type: application/json' correctly
         header('Vary: Accept');
         if(isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
             header('Content-type: application/json');
         } else {
             header('Content-type: text/plain');
-        }
-        
-        $model = new ArenaUploadForm();
-        
-        $file = CUploadedFile::getInstance($model, 'fileName');
-        
-        if($file !== null) {
-            // The file has been uploaded.
-            // We need to save it so we can process it later!
-            $uploadDir = Yii::app()->params['uploads']['path'];
-            $uploadDir .= DIRECTORY_SEPARATOR;
-            $uploadDir .= Yii::app()->params['uploads']['directory'];
-            
-            // Each user gets it's own directory
-            $uploadDir .= DIRECTORY_SEPARATOR;
-            $uploadDir .= (string)Yii::app()->user->id;
+        }        
+    }
 
-            // Each type gets it's own subdirectory
-            $uploadDir .= DIRECTORY_SEPARATOR;
-            $uploadDir .= (string)FileUpload::TYPE_ARENA_CSV;
+    /**
+     * Checks that the DELETE method is used
+     * @return mixed true if the DELETE is being used or else
+     * a JSON encoded error string
+     */
+    public function isDeleteMethod()
+    {
+        if(isset($_SERVER['REQUEST_METHOD']) &&
+            strcasecmp($_SERVER['REQUEST_METHOD'], 'DELETE') != 0) {
             
-            // Check if the path exists. If it doesn't, then create it!
-            if(!file_exists($uploadDir)) {
-                // Attempt to create the directory path
-                if(!mkdir($uploadDir, 0777, true)) {
-                    // Something went horribly wrong!
-                    echo json_encode(
-                            array(
-                                'success' => false,
-                                'error' => 'Failed to create upload path: ' . $uploadDir,
-                            )
-                    );
-                    
-                    Yii::app()->end(1);
-                }
-            }
-            
-            // Our path is valid, now we must save our temp file to it!
-            $uploadFile = $uploadDir . DIRECTORY_SEPARATOR;
-            $uploadFile .= $file->getName();
-            
-            // Check for an existing record
-            $fileUpload = FileUpload::model()->find(
-                    'upload_type_id = :upload_type_id AND name = :name',
-                    array(
-                        ':upload_type_id' => FileUpload::TYPE_ARENA_CSV,
-                        ':name' => $file->getName()
-                    )
-            );
-
-            if($fileUpload !== null) {
-                // Ok, we have an existing record, so we abort!
-                echo json_encode(
-                        array(
-                            'success' => false,
-                            'error' => 'File already has been uploaded: ' . $uploadFile,
-                        )
-                );
-                    
-               Yii::app()->end();
-            }
-            
-            // Ok, we can safely save off the file!
-            if(!$file->saveAs($uploadFile)) {
-                // Something went horribly wrong!!!
-                echo json_encode(
-                        array(
-                            'success' => false,
-                            'error' => 'Unable to save the temp file to the filesystem: ' . $uploadFile,
-                        )
-                );
-                    
-                Yii::app()->end(1);
-            }
-            
-            // File has been saved, now we make a record of it!!
-            $fileUpload = new FileUpload();
-            $fileUpload->upload_type_id = FileUpload::TYPE_ARENA_CSV;
-            $fileUpload->user_id = Yii::app()->user->id;
-            $fileUpload->name = $file->getName();
-            $fileUpload->path = $uploadDir;
-            $fileUpload->extension = $file->getExtensionName();
-            $fileUpload->mime_type = $file->getType();
-            $fileUpload->size = $file->getSize();
-            $fileUpload->error_code = $file->getError();
-
-            if(!$fileUpload->save()) {
-                // Something went horribly wrong!!!
-                echo json_encode(
-                        array(
-                            'success' => false,
-                            'error' => 'Unable to save file details to the database: ' . $uploadDir,
-                        )
-                );
-                    
-                Yii::app()->end(1);
-            }
-            
-            // We are ready to process the file so let the UI know that we are ready for it!
-            echo json_encode(
-                    array(
-                        'success' => true,
-                        'error' => false,
-                        'fileUpload' => array(
-                            'uploadType' => FileUpload::itemAlias('UploadType', $fileUpload->upload_type_id),
-                            'id' => (integer)$fileUpload->id,
-                            'user' => Yii::app()->user->fullName,
-                            'name' => $fileUpload->name,
-                            'path' => $fileUpload->path,
-                            'extension' => $fileUpload->extension,
-                            'mimeType' => $fileUpload->mime_type,
-                            'size' => (integer)$fileUpload->size,
-                            'errorCode' => (integer)$fileUpload->error_code,
-                        ),
-                    )
-            );
-            
-            Yii::app()->end();
-        } else {
-            echo json_encode(
+            return json_encode(
                     array(
                         'success' => false,
-                        'error' => 'Failed to retrieve uploaded file.',
+                        'error' => 'Request Method must be DELETE.',
                     )
             );
-            
-            Yii::app()->end(1);
+        }
+        
+        return true;        
+    }
+    
+    /**
+     * Read the request parameters directly for php://input
+     * @return mixed an unparsed string containing the parameters
+     * read from php://input or false if unable to read them
+     */
+    public function getParamsFromPhp()
+    {
+        // We need to read the contents of the DELETE request
+        // via the php://input file
+        if(is_resource('php://input')) {
+            rewind('php://input');
+            // For now just echo!
+            $paramstr =  stream_get_contents('php://input');
+        } else {
+            // For now just echo!
+            $paramstr =  file_get_contents('php://input');
+        }
+        
+        return $paramstr;
+    }
+    
+    /**
+     * Performs the AJAX validation.
+     * @param Arena $model the model to be validated
+     */
+    protected function performAjaxValidation($model)
+    {
+        if(isset($_POST['ajax']) && $_POST['ajax'] === 'arena-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
         }
     }
-	/**
-	 * Returns the data model based on the primary key given in the GET variable.
-	 * If the data model is not found, an HTTP exception will be raised.
-	 * @param integer $id the ID of the model to be loaded
-	 * @return Arena the loaded model
-	 * @throws CHttpException
-	 */
-	public function loadModel($id)
-	{
-		$model=Arena::model()->findByPk($id);
-		if ($model===null) {
-			throw new CHttpException(404,'The requested page does not exist.');
-		}
-		return $model;
-	}
-
-	/**
-	 * Performs the AJAX validation.
-	 * @param Arena $model the model to be validated
-	 */
-	protected function performAjaxValidation($model)
-	{
-		if (isset($_POST['ajax']) && $_POST['ajax']==='arena-form') {
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
-	}
 }

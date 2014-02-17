@@ -11,6 +11,7 @@
  * @property integer $upload_type_id
  * @property string $name
  * @property string $path
+ * @property string $uri
  * @property string $extension
  * @property string $mime_type
  * @property integer $size
@@ -55,7 +56,7 @@ class FileUpload extends RinkfinderActiveRecord
         // will receive user inputs.
         return array(
             array(
-                'user_id, upload_type_id, name, path, extension, mime_type, size',
+                'user_id, upload_type_id, name, path, uri, extension, mime_type, size',
                 'required'
             ),
             array(
@@ -64,9 +65,19 @@ class FileUpload extends RinkfinderActiveRecord
                 'integerOnly' => true
             ),
             array(
-                'name, path',
+                'name',
                 'length',
                 'max' => 255
+            ),
+            array(
+                'path',
+                'length',
+                'max' => 511
+            ),
+            array(
+                'uri',
+                'length',
+                'max' => 766
             ),
             array(
                 'extension',
@@ -81,7 +92,7 @@ class FileUpload extends RinkfinderActiveRecord
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
             array(
-                'id, user_id, arena_id, ice_sheet_id, upload_type_id, name, path, extension, mime_type, size, error_code, lock_version, created_by_id, created_on, updated_by_id, updated_on',
+                'id, user_id, arena_id, ice_sheet_id, upload_type_id, name, path, uri, extension, mime_type, size, error_code, lock_version, created_by_id, created_on, updated_by_id, updated_on',
                 'safe',
                 'on' => 'search'
             ),
@@ -152,6 +163,7 @@ class FileUpload extends RinkfinderActiveRecord
             'upload_type_id' => 'Upload Type',
             'name' => 'File Name',
             'path' => 'File Path',
+            'uri' => 'URI',
             'extension' => 'File Extension',
             'mime_type' => 'File Mime Type',
             'size' => 'File Size',

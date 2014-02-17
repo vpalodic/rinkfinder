@@ -3,11 +3,13 @@
 /**
  * ArenaUploadForm class.
  * ArenaUploadForm is the data structure for keeping
- * upload form data. It is used by the 'upload' action of 'ArenaController'.
+ * upload form data. It is used by the 'uploadArenas' action of 'ArenaController'.
+ *
+ * The following are the additional properties:
+ * @property boolean $emailResults
  */
-class ArenaUploadForm extends CFormModel
+class ArenaUploadForm extends RinkfinderUploadForm
 {
-    public $fileName;
     public $emailResults;
 
     /**
@@ -15,26 +17,25 @@ class ArenaUploadForm extends CFormModel
      */
     public function rules()
     {
-        return array(
-            // fileName is required
-            array(
-                'fileName',
-                'required'
-            ),
+        $baseRules = parent::rules();
+        
+        $newRules = array(
             // fileName has to be a valid file
             array(
                 'fileName',
                 'file',
-                'types' => 'csv',
+                'types' => 'csv, tsv, txt',
                 'safe' => true,
-                'message' => 'Only CSV files may be uploaded'
+                'message' => 'Only CSV, TSV, or TXT files may be uploaded'
             ),
-            // $emailResults needs to be a boolean
+            // emailResults needs to be a boolean
             array(
                 'emailResults',
                 'boolean'
             ),
         );
+        
+        return array_merge($baseRules, $newRules);
     }
 
     /**
@@ -44,9 +45,12 @@ class ArenaUploadForm extends CFormModel
      */
     public function attributeLabels()
     {
-        return array(
-            'fileName' => 'File Name',
+        $baseLabels = parent::attributeLabels();
+        
+        $newLabels = array(
             'emailResults' => 'E-mail the results',
         );
+        
+        return array_merge($baseLabels, $newLabels);
     }
 }
