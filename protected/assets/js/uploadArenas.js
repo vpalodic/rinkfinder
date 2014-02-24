@@ -58,7 +58,8 @@
         this.fileUpload = response.fileUpload;
         this.endpoints.deleteFile = response.deleteFile.endpoint;
         this.endpoints.processFile = response.processFile.endpoint;
-            
+        $("#loadingScreen").html("");
+        
         return true;
     };
     
@@ -84,6 +85,9 @@
                 });
             }
         }
+        
+        $("#loadingScreen").html("");
+        
         return true;
     };
 
@@ -97,7 +101,14 @@
         return true;
     };
     
+    uploadArenas.onUploadRetry = function (event, id, name) {
+        uploadArenas.setLoadingScreen("#loadingScreen");
+        
+        return true;
+    };
+    
     uploadArenas.onUploadButtonClick = function () {
+        uploadArenas.setLoadingScreen("#loadingScreen");
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
@@ -111,6 +122,8 @@
     };
     
     uploadArenas.onDeleteButtonClick = function (response) {
+        uploadArenas.setLoadingScreen("#loadingScreen");
+        
         $.ajax({                        
             url: response.deleteFile.endpoint,
             type: "DELETE",
@@ -122,10 +135,11 @@
                 $("#deleteButton").addClass("disabled");
                 $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");
                 alert("File has been deleted, please retry your upload.");
+                $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                console.log(xhr);
                 alert("Failed to delete the file.\nStatus: " + status + "\nError Thrown: " + errorThrown);
+                $("#loadingScreen").html("");
             }
         });
         return true;
@@ -145,7 +159,7 @@
         
         $("#step2Continue").prop("disabled", true);
         $("#step2Continue").addClass("disabled");
-        $("#arenaUploadStep2").animate({opacity: 1.0}, 100).fadeOut("slow");
+        $("#arenaUploadStep2").hide();
 
         $.ajax({                        
             url: this.endpoints.processFile,
@@ -166,7 +180,7 @@
                 that.tableFields = result.tableFields;
                 that.setupMappingTable("#mappingTable");
                 
-                $("#arenaUploadStep3").animate({opacity: 1.0}, 100).fadeIn("slow");
+                $("#arenaUploadStep3").show();
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
@@ -174,7 +188,7 @@
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
-                $("#arenaUploadStep2").animate({opacity: 1.0}, 100).fadeIn("slow");
+                $("#arenaUploadStep2").show();
                 $("#loadingScreen").html("");
             }
         });
@@ -190,7 +204,7 @@
         
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
-        $("#arenaUploadStep3").animate({opacity: 1.0}, 100).fadeOut("slow");
+        $("#arenaUploadStep3").hide();
         
         
         $.ajax({                        
@@ -210,7 +224,7 @@
             success: function(result, status, xhr) {
                 $("#step4Continue").prop("disabled", false);
                 $("#step4Continue").removeClass("disabled");
-                $("#arenaUploadStep4").animate({opacity: 1.0}, 100).fadeIn("slow");
+                $("#arenaUploadStep4").show();
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
@@ -218,7 +232,7 @@
                 
                 $("#step3Continue").prop("disabled", false);
                 $("#step3Continue").removeClass("disabled");
-                $("#arenaUploadStep3").animate({opacity: 1.0}, 100).fadeIn("slow");
+                $("#arenaUploadStep3").hide();
                 $("#loadingScreen").html("");
             }
         });
@@ -229,8 +243,8 @@
     uploadArenas.onContinueStep4ButtonClick = function () {
         $("#step4Continue").prop("disabled", true);
         $("#step4Continue").addClass("disabled");
-        $("#arenaUploadStep4").animate({opacity: 1.0}, 100).fadeOut("slow");
-        $("#arenaUploadStep5").animate({opacity: 1.0}, 100).fadeIn("slow");
+        $("#arenaUploadStep4").hide();
+        $("#arenaUploadStep5").show();
         return true;
     };
     

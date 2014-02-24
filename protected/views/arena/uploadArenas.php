@@ -39,6 +39,9 @@
             . '$("#ArenaUploadForm_fileName").on("cancel", function (event, id, name) {'
             . '    return uploadArenas.onUploadCancel(event, id, name);'
             . '});'
+            . '$("#ArenaUploadForm_fileName").on("manualRetry", function (event, id, name) {'
+            . '    return uploadArenas.onUploadRetry(event, id, name);'
+            . '});'
             . '$("#ArenaUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {'
             . '    return uploadArenas.onUploadError(event, id, name, errorReason, xhr);'
             . '});',
@@ -52,8 +55,6 @@
     
 </div>
 <div id="arenaUploadStep1" class="row-fluid">
-    <?php echo Yii::app()->getBaseUrl(true) . '/'; ?>
-
     <h3 class="sectionSubHeader">
         Step 1: <h4>Select A File To Upload</h4>
     </h3>
@@ -140,6 +141,11 @@
             3 => '3',
             4 => '4',
             5 => '5',
+            6 => '6',
+            7 => '7',
+            8 => '8',
+            9 => '9',
+            10 => '10',
         );
         echo TbHtml::dropDownListControlGroup(
                 'header-row',
@@ -221,8 +227,12 @@
     Use the drop-down lists to map fields in the CSV file to fields in the Arena table.
     Please remember that fields with a <span class="required">*</span> are required to be mapped.
     A field will automatically be mapped if the field name appears in the CSV header.
+    Data in the CSV file that exceeds the length of the database field will be truncated. Any
+    characters in the data from the CSV file that do not conform to the database field type
+    will be stripped before being imported. For example, for the phone number field, all
+    formatting characters such as () and - will be removed before being imported.
     Please note that you will not be able to continue until all required table fields have
-    been mapped to a CSV field.
+    been mapped to a CSV field. 
     </p>
     <table id="mappingTable" class="items table table-striped table-bordered table-condensed table-hover" style="padding: 0px;">
     </table>

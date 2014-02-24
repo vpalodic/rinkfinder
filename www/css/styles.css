@@ -467,3 +467,9 @@ div.search-form
 .calendar-small em:after {
     right:9px;
 }
+
+#loading {
+    margin: auto;
+    padding: 5px;
+    width: 100px;
+}

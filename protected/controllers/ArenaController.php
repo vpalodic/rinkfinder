@@ -461,31 +461,17 @@ class ArenaController extends Controller
                 $enclosure,
                 $escapeChar
         );
-        /*
-        $csvFile = fopen($fileUpload->path . DIRECTORY_SEPARATOR . $fileUpload->name, 'r');
+
+        $csvFile = $csvImporter->open();
         
-        if($csvFile === false) {
-            echo json_encode(
-                    array(
-                        'success' => false,
-                        'error' => 'Unable to open CSV file for processing',
-                    )
-            );
+        if($csvFile !== true) {
+            echo $csvFile;
             Yii::app()->end();
         }
         
-        // skip any lines
-        $i = 0; 
-        while($i < $skipRows) {
-            fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
-             $i++;
-        }
-        
-        $csvHeaders = fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
-        $csvRow = fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
-        */
         $csvHeader = $csvImporter->getHeader();
         $csvRow = $csvImporter->getRows(1);
+        $csvImporter->close();
         $tableFields = Arena::getImportAttributes();
         
         echo json_encode(
