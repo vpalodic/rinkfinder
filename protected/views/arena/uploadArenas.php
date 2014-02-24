@@ -12,84 +12,35 @@
 <?php
     Yii::app()->clientScript->registerScript(
             'addUploadButton',
-            '$(\'<span>   </span><button id="uploadButton"'
-            . ' class="btn btn-primary btn-large disabled" name="yt0" '
-            . 'type="button">Begin Upload</button>'
-            . '<span>   </span><button id="deleteButton" style="display: none;"'
-            . ' class="btn btn-primary btn-large disabled" name="yt1" '
-            . 'type="button">Delete File</button>\')'
-            . '.insertAfter($(".qq-upload-button"));',
+            'uploadArenas.addUploadAndDeleteButtons();'
+            . '$("#step2Continue").on("click", function () {'
+            . '    return uploadArenas.onContinueStep2ButtonClick();'
+            . '});'
+            . '$("#step3Continue").on("click", function () {'
+            . '    return uploadArenas.onContinueStep3ButtonClick();'
+            . '});'
+            . '$("#step4Continue").on("click", function () {'
+            . '    return uploadArenas.onContinueStep4ButtonClick();'
+            . '});'
+            . '$("#uploadButton").on("click", function () {'
+            . '    return uploadArenas.onUploadButtonClick();'
+            . '});'
+            . 'uploadArenas.baseUrl = "' . Yii::app()->request->baseUrl . '";',
             CClientScript::POS_READY
     );
     Yii::app()->clientScript->registerScript(
             'uploadArenaCSV',
             '$("#ArenaUploadForm_fileName").on("complete", function (event, id, name, response, xhr) {'
-            . '    if (response.success !== true) {'
-            . '    } else {'
-            . '        $("#beginUploadCSV").animate({opacity: 1.0}, 0).fadeOut("fast");'
-            . '        $("#previewUploadCSV").animate({opacity: 1.0}, 0).fadeIn("slow");'
-            . '    }'
+            . '    return uploadArenas.onUploadComplete(event, id, name, response, xhr);'
             . '});'
             . '$("#ArenaUploadForm_fileName").on("submit", function (event, id, name) {'
-            . '    $("#uploadButton").prop("disabled", false);'
-            . '    $("#uploadButton").removeClass("disabled");'
-            . '    if($("#uploadButton").css("display") === "none") {'
-//            . '        $("#uploadButton").animate({opacity: 1.0}, 0).fadeIn("fast");'
-            . '    }'
+            . '    return uploadArenas.onUploadSubmit(event, id, name);'
             . '});'
             . '$("#ArenaUploadForm_fileName").on("cancel", function (event, id, name) {'
-            . '    $("#uploadButton").prop("disabled", true);'
-            . '    if($("#uploadButton").css("display") !== "none") {'
-//            . '        $("#uploadButton").animate({opacity: 1.0}, 0).fadeOut("fast");'
-            . '    }'
-            . '    return true;'
+            . '    return uploadArenas.onUploadCancel(event, id, name);'
             . '});'
             . '$("#ArenaUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {'
-            . '    if(id === null || xhr === null) {'
-            . '        return false;'
-            . '    }'
-            . '    $("#uploadButton").prop("disabled", true);'
-            . '    var response = JSON.parse(xhr.responseText);'
-            . '    console.log(event);'
-            . '    console.log(id);'
-            . '    console.log(name);'
-            . '    console.log(errorReason);'
-            . '    console.log(response);'
-            . ''
-            . '    if(response.existingFile) {'
-            . '        if($("#deleteButton").css("display") === "none") {'
-            . '            $("#deleteButton").prop("disabled", false);'
-            . '            $("#deleteButton").removeClass("disabled");'
-            . '            $("#deleteButton").animate({opacity: 1.0}, 0).fadeIn("fast");'
-            . '        '
-            . '        $("#deleteButton").on("click", function () {'
-            . '            $.ajax({'
-            . '                url: response.deleteFile.endpoint,'
-            . '                type: "DELETE",'
-            . '                dataType: "json",'
-            . '                data: { fid: response.fileUpload.id, name: response.fileUpload.name },'
-            . '                success: function(result, status, xhr) {'
-            . '                    $("#deleteButton").off("click");'
-            . '                    $("#deleteButton").prop("disabled", true);'
-            . '                    $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");'
-            . '                    alert("File has been deleted, please retry your upload.");'
-            . '                },'
-            . '                error: function(xhr, status, errorThrown) {'
-            . '                    console.log(xhr);'
-            . '                }'
-            . '            });'
-            . '        });'
-            . '        }'
-            . '    }'
-            . '    return true;'
-            . '});'
-            . '$("#uploadButton").on("click", function () {'
-            . '    $("#uploadButton").prop("disabled", true);'
-            . '    if($("#uploadButton").css("display") !== "none") {'
-//            . '        $("#uploadButton").animate({opacity: 1.0}, 100).fadeOut("fast");'
-            . '    }'
-            . '    $("#ArenaUploadForm_fileName").fineUploader("uploadStoredFiles");'
-            . '    return true;'
+            . '    return uploadArenas.onUploadError(event, id, name, errorReason, xhr);'
             . '});',
             CClientScript::POS_READY
     );
@@ -97,173 +48,243 @@
 
 <h2 class="sectionHeader">Upload Arenas</h2>
 
-<?php
-    $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
-?>
-
-<?php if(!isset($uploaded) || $uploaded == false) : ?>
-
-<div id="beginUploadCSV" class="row-fluid">
+<div id="loadingScreen" class="row-fluid">
+    
+</div>
+<div id="arenaUploadStep1" class="row-fluid">
     <?php echo Yii::app()->getBaseUrl(true) . '/'; ?>
 
     <h3 class="sectionSubHeader">
-        Step 1:
+        Step 1: <h4>Select A File To Upload</h4>
     </h3>
     <p class="sectionSubHeaderContent">
     Click the button below to select a CSV file that contains the arenas you wish to upload.
     </p>
-
-        <?php
-            $fileWidget = $this->widget(
-                    'yiiwheels.widgets.fineuploader.WhFineUploader',
-                    array(
-                        'model' => $model,
-                        'attribute' => 'fileName',
-                        'uploadAction' => $this->createUrl(
-                                'arena/uploadArenasFile',
-                                array(
-                                    'fine' => 1
-                                )
-                        ),
-                        'pluginOptions' => array(
-                            'debug' => true,
-                            'multiple' => false,
-                            'autoUpload' => false,
-                            'deleteFile' => array(
-                                'enabled' => true,
-                                'endpoint' => $this->createUrl(
-                                        'arena/uploadArenasFileDelete',
-                                        array(
-                                            'fine' => 1
-                                            )
-                                )
-                            ),                                
-                            'dragAndDrop' => array(
-                                'disableDefaultDropzone' => true,
-                            ),
-                            'text' => array(
-                                'uploadButton' => 'Select File',
-                            ),
-                            'failedUploadTextDisplay' => array(
-                                'mode' => 'custom',
-                                'responseProperty' => 'error',
-                                
-                            ),
-                            'retry' => array(
-                                'showButton' => true,
-                                
-                            ),
-                            'template' => '<div class="qq-uploader">'
-                            . '<div class="qq-upload-button btn btn-primary btn-large">'
-                            . '<div>{uploadButtonText}</div></div>'
-                            . '<span class="qq-drop-processing"><span>{dropProcessingText}'
-                            . '</span><span class="qq-drop-processing-spinner"></span>'
-                            . '</span><ul class="qq-upload-list"></ul></div>',
-                            'classes' => array(
-                                'button' => 'qq-upload-button.btn.btn-primary.btn-large',
-                                'success' => 'btn-success',
-                                'buttonHover' => '',
-                                'buttonFocus' => '',
-                            )
-                        ),
-                        'htmlOptions' => array(
-                        ),
-                    ),
-                    true
-            );
-            
-            echo '<div class="control-group">';
-            echo '<div class="controls">';
-            echo $fileWidget;
-            echo TbHtml::error($model, 'fileName');
-            echo '</div>';
-            echo '</div>';
-/*            echo '<div class="control-group">';
-            echo '<div class="controls">';
-            echo TbHtml::button(
-                    'Begin Upload',
-                    array(
-                        'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                        'size' => TbHtml::BUTTON_SIZE_LARGE,
-                        'style' =>  'display:none;',
-                        'id' => 'uploadButton',
-                        'disabled' => true,
-                        )
-            );
-            echo '</div>';
-            echo '</div>';*/
-        ?>
-</div>
-<div id="previewUploadCSV" class="form" style="display: none">
     <?php
-        $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
-                                   array('layout' => TbHtml::FORM_LAYOUT_HORIZONTAL,
-                                         'id' => 'arena-upload-form',
-                                         'enableAjaxValidation' => true,
-                                         'enableClientValidation' => true,
-                                         'clientOptions' => array('validateOnSubmit' => true),
-                                         'htmlOptions' => array('enctype' => 'multipart/form-data')
-                                         ));
-    ?>
-
-    <fieldset>
-        <p class="note">
-            <legend class="help-block">Fields with <span class="required">*</span> are required.</legend>
-        </p>
-        <?php echo $form->errorSummary($model); ?>
-        <?php
-            $htmlOptions = array(
-                        'span' => 5,
-            );
-            
-/*            echo $form->fileFieldControlGroup(
-                    $model,
-                    'fileName',
-                    $htmlOptions
-            );*/
-        ?>
-        <?php
-            $widget = $this->widget(
-                    'yiiwheels.widgets.switch.WhSwitch',
-                    array(
-                        'model' => $model,
-                        'attribute' => 'emailResults',
-                        'onLabel' => 'Yes',
-                        'offLabel' => 'No',
-                        'size' => 'large',
-                        'offColor' => 'warning',
-                        'htmlOptions' => array(
-                        ),
+        $fileWidget = $this->widget(
+                'yiiwheels.widgets.fineuploader.WhFineUploader',
+                array(
+                    'model' => $model,
+                    'attribute' => 'fileName',
+                    'uploadAction' => $this->createUrl(
+                            'arena/uploadArenasFile',
+                            array(
+                            )
                     ),
-                    true
-            );
-            
-            echo '<div class="control-group">';
-            echo '<div class="controls">';
+                    'pluginOptions' => array(
+                        'debug' => false,
+                        'multiple' => false,
+                        'autoUpload' => false,
+                        'deleteFile' => array(
+                            'enabled' => true,
+                            'endpoint' => $this->createUrl(
+                                    'arena/uploadArenasFileDelete',
+                                    array(
+                                        )
+                            )
+                        ),                                
+                        'dragAndDrop' => array(
+                            'disableDefaultDropzone' => true,
+                        ),
+                        'text' => array(
+                            'uploadButton' => 'Select File',
+                        ),
+                        'failedUploadTextDisplay' => array(
+                            'mode' => 'custom',
+                            'responseProperty' => 'error',
+                        ),
+                        'retry' => array(
+                            'showButton' => true,
+                        ),
+                        'template' => '<div class="qq-uploader">'
+                        . '<div class="qq-upload-button btn btn-warning btn-large">'
+                        . '<div>{uploadButtonText}</div></div>'
+                        . '<span class="qq-drop-processing"><span>{dropProcessingText}'
+                        . '</span><span class="qq-drop-processing-spinner"></span>'
+                        . '</span><ul class="qq-upload-list"></ul></div>',
+                        'classes' => array(
+                            'button' => 'qq-upload-button.btn.btn-warning.btn-large',
+                            'success' => 'alert alert-success',
+                            'buttonHover' => '',
+                            'buttonFocus' => '',
+                        )
+                    ),
+                    'htmlOptions' => array(
+                    ),
+                ),
+                true
+        );
+    ?>    
+    <div class="control-group">
+        <div class="controls">
+            <?php
+                echo $fileWidget;
+                echo TbHtml::error($model, 'fileName');
+            ?>
+        </div>
+    </div>
+</div><!-- step 1 -->
+<div id="arenaUploadStep2" class="row-fluid" style="display: none;">
+    <h3 class="sectionSubHeader">
+        Step 2: <h4>Import Settings</h4>
+    </h3>
+    <p class="sectionSubHeaderContent">
+    If you are uploading a standard CSV file with headers as the first row
+    then you can simply click the continue button. Otherwise, please select
+    the options for your file and click the continue button to proceed.
+    </p>
+    <?php
+        $headerArr = array(
+            1 => '1',
+            2 => '2',
+            3 => '3',
+            4 => '4',
+            5 => '5',
+        );
+        echo TbHtml::dropDownListControlGroup(
+                'header-row',
+                1,
+                $headerArr,
+                array(
+                    'span' => 5,
+                    'label' => 'Field headers start on which row?'
+                )
+        );
+    ?>
+    <?php
+        $delimArr = array(
+            ',' => 'Comma (,)',
+            '\t' => 'Tab (    )',
+            ' ' => 'Space ( )',
+            ';' => 'Semi-colon (;)',
+            ':' => 'Colon (:)',
+            '~' => 'Tilda (~)',
+            '^' => 'Carrot (^)',
+        );
+        echo TbHtml::dropDownListControlGroup(
+                'delimiter',
+                ',',
+                $delimArr,
+                array(
+                    'span' => 5,
+                    'label' => 'Fields are separated by?'
+                )
+        );
+    ?>
+    <?php
+        $enclArr = array(
+            '"' => 'Double-quotes (")',
+            '\'' => 'Single-quote (\')',
+            '`' => 'Back-quote (`)',
+            '~' => 'Tilda (~)',
+            '^' => 'Carrot (^)',
+        );
+        echo TbHtml::dropDownListControlGroup(
+                'enclosure',
+                '"',
+                $enclArr,
+                array(
+                    'span' => 5,
+                    'label' => 'Text is enclosed by?'
+                )
+        );
+    ?>
+    <?php
+        $escapeArr = array(
+            '\\' => 'Back-slash (\\)',
+            '/' => 'Forward-slash (/)',
+            '~' => 'Tilda (~)',
+            '^' => 'Carrot (^)',
+        );
+        echo TbHtml::dropDownListControlGroup(
+                'escape-char',
+                '\\',
+                $escapeArr,
+                array('span' => 5,
+                    'label' => 'Special characters are escaped by?'
+                )
+        );
+    ?>
+    <div class="control-group">
+        <div class="controls">
+            <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
+                Continue
+            </button>
+        </div>
+    </div>
+</div><!-- step 2 -->
+<div id="arenaUploadStep3" class="row-fluid" style="display: none;">
+    <h3 class="sectionSubHeader">
+        Step 3: <h4>Import Mappings</h4>
+    </h3>
+    <p class="sectionSubHeaderContent">
+    Use the drop-down lists to map fields in the CSV file to fields in the Arena table.
+    Please remember that fields with a <span class="required">*</span> are required to be mapped.
+    A field will automatically be mapped if the field name appears in the CSV header.
+    Please note that you will not be able to continue until all required table fields have
+    been mapped to a CSV field.
+    </p>
+    <table id="mappingTable" class="items table table-striped table-bordered table-condensed table-hover" style="padding: 0px;">
+    </table>
+    <div class="control-group">
+        <div class="controls">
+            <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
+                Preview Import
+            </button>
+        </div>
+    </div>
+</div><!-- step 3 -->
+<div id="arenaUploadStep4" class="row-fluid" style="display: none;">
+    <h3 class="sectionSubHeader">
+        Step 4: <h4>Import Preview</h4>
+    </h3>
+    <p class="sectionSubHeaderContent">
+    Click the button below to select a CSV file that contains the arenas you wish to upload.
+    </p>
+    <?php
+        $widget = $this->widget(
+                'yiiwheels.widgets.switch.WhSwitch',
+                array(
+                    'model' => $model,
+                    'attribute' => 'emailResults',
+                    'onLabel' => 'Yes',
+                    'offLabel' => 'No',
+                    'size' => 'large',
+                    'offColor' => 'warning',
+                    'htmlOptions' => array(
+                    ),
+                ),
+                true
+        );
+    ?>    
+    <div class="control-group">
+        <div class="controls">
+        <?php
             echo $widget;
-            echo $form->labelEx(
+/*            echo TbHtml::labelEx(
                     $model,
                     'emailResults',
                     array(
-//                        'class' => 'control-label',
                         )
                     );
-            echo $form->error($model, 'emailResults');
-            echo '</div>';
-            echo '</div>';
-        ?>
-    </fieldset>
-    <?php
-        echo TbHtml::formActions(
-                TbHtml::submitButton(
-                        'Submit',
-                        array(
-                            'color' => TbHtml::BUTTON_COLOR_PRIMARY,
-                            'size' => TbHtml::BUTTON_SIZE_LARGE,
-                        )
-                )
-            );
-    ?>
-    <?php $this->endWidget(); ?>
-</div><!-- form -->
-<?php endif; ?>
+            echo TbHtml::error($model, 'emailResults');
+*/        ?>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button id="step4Continue" class="btn btn-primary btn-large disabled" type="button" name="yt3" disabled>
+                Import
+            </button>
+        </div>
+    </div>
+</div><!-- step 4 -->
+<div id="arenaUploadStep5" class="row-fluid" style="display: none;">
+    <h3 class="sectionSubHeader">
+        Step 5: <h4>Import Summary</h4>
+    </h3>
+    <p class="sectionSubHeaderContent">
+    Use the drop-down lists to map fields in the CSV file to fields in the Arena table.
+    Please remember that fields with a <span class="required">*</span> are required.
+    </p>
+</div><!-- step 5 -->

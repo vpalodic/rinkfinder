@@ -16,7 +16,7 @@ class ArenaController extends Controller
         return array(
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
-            'ajaxOnly + uploadArenasFile actionUploadArenasFileDelete', // we only upload and delete files via ajax!
+            'ajaxOnly + uploadArenasFile uploadArenasFileDelete uploadArenasProcessCSV', // we only upload, delete, and process files via ajax!
         );
     }
 
@@ -46,6 +46,7 @@ class ArenaController extends Controller
                     'uploadArenas',
                     'uploadArenasFile',
                     'uploadArenasFileDelete',
+                    'uploadArenasProcessCSV',
                 ),
                 'users' => array(
                     '@'
@@ -190,7 +191,7 @@ class ArenaController extends Controller
 
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
-        Yii::app()->clientScript->registerScriptFile($path.'/uploadArenas.js');
+        Yii::app()->clientScript->registerScriptFile($path . '/uploadArenas.js');
         
         $this->render(
                 'uploadArenas',
@@ -269,7 +270,8 @@ class ArenaController extends Controller
 
         // We are ready to process the file so let the UI know that we are ready for it!
         echo $model->getJsonSuccessResponse(
-                $this->createUrl('arena/uploadArenasFileDelete')
+                $this->createUrl('arena/uploadArenasFileDelete'),
+                $this->createUrl('arena/uploadArenasProcessCSV')
         );
         Yii::app()->end();
     }
@@ -320,6 +322,54 @@ class ArenaController extends Controller
         Yii::app()->end();
     }
     
+    public function actionUploadArenasProcessCSV()
+    {
+        $this->sendJSONHeaders();
+        
+//        $isGetMethod = $this->isGetMethod();
+        
+        // This needs to come through as an actual DELETE request!!!
+//        if($isGetMethod !== true) {
+//            echo $isGetMethod;
+//            Yii::app()->end();
+//        }
+        
+        $step = isset($_GET['step']) ? (integer)$_GET['step'] : null;
+ 
+        if(!isset($step)) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Missing expected parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        switch ($step) {
+            case 2:
+                // This is a request to set the processing options and return
+                // the database fields, the csv header fields, and a preview
+                // row based on the options sent.
+                $this->uploadArenasProcessCSVStep2();
+                break;
+            case 3:
+                $this->uploadArenasProcessCSVStep3();
+                break;
+            case 4:
+                $this->uploadArenasProcessCSVStep4();
+                break;
+            default:
+                echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid step specified.',
+                    )
+                );
+                Yii::app()->end();
+        }
+    }
+    
     /**
      * Returns the data model based on the primary key given in the GET variable.
      * If the data model is not found, an HTTP exception will be raised.
@@ -342,62 +392,6 @@ class ArenaController extends Controller
     }
 
     /**
-     * Sends the headers
-     */
-    protected function sendJSONHeaders()
-    {
-        // This is for IE which doens't handle 'Content-type: application/json' correctly
-        header('Vary: Accept');
-        if(isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-            header('Content-type: application/json');
-        } else {
-            header('Content-type: text/plain');
-        }        
-    }
-
-    /**
-     * Checks that the DELETE method is used
-     * @return mixed true if the DELETE is being used or else
-     * a JSON encoded error string
-     */
-    public function isDeleteMethod()
-    {
-        if(isset($_SERVER['REQUEST_METHOD']) &&
-            strcasecmp($_SERVER['REQUEST_METHOD'], 'DELETE') != 0) {
-            
-            return json_encode(
-                    array(
-                        'success' => false,
-                        'error' => 'Request Method must be DELETE.',
-                    )
-            );
-        }
-        
-        return true;        
-    }
-    
-    /**
-     * Read the request parameters directly for php://input
-     * @return mixed an unparsed string containing the parameters
-     * read from php://input or false if unable to read them
-     */
-    public function getParamsFromPhp()
-    {
-        // We need to read the contents of the DELETE request
-        // via the php://input file
-        if(is_resource('php://input')) {
-            rewind('php://input');
-            // For now just echo!
-            $paramstr =  stream_get_contents('php://input');
-        } else {
-            // For now just echo!
-            $paramstr =  file_get_contents('php://input');
-        }
-        
-        return $paramstr;
-    }
-    
-    /**
      * Performs the AJAX validation.
      * @param Arena $model the model to be validated
      */
@@ -407,5 +401,112 @@ class ArenaController extends Controller
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
+    }
+    
+    protected function uploadArenasProcessCSVStep2()
+    {
+        // We know we are on step 2, so grab the parameters we need
+        $fid = isset($_GET['fileUpload']['id']) ? (integer)$_GET['fileUpload']['id'] : null;
+        $name = isset($_GET['fileUpload']['name']) ? $_GET['fileUpload']['name'] : null;
+        $upload_type_id = isset($_GET['fileUpload']['upload_type_id']) ? $_GET['fileUpload']['upload_type_id'] : null;
+        $skipRows = isset($_GET['csvOptions']['skipRows']) ? (integer)$_GET['csvOptions']['skipRows'] : null;
+        $delimiter = isset($_GET['csvOptions']['delimiter']) ? $_GET['csvOptions']['delimiter'] : null;
+        $enclosure = isset($_GET['csvOptions']['enclosure']) ? $_GET['csvOptions']['enclosure'] : null;
+        $escapeChar = isset($_GET['csvOptions']['escapeChar']) ? $_GET['csvOptions']['escapeChar'] : null;
+        
+        // ensure all parameters have been passed in.
+        if(!isset($fid) || !isset($name) || !isset($upload_type_id) ||
+           !isset($skipRows) || !isset($delimiter) || !isset($enclosure) ||
+           !isset($escapeChar)) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Missing expected parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Find our uploaded record
+        $fileUpload = FileUpload::model()->find(
+                'id = :fid AND upload_type_id = :upload_type_id AND name = :name',
+                array(
+                    ':fid' => $fid,
+                    ':upload_type_id' => $upload_type_id,
+                    ':name' => $name
+                )
+        );
+        
+        if($fileUpload === null) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Unable to locate existing database file record',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // We have the database record, now open the CSV file and process it
+        // based on the options.
+
+        // In case tab is selected as delimiter
+        $delimiter = str_replace("\\t", "\t", $delimiter);
+        
+        $csvImporter = new CsvImporter(
+                $fileUpload->path . DIRECTORY_SEPARATOR . $fileUpload->name,
+                true,
+                $skipRows,
+                $delimiter,
+                $enclosure,
+                $escapeChar
+        );
+        /*
+        $csvFile = fopen($fileUpload->path . DIRECTORY_SEPARATOR . $fileUpload->name, 'r');
+        
+        if($csvFile === false) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Unable to open CSV file for processing',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // skip any lines
+        $i = 0; 
+        while($i < $skipRows) {
+            fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
+             $i++;
+        }
+        
+        $csvHeaders = fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
+        $csvRow = fgetcsv($csvFile, 0, $delimiter, $enclosure, $escapeChar);
+        */
+        $csvHeader = $csvImporter->getHeader();
+        $csvRow = $csvImporter->getRows(1);
+        $tableFields = Arena::getImportAttributes();
+        
+        echo json_encode(
+                array(
+                    'success' => true,
+                    'error' => false,
+                    'csvFields' => $csvHeader,
+                    'csvRows' => $csvRow,
+                    'tableFields' => $tableFields,
+                )
+        );
+        Yii::app()->end();
+    }
+    
+    protected function uploadArenasProcessCSVStep3()
+    {
+        
+    }
+    
+    protected function uploadArenasProcessCSVStep4()
+    {
+        
     }
 }

@@ -287,24 +287,175 @@ class Arena extends RinkfinderActiveRecord
     public static function getImportAttributes()
     {
         return array(
-            'external_id' => 'External ID',
-            'name' => 'Name *',
-            'address_line1' => 'Address Line1 *',
-            'address_line2' => 'Address Line2',
-            'city' => 'City *',
-            'state' => 'State *',
-            'zip' => 'Zip *',
-            'lat' => 'Lattitude',
-            'lng' => 'Longitude',
-            'phone' => 'Phone',
-            'ext' => 'Ext',
-            'fax' => 'Fax',
-            'fax_ext' => 'Fax Ext',
-            'url' => 'Url',
-            'description' => 'Description',
-            'tags' => 'Tags',
-            'notes' => 'Notes',
-            'status_id' => 'Status',
+            array(
+                'name' => 'external_id',
+                'display' => 'External ID',
+                'type' => 'string',
+                'size' => 32,
+                'required' => false,
+                'tooltip' => 'Here you can enter the ID of the arena in your system. '
+                . 'You can enter up to a 32 character ID.',
+            ),
+            array(
+                'name' => 'name',
+                'display' => 'Name',
+                'type' => 'string',
+                'size' => 128,
+                'required' => true,
+                'tooltip' => 'Here you can enter the name of the Arena. '
+                . 'There is a 128 character limit for the name. This field is required.'
+            ),
+            array(
+                'name' => 'address_line1',
+                'display' => 'Address Line 1',
+                'type' => 'string',
+                'size' => 128,
+                'required' => true,
+                'tooltip' => 'Here you can enter the first line of the Arena\'s address. '
+                . 'There is a 128 character limit for the address line. This field is required.'
+            ),
+            array(
+                'name' => 'address_line2',
+                'display' => 'Address Line 2',
+                'type' => 'string',
+                'size' => 128,
+                'required' => false,
+                'tooltip' => 'Here you can enter the second line of the Arena\'s address. '
+                . 'There is a 128 character limit for the address line.'
+            ),
+            array(
+                'name' => 'city',
+                'display' => 'City',
+                'type' => 'string',
+                'size' => 128,
+                'required' => true,
+                'tooltip' => 'Here you can enter the city of the Arena\'s address. '
+                . 'There is a 128 character limit for the city. This field is required.'
+            ),
+            array(
+                'name' => 'state',
+                'display' => 'State',
+                'type' => 'string',
+                'size' => 2,
+                'required' => true,
+                'tooltip' => 'Here you can enter the state of the Arena\'s address. '
+                . 'There is a 2 character limit for the state. This field is required.'
+            ),
+            array(
+                'name' => 'zip',
+                'display' => 'Zip',
+                'type' => 'string',
+                'size' => 5,
+                'required' => true,
+                'tooltip' => 'Here you can enter the 5 digit zip code of the Arena\'s address. '
+                . 'There is a 5 character limit for the zip code. This field is required.'
+
+            ),
+            array(
+                'name' => 'lat',
+                'display' => 'Lattitude',
+                'type' => 'float',
+                'size' => 0,
+                'required' => false,
+                'tooltip' => 'Here you can enter the lattitude of the Arena. '
+                . 'This field may be overwritten if the Arena is later geocoded.'
+            ),
+            array(
+                'name' => 'lng',
+                'display' => 'Longitude',
+                'type' => 'float',
+                'size' => 0,
+                'required' => false,
+                'tooltip' => 'Here you can enter the longitude of the Arena. '
+                . 'This field may be overwritten if the Arena is later geocoded.'
+            ),
+            array(
+                'name' => 'phone',
+                'display' => 'Phone',
+                'type' => 'string',
+                'size' => 10,
+                'required' => false,
+                'tooltip' => 'Here you can enter the 10 digit phone number of the Arena. '
+            ),
+            array(
+                'name' => 'ext',
+                'display' => 'Extension',
+                'type' => 'string',
+                'size' => 10,
+                'required' => false,
+                'tooltip' => 'Here you can enter up to a 10 digit extension for the phone number of the Arena. '
+            ),
+            array(
+                'name' => 'fax',
+                'display' => 'Fax',
+                'type' => 'string',
+                'size' => 10,
+                'required' => false,
+                'tooltip' => 'Here you can enter the 10 digit fax number of the Arena. '
+            ),
+            array(
+                'name' => 'fax_ext',
+                'display' => 'Fax Extension',
+                'type' => 'string',
+                'size' => 10,
+                'required' => false,
+                'tooltip' => 'Here you can enter up to a 10 digit extension for the fax number of the Arena. '
+            ),
+            array(
+                'name' => 'url',
+                'display' => 'Homepage URL',
+                'type' => 'string',
+                'size' => 511,
+                'required' => false,
+                'tooltip' => 'Here you can enter the hompage for the Arena. '
+                . 'Don\'t forget to add http:// or https://. '
+                . 'There is a 511 character limit for this field.'
+            ),
+            array(
+                'name' => 'description',
+                'display' => 'Description',
+                'type' => 'text',
+                'size' => 0,
+                'required' => false,
+                'tooltip' => 'Here you can enter a description for the Arena. '
+                . 'The description can contain HTML markup. '
+                . 'The description will appear at the top of the Arena\'s page '
+                . 'on this site. '
+                . 'There is no limit to the amount of text you may enter.'
+            ),
+            array(
+                'name' => 'tags',
+                'display' => 'Tags',
+                'type' => 'string',
+                'size' => 1024,
+                'required' => false,
+                'tooltip' => 'Here you can enter tags for the Arena. '
+                . 'Tags should be seperated by a comma (,).'
+                . 'There is a 1024 character limit for this field'
+            ),
+            array(
+                'name' => 'notes',
+                'display' => 'Notes',
+                'type' => 'text',
+                'size' => 0,
+                'required' => false,
+                'tooltip' => 'Here you can enter any notes for the Arena. '
+                . 'The notes can contain HTML markup. '
+                . 'The notes will appear at the bottom of the Arena\'s page '
+                . 'on this site. '
+                . 'There is no limit to the amount of text you may enter.'
+            ),
+            array(
+                'name' => 'status_id',
+                'display' => 'Status ID',
+                'type' => 'integer',
+                'size' => 0,
+                'required' => false,
+                'tooltip' => 'Here you may enter the Status ID of the Arena. '
+                . 'Please note that entering in an invalid Status ID will result '
+                . 'with the import failing. It is best to leave this field blank '
+                . 'unless you know what you are doing.'
+            ),
         );
     }
 

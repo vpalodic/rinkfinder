@@ -195,8 +195,8 @@ class RinkfinderUploadForm extends CFormModel
 
         if($fileUploadRecord !== null) {
             // Ok, we have an existing record, so we abort!
-        $fuarr = array(
-        );
+            $fuarr = array(
+            );
 
             return json_encode(
                     array(
@@ -282,9 +282,10 @@ class RinkfinderUploadForm extends CFormModel
     /**
      * Returns a JSON encoded success string
      * @param string $deleteUrl The URL to delete the uploaded file
+     * @param string $processUrl The URL to process the uploaded file
      * @return string JSON encoded success string
      */
-    public function getJsonSuccessResponse($deleteUrl = '')
+    public function getJsonSuccessResponse($deleteUrl = '', $processUrl = '')
     {
         return json_encode(
                 array(
@@ -307,6 +308,9 @@ class RinkfinderUploadForm extends CFormModel
                     ),
                     'deleteFile' => array(
                         'endpoint' => $deleteUrl,
+                    ),
+                    'processFile' => array(
+                        'endpoint' => $processUrl,
                     )
                 )
         );

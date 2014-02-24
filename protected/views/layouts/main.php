@@ -5,10 +5,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="<?php echo Yii::app()->request->baseUrl; ?>/js/console.js"></script>
     <link rel="shortcut icon" href="<?php echo Yii::app()->request->baseUrl; ?>/images/favicon.ico">
     <link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/styles.css" />
     <?php Yii::app()->bootstrap->register(); ?>
-    
     <title><?php echo CHtml::encode($this->pageTitle); ?></title>
 </head>
 
