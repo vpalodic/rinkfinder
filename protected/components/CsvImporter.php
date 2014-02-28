@@ -8,18 +8,79 @@
 
 class CsvImporter extends CComponent
 { 
-    private $fp;
-    private $file_name;
-    private $parse_header;
-    private $header;
-    private $delimiter;
-    private $enclosure;
-    private $escape;
-    private $length;
-    private $skipRows;
+    /**
+     *
+     * @var mixed Holds the file pointer. Value is false when the file is closed
+     */
+    protected $fp;
     
-    //-------------------------------------------------------------------- 
-    function __construct($file_name, $parse_header = false, $skipRows = 0, $delimiter = ',', $enclosure = '"', $escape = '\\', $length = 0) 
+    /**
+     *
+     * @var string The name of the file that contains the data 
+     */
+    protected $file_name;
+    
+    /**
+     *
+     * @var boolean Is set to true, the CSV data will be indexed by the header row
+     */
+    protected $parse_header;
+    
+    /**
+     *
+     * @var array[] Contains the CSV field names if parse_header is true 
+     */
+    protected $header;
+    
+    /**
+     *
+     * @var string Contains the field delimiter character
+     */
+    protected $delimiter;
+    
+    /**
+     *
+     * @var string Contains the field enclosure character
+     */
+    protected $enclosure;
+    
+    /**
+     *
+     * @var string Contains the escape character
+     */
+    protected $escape;
+    
+    /**
+     *
+     * @var integer If greater than 0, conains the maximum number of characters
+     * to read per row
+     */
+    protected $length;
+    
+    /**
+     *
+     * @var integer If $parse_header is true, contains the number of rows to
+     * skip to get to the header row
+     */
+    protected $skipRows;
+    
+    /**
+     *
+     * @var integer The number of rows read from the CSV file
+     */
+    protected $rowCount;
+    
+    /**
+     * Constructs the CvsImporter object
+     * @param string $file_name
+     * @param boolean $parse_header
+     * @param integer $skipRows
+     * @param string $delimiter
+     * @param string $enclosure
+     * @param string $escape
+     * @param integer $length
+     */
+    public function __construct($file_name, $parse_header = false, $skipRows = 0, $delimiter = ',', $enclosure = '"', $escape = '\\', $length = 0) 
     {
         $this->file_name = $file_name;
         $this->parse_header = $parse_header;
@@ -27,23 +88,28 @@ class CsvImporter extends CComponent
         $this->delimiter = $delimiter; 
         $this->enclosure = $enclosure; 
         $this->escape = $escape; 
-        $this->length = $length; 
+        $this->length = $length;
+        $this->rowCount = 0;
         $this->header = false;
         $this->fp = false;
-
     }
     
-    //-------------------------------------------------------------------- 
-    function __destruct() 
+    /**
+     * Destroys the CsvImporter object and closes the CSV file if it is open
+     */
+    public function __destruct() 
     { 
-        if ($this->fp) 
-        { 
-            fclose($this->fp); 
-        } 
+        if($this->fp) {
+            fclose($this->fp);
+        }
     }
     
-    //-------------------------------------------------------------------- 
-    function open() 
+    /**
+     * Opens the CSV file and parses the header row
+     * @return mixed Returns true if the file is opened and the header
+     * is successfully parsed. otherwise a JSON encoded error string
+     */
+    public function open() 
     {
         $this->fp = fopen($this->file_name, "r");
         
@@ -79,8 +145,11 @@ class CsvImporter extends CComponent
         return true;
     }
 
-    //-------------------------------------------------------------------- 
-    function close() 
+    /**
+     * Closes the file if it is open
+     * @return boolean
+     */
+    public function close() 
     {
         if($this->fp !== false) {
             $ret = fclose($this->fp);
@@ -93,16 +162,34 @@ class CsvImporter extends CComponent
         return true;
     }
     
-    //-------------------------------------------------------------------- 
-    function getHeader() 
+    /**
+     * Returns the parsed header
+     * @return string[]
+     */
+    public function getHeader() 
     {
         return $this->header;
     }
 
-    //-------------------------------------------------------------------- 
-    function getRows($max_lines = 0)
+    /**
+     * Returns the row count
+     * @return string[]
+     */
+    public function getRowCount() 
+    {
+        return $this->rowCount;
+    }
+
+    /**
+     * Retrives the number of rows up to $max_lines. If $max_lines is 0,
+     * then all rows are retrieved. If there is a header, the row data is
+     * indexed by the header fields.
+     * @param integer $max_lines
+     * @return array[] The CSV data
+     */
+    public function getRows($max_lines = 0)
     { 
-        //if $max_lines is set to 0, then get all the data 
+        // if $max_lines is === 0, then get all the data 
 
         $data = array(); 
 
@@ -127,6 +214,8 @@ class CsvImporter extends CComponent
             if($max_lines > 0) {
                 $line_count++;
             }
+            
+            $this->rowCount++;
         } 
         return $data; 
     }

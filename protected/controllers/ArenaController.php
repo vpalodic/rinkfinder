@@ -326,14 +326,6 @@ class ArenaController extends Controller
     {
         $this->sendJSONHeaders();
         
-//        $isGetMethod = $this->isGetMethod();
-        
-        // This needs to come through as an actual DELETE request!!!
-//        if($isGetMethod !== true) {
-//            echo $isGetMethod;
-//            Yii::app()->end();
-//        }
-        
         $step = isset($_GET['step']) ? (integer)$_GET['step'] : null;
  
         if(!isset($step)) {
@@ -405,6 +397,14 @@ class ArenaController extends Controller
     
     protected function uploadArenasProcessCSVStep2()
     {
+        $isGetMethod = $this->isGetMethod();
+        
+        // This needs to come through as an actual DELETE request!!!
+        if($isGetMethod !== true) {
+            echo $isGetMethod;
+            Yii::app()->end();
+        }
+
         // We know we are on step 2, so grab the parameters we need
         $fid = isset($_GET['fileUpload']['id']) ? (integer)$_GET['fileUpload']['id'] : null;
         $name = isset($_GET['fileUpload']['name']) ? $_GET['fileUpload']['name'] : null;
@@ -488,7 +488,78 @@ class ArenaController extends Controller
     
     protected function uploadArenasProcessCSVStep3()
     {
+        $isPutMethod = $this->isPutMethod();
         
+        // This needs to come through as an actual DELETE request!!!
+        if($isPutMethod !== true) {
+            echo $isPutMethod;
+            Yii::app()->end();
+        }
+
+        $paramstr =  $this->getParamsFromPhp();
+
+        if($paramstr === false) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Unable to read the parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // explode the parameters!
+        parse_str($paramstr);
+        
+        // ensure all parameters have been passed in.
+        if(!isset($step) || !isset($fileUpload) || !isset($csvOptions) ||
+           !isset($tableFields) || !isset($mappings)) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Missing expected parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Find our uploaded record
+        $fileUploadRecord = FileUpload::model()->find(
+                'id = :fid AND upload_type_id = :upload_type_id AND name = :name',
+                array(
+                    ':fid' => $fileUpload['id'],
+                    ':upload_type_id' => $fileUpload['upload_type_id'],
+                    ':name' => $fileUpload['name']
+                )
+        );
+        
+        if($fileUploadRecord === null) {
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Unable to locate existing database file record',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // We have the database record, now open the CSV file and process it
+        // based on the options.
+
+        // In case tab is selected as delimiter
+        $csvOptions['delimiter'] = str_replace("\\t", "\t", $csvOptions['delimiter']);
+        
+        $tableImporter = new TableImporter(
+                'arena',
+                array('id', 'name', 'city', 'state'),
+                array('name', 'city', 'state'),
+                $tableFields,
+                $csvOptions,
+                $fileUploadRecord,
+                $mappings
+        );
+        
+        $tableImporter->doImport();
     }
     
     protected function uploadArenasProcessCSVStep4()

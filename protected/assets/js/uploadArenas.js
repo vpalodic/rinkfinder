@@ -150,9 +150,10 @@
             delimiter: $("#delimiter").val(),
             enclosure: $("#enclosure").val(),
             escapeChar: $("#escape-char").val(),
-            skipRows: $("#header-row").val() - 1
+            skipRows: $("#header-row").val() - 1,
+            updateExisting: $("#update-existing").is(':checked') ? 1 : 0
         };
-        
+
         var that = this;
         
         uploadArenas.setLoadingScreen("#loadingScreen");
@@ -219,6 +220,7 @@
                     upload_type_id: this.fileUpload.upload_type_id
                 },
                 csvOptions: this.csvOptions,
+                tableFields: this.tableFields,
                 mappings: this.mappings
             },
             success: function(result, status, xhr) {
@@ -232,7 +234,7 @@
                 
                 $("#step3Continue").prop("disabled", false);
                 $("#step3Continue").removeClass("disabled");
-                $("#arenaUploadStep3").hide();
+                $("#arenaUploadStep3").show();
                 $("#loadingScreen").html("");
             }
         });
@@ -243,13 +245,17 @@
     uploadArenas.onContinueStep4ButtonClick = function () {
         $("#step4Continue").prop("disabled", true);
         $("#step4Continue").addClass("disabled");
+        $("#ArenaUploadForm_fileName").fineUploader("clearStoredFiles");
+        $("#mappingTable").html("");
         $("#arenaUploadStep4").hide();
-        $("#arenaUploadStep5").show();
+        $("#arenaUploadStep1").show();
         return true;
     };
     
     uploadArenas.setLoadingScreen = function (elementID) {
-        var strOutput = "<div id=\"loading\"><img src=\"" + this.baseUrl + "/images/ajax-loader-roller-bg_red-fg_blue.gif\" alt=\"Loading...\" /></div>";
+        var strOutput = "<div id=\"loading\"><img src=\"" + this.baseUrl +
+                "/images/ajax-loader-roller-bg_red-fg_blue.gif\"" + 
+                "alt=\"Loading...\" /><br />Please wait...</div>";
 	$(elementID).html(strOutput);
 	return strOutput;
     };
@@ -322,6 +328,7 @@
             
             tableBody.append(strOutput);
             
+            // Setup the onChange handler for the select lists!
             $('#' + this.tableFields[i].name + 'SelectList').on("change", function () {
                 if (this.value === "Not Mapped") {
                     $('#' + that.tableFields[$(this).data('index')].name + 'PreviewField').html("");

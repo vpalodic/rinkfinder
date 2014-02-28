@@ -51,9 +51,6 @@
 
 <h2 class="sectionHeader">Upload Arenas</h2>
 
-<div id="loadingScreen" class="row-fluid">
-    
-</div>
 <div id="arenaUploadStep1" class="row-fluid">
     <h3 class="sectionSubHeader">
         Step 1: <h4>Select A File To Upload</h4>
@@ -211,6 +208,37 @@
                 )
         );
     ?>
+    <?php
+        $widget1 = $this->widget(
+                'yiiwheels.widgets.switch.WhSwitch',
+                array(
+                    'name' => 'update-existing',
+                    'id' => 'update-existing',
+                    'onLabel' => 'Yes',
+                    'offLabel' => 'No',
+                    'size' => 'large',
+                    'offColor' => 'warning',
+                    'htmlOptions' => array(
+                    ),
+                ),
+                true
+        );
+    ?>
+    <div class="control-group">
+        <div class="controls">
+        <?php
+            echo TbHtml::label(
+                    'Update existing records? (If you select No and an arena '
+                    . 'exists in the database that you are trying to import, '
+                    . 'the import will fail.)',
+                    'update-existing',
+                    array(
+                        )
+                    );
+            echo $widget1;
+        ?>
+        </div>
+    </div>
     <div class="control-group">
         <div class="controls">
             <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
@@ -238,63 +266,26 @@
     </table>
     <div class="control-group">
         <div class="controls">
-            <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
-                Preview Import
+            <button id="step3Continue" class="btn btn-primary btn-large disabled" type="button" name="yt3" disabled>
+                Import
             </button>
         </div>
     </div>
 </div><!-- step 3 -->
 <div id="arenaUploadStep4" class="row-fluid" style="display: none;">
     <h3 class="sectionSubHeader">
-        Step 4: <h4>Import Preview</h4>
+        Step 4: <h4>Import Summary</h4>
     </h3>
     <p class="sectionSubHeaderContent">
     Click the button below to select a CSV file that contains the arenas you wish to upload.
     </p>
-    <?php
-        $widget = $this->widget(
-                'yiiwheels.widgets.switch.WhSwitch',
-                array(
-                    'model' => $model,
-                    'attribute' => 'emailResults',
-                    'onLabel' => 'Yes',
-                    'offLabel' => 'No',
-                    'size' => 'large',
-                    'offColor' => 'warning',
-                    'htmlOptions' => array(
-                    ),
-                ),
-                true
-        );
-    ?>    
     <div class="control-group">
         <div class="controls">
-        <?php
-            echo $widget;
-/*            echo TbHtml::labelEx(
-                    $model,
-                    'emailResults',
-                    array(
-                        )
-                    );
-            echo TbHtml::error($model, 'emailResults');
-*/        ?>
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-            <button id="step4Continue" class="btn btn-primary btn-large disabled" type="button" name="yt3" disabled>
-                Import
+            <button id="step4Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
+                Import Another File
             </button>
         </div>
     </div>
 </div><!-- step 4 -->
-<div id="arenaUploadStep5" class="row-fluid" style="display: none;">
-    <h3 class="sectionSubHeader">
-        Step 5: <h4>Import Summary</h4>
-    </h3>
-    <p class="sectionSubHeaderContent">
-    Use the drop-down lists to map fields in the CSV file to fields in the Arena table.
-    Please remember that fields with a <span class="required">*</span> are required.
-    </p>
-</div><!-- step 5 -->
+<div id="loadingScreen" class="row-fluid">
+</div><!-- Loading Screen -->
