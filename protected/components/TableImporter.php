@@ -368,7 +368,7 @@ class TableImporter extends CComponent
                 $this->rowsUpdated = $lastCommitCount;
                 $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
                 $message = $e->getMessage();
-                new CDbException(
+                throw new CDbException(
                         'Failed to execute the SQL statement: ' . $message,
                         (int)$e->getCode(),
                         $errorInfo
@@ -468,7 +468,7 @@ class TableImporter extends CComponent
                 $this->rowsInserted = $lastCommitCount;
                 $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
                 $message = $e->getMessage();
-                new CDbException(
+                throw new CDbException(
                         'Failed to execute the SQL statement: ' . $message,
                         (int)$e->getCode(),
                         $errorInfo

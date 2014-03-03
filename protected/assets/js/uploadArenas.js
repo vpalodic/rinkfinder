@@ -230,6 +230,8 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
+                console.log(xhr);
+                
                 alert("Failed to process the CSV file.\nStatus: " + status + "\nError Thrown: " + errorThrown);
                 
                 $("#step3Continue").prop("disabled", false);

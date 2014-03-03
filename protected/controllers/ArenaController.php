@@ -324,11 +324,12 @@ class ArenaController extends Controller
     
     public function actionUploadArenasProcessCSV()
     {
-        $this->sendJSONHeaders();
+        
         
         $step = isset($_GET['step']) ? (integer)$_GET['step'] : null;
  
         if(!isset($step)) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -352,6 +353,7 @@ class ArenaController extends Controller
                 $this->uploadArenasProcessCSVStep4();
                 break;
             default:
+                $this->sendResponseHeaders(400);
                 echo json_encode(
                     array(
                         'success' => false,
@@ -492,6 +494,7 @@ class ArenaController extends Controller
         
         // This needs to come through as an actual DELETE request!!!
         if($isPutMethod !== true) {
+            $this->sendResponseHeaders(400);
             echo $isPutMethod;
             Yii::app()->end();
         }
@@ -499,6 +502,7 @@ class ArenaController extends Controller
         $paramstr =  $this->getParamsFromPhp();
 
         if($paramstr === false) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -514,6 +518,7 @@ class ArenaController extends Controller
         // ensure all parameters have been passed in.
         if(!isset($step) || !isset($fileUpload) || !isset($csvOptions) ||
            !isset($tableFields) || !isset($mappings)) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -534,6 +539,7 @@ class ArenaController extends Controller
         );
         
         if($fileUploadRecord === null) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
