@@ -549,17 +549,49 @@ class ArenaController extends Controller
         // In case tab is selected as delimiter
         $csvOptions['delimiter'] = str_replace("\\t", "\t", $csvOptions['delimiter']);
         
+        $tableName = 'arena';
+        $selectFields = array('id', 'name', 'city', 'state');
+        $inFields = array('name', 'city', 'state');
+        $createFields = array(
+            'created_by_id' => Yii::app()->user->id,
+            'created_on' => new CDbExpression("NOW()")
+        );
+        $updateFields = array(
+            'updated_by_id' => Yii::app()->user->id,
+            'updated_on' => new CDbExpression("NOW()") //date('Y-m-d H:i:s')
+        );
+        
         $tableImporter = new TableImporter(
-                'arena',
-                array('id', 'name', 'city', 'state'),
-                array('name', 'city', 'state'),
+                $tableName,
+                $selectFields,
+                $inFields,
+                $createFields,
+                $updateFields,
                 $tableFields,
                 $csvOptions,
                 $fileUploadRecord,
                 $mappings
         );
         
-        $tableImporter->doImport();
+        try {
+            $tableImporter->doImport();
+        } catch (CDbException $ex) {
+            $errorMsg = "A database error occurred: " . $ex->getMessage();
+            
+            $this->sendResponseHeaders(500);
+            
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $errorMsg,
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine()
+                    )
+            );
+            Yii::app()->end();
+        }
     }
     
     protected function uploadArenasProcessCSVStep4()

@@ -390,7 +390,10 @@
             if ($("#" + this.tableFields[i].name + "SelectList").val() !== "Not Mapped") {
                 this.mappings.push({
                     fieldName: this.tableFields[i].name,
-                    headerName: $("#" + this.tableFields[i].name + "SelectList").val()
+                    headerName: $("#" + this.tableFields[i].name + "SelectList").val(),
+                    fieldType: this.tableFields[i].type,
+                    fieldSize: this.tableFields[i].size,
+                    fieldRequired: this.tableFields[i].required
                 });
             }
         }

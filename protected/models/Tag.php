@@ -113,7 +113,7 @@ class Tag extends RinkfinderActiveRecord
     {
         $tags = $this->findAll(array(
             'condition' => 'name LIKE :keyword',
-            'order' => 'frequency DESC, Name',
+            'order' => 'frequency DESC, name',
             'limit' => $limit,
             'params' => array(
                 ':keyword' => '%' . strtr($keyword, array('%' => '\%', '_' => '\_', '\\' => '\\\\')) . '%',
@@ -152,7 +152,7 @@ class Tag extends RinkfinderActiveRecord
     /**
      * Updates the frequency count for $oldTags and $newTags
      * New tags are added to the database and unreferenced tags are removed
-     * @param array $olTags The previous set of tags
+     * @param array $oldTags The previous set of tags
      * @param array $newTags The new set of tags
      */
     public function updateFrequency($oldTags, $newTags)

@@ -99,7 +99,7 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
                 'UNIQUE KEY external_id (external_id)',
-                'UNIQUE KEY name_city (name, city)',
+                'UNIQUE KEY name_city_state (name, city, state)',
                 'KEY name (name)',
                 'KEY tags (tags)',
                 'KEY arena_status_id_fk (status_id)',
