@@ -582,18 +582,27 @@ class ArenaController extends Controller
         try {
             $tableImporter->doImport();
         } catch (CDbException $ex) {
-            $errorMsg = "A database error occurred: " . $ex->getMessage();
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
             
             $this->sendResponseHeaders(500);
-            
+
             echo json_encode(
                     array(
                         'success' => false,
-                        'error' => $errorMsg,
+                        'error' => $ex->getMessage(),
                         'exception' => true,
                         'errorCode' => $ex->getCode(),
                         'errorFile' => $ex->getFile(),
-                        'errorLine' => $ex->getLine()
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
                     )
             );
             Yii::app()->end();

@@ -85,7 +85,7 @@
                             'disableDefaultDropzone' => true,
                         ),
                         'text' => array(
-                            'uploadButton' => 'Select File',
+                            'uploadButton' => '<i class="icon-file icon-white"></i> Select File',
                         ),
                         'failedUploadTextDisplay' => array(
                             'mode' => 'custom',
@@ -242,7 +242,7 @@
     <div class="control-group">
         <div class="controls">
             <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
-                Continue
+                <i class="icon-arrow-right icon-white"></i> Continue
             </button>
         </div>
     </div>
@@ -267,7 +267,7 @@
     <div class="control-group">
         <div class="controls">
             <button id="step3Continue" class="btn btn-primary btn-large disabled" type="button" name="yt3" disabled>
-                Import
+                <i class="icon-upload icon-white"></i> Import
             </button>
         </div>
     </div>
@@ -282,10 +282,23 @@
     <div class="control-group">
         <div class="controls">
             <button id="step4Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
-                Import Another File
+                <i class="icon-repeat icon-white"></i> Import Another File
             </button>
         </div>
     </div>
 </div><!-- step 4 -->
 <div id="loadingScreen" class="row-fluid">
 </div><!-- Loading Screen -->
+<!-- Modal Dialog -->
+<div id="arenaModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalLabel" aria-hidden="true">
+  <div id="arenaModalHeader" class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="arenaModalLabel">Modal header</h3>
+  </div>
+  <div id="arenaModalBody" class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div id="arenaModalFooter" class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
+  </div>
+</div><!-- Modal Dialog -->

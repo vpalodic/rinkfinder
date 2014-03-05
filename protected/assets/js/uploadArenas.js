@@ -27,10 +27,11 @@
     // public methods
     uploadArenas.addUploadAndDeleteButtons = function () {
         $('<span>   </span><button id="uploadButton" class="btn btn-success ' +
-          'btn-large disabled" name="yt0" type="button">Begin Upload</button> ' +
+          'btn-large disabled" name="yt0" type="button"><i class="icon-upload' +
+          ' icon-white"></i> Begin Upload</button> ' +
           '<span>   </span><button id="deleteButton" style="display: none;" ' +
           'class="btn btn-danger btn-large disabled" name="yt1" type="button">' +
-          'Delete File</button>').insertAfter($(".qq-upload-button"));
+          '<i class="icon-trash icon-white"></i> Delete File</button>').insertAfter($(".qq-upload-button"));
     };
     
     uploadArenas.onUploadCancel = function (event, id, name) {
@@ -134,11 +135,15 @@
                 $("#deleteButton").prop("disabled", true);
                 $("#deleteButton").addClass("disabled");
                 $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");
-                alert("File has been deleted, please retry your upload.");
+                $("#arenaModalLabel").html("Delete Request");
+                $("#arenaModalBody").html("<p>File has been deleted, please retry your upload.</p>");
+                $("#arenaModal").modal('show');
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                alert("Failed to delete the file.\nStatus: " + status + "\nError Thrown: " + errorThrown);
+                $("#arenaModalLabel").html("Delete Request");
+                $("#arenaModalBody").html("<p>Failed to delete the file.<br />Status: " + status + "<br />Error Thrown: " + errorThrown + "</p>");
+                $("#arenaModal").modal('show');
                 $("#loadingScreen").html("");
             }
         });
@@ -185,7 +190,9 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                alert("Failed to apply CSV Options.\nStatus: " + status + "\nError Thrown: " + errorThrown);
+                $("#arenaModalLabel").html("CSV Options");
+                $("#arenaModalBody").html("<p>Failed to apply CSV Options.<br />Status: " + status + "<br />Error Thrown: " + errorThrown + "</p>");
+                $("#arenaModal").modal('show');
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
@@ -230,13 +237,46 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                console.log(xhr);
+                var response = JSON.parse(xhr.responseText);
                 
-                alert("Failed to process the CSV file.\nStatus: " + status + "\nError Thrown: " + errorThrown);
+                $("#arenaModalLabel").html("Process CSV");
                 
-                $("#step3Continue").prop("disabled", false);
-                $("#step3Continue").removeClass("disabled");
-                $("#arenaUploadStep3").show();
+                var htmlOutput = "<p class=\"text-error\">Failed to process the CSV file.</p>";
+                
+                htmlOutput += "<h4>Web Server Response</h4>";
+                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
+                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
+                
+                if (response)
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    
+                    if (response.exception == true)
+                    {
+                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
+                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
+                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
+                        
+                        if (response.errorInfo != null)
+                        {
+                            htmlOutput += "</pre><h4>Database Server Response</h4>";
+                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
+                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
+                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
+                        }
+                    }
+                    
+                    htmlOutput += "</pre>";
+                }
+                
+                $("#arenaModalBody").html(htmlOutput);
+                $("#arenaModal").modal('show');
+                
+                $("#step2Continue").prop("disabled", false);
+                $("#step2Continue").removeClass("disabled");
+                $("#mappingTable").html("");
+                $("#arenaUploadStep2").show();
                 $("#loadingScreen").html("");
             }
         });
@@ -296,7 +336,7 @@
             
             // Build the select list!!
             strOutput += '<td id="' + this.tableFields[i].name + 'SelectField">';
-            strOutput += '<select id="' + this.tableFields[i].name + 'SelectList" data-index="' + i + '">';
+            strOutput += '<select class="span5" id="' + this.tableFields[i].name + 'SelectList" data-index="' + i + '">';
             strOutput += '<option value="Not Mapped">Not Mapped</option>';
             
             // Loop through all of the CSV fields

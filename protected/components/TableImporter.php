@@ -176,7 +176,7 @@ class TableImporter extends CComponent
      * formatted error string
      * @throws CDbException
      */
-    public function doImport($transaction = true, $rowsPerCommit = 10)
+    public function doImport($transaction = true, $rowsPerCommit = 0)
     {
         // First we need to read in the CSV data.
         $csvRet = $this->csvImporter->open();
@@ -201,6 +201,10 @@ class TableImporter extends CComponent
         
         // Get the total row count
         $this->rowsTotal = count($this->csvData);
+        
+        if($transaction == true && $rowsPerCommit == 0) {
+            $rowsPerCommit = $this->rowsTotal;
+        }
         
         // Check to see if we should look for existing records
         if($this->csvOptions['updateExisting'] == 1) {
@@ -464,8 +468,16 @@ class TableImporter extends CComponent
             }
             catch(Exception $e)
             {
-                $dbTransaction->rollback();
+                if($dbTransaction->active == true) {
+                    $dbTransaction->rollback();
+                }
+                
                 $this->rowsInserted = $lastCommitCount;
+                
+                if($e instanceof CDbException) {
+                    throw $e;
+                }
+                
                 $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
                 $message = $e->getMessage();
                 throw new CDbException(
