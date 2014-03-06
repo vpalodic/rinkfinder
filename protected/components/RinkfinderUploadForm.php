@@ -89,11 +89,11 @@ class RinkfinderUploadForm extends CFormModel
             return json_encode(
                     array(
                         'success' => false,
-                        'error' => 'File received does not match file uploaded.\n'
-                        . 'Sent File Name: ' . $this->fileName . '. \n'
-                        . 'Sent Files Sze: ' . $this->fileSize . '. \n'
-                        . 'Received File Name: ' . $this->fileInstance->name . '. \n'
-                        . 'Received File Size: ' . $this->fileInstance->size . '. \n'
+                        'error' => "File received does not match file uploaded.\n"
+                        . 'Sent File Name: ' . $this->fileName . ". \n"
+                        . 'Sent Files Sze: ' . $this->fileSize . ". \n"
+                        . 'Received File Name: ' . $this->fileInstance->name . ". \n"
+                        . 'Received File Size: ' . $this->fileInstance->size . ". \n"
                     )
             );
         }
