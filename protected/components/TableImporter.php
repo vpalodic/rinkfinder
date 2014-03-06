@@ -44,12 +44,6 @@ class TableImporter extends CComponent
     
     /**
      *
-     * @var array[][] Holds the details on the table fields such as data type
-     */
-    protected $tableFields;
-    
-    /**
-     *
      * @var array[] Holds the CSV processing options
      */
     protected $csvOptions;
@@ -109,19 +103,17 @@ class TableImporter extends CComponent
      * @param string[] $tableInFields
      * @param array[] $tableCreateFields
      * @param array[] $tableUpdateFields
-     * @param array[][] $tableFields
      * @param array[] $csvOptions
      * @param FileUpload $fileUpload
      * @param array[][] $mappings
      */
-    public function __construct($tableName, $tableSelectFields, $tableInFields, $tableCreateFields, $tableUpdateFields, $tableFields, $csvOptions, $fileUpload, $mappings) 
+    public function __construct($tableName, $tableSelectFields, $tableInFields, $tableCreateFields, $tableUpdateFields, $csvOptions, $fileUpload, $mappings) 
     {
         $this->tableName = $tableName;
         $this->tableSelectFields = $tableSelectFields;
         $this->tableInFields = $tableInFields;
         $this->tableCreateFields = $tableCreateFields;
         $this->tableUpdateFields = $tableUpdateFields;
-        $this->tableFields = $tableFields;
         $this->csvOptions = $csvOptions;
         $this->fileUpload = $fileUpload;
         $this->mappings = $mappings;
@@ -368,8 +360,16 @@ class TableImporter extends CComponent
             }
             catch(Exception $e)
             {
-                $dbTransaction->rollback();
+                if($dbTransaction->active) {
+                    $dbTransaction->rollback();
+                }
+                
                 $this->rowsUpdated = $lastCommitCount;
+
+                if($e instanceof CDbException) {
+                    throw $e;
+                }
+                
                 $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
                 $message = $e->getMessage();
                 throw new CDbException(
@@ -379,9 +379,25 @@ class TableImporter extends CComponent
                 );
             }
         } else {
-            for($i = 0; $i < $updateRecordsTotal; $i++) {
-                $this->rowsUpdated += $this->updateExistingRecord($updateRecords[$i]);
-                unset($updateRecords[$i]);
+            try {
+                for($i = 0; $i < $updateRecordsTotal; $i++) {
+                    $this->rowsUpdated += $this->updateExistingRecord($updateRecords[$i]);
+                    unset($updateRecords[$i]);
+                }
+            }
+            catch(Exception $e)
+            {
+                if($e instanceof CDbException) {
+                    throw $e;
+                }
+                
+                $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+                $message = $e->getMessage();
+                throw new CDbException(
+                        'Failed to execute the SQL statement: ' . $message,
+                        (int)$e->getCode(),
+                        $errorInfo
+                );
             }
         }
         
@@ -396,8 +412,6 @@ class TableImporter extends CComponent
      */
     protected function updateExistingRecord($record)
     {
-        $command = Yii::app()->db->createCommand();
-
         $where = "";
         $params = array();
 
@@ -410,7 +424,21 @@ class TableImporter extends CComponent
             $where .= $tableSelectField . "= :where" . $tableSelectField;
             $params[":where" . $tableSelectField] = $record[$tableSelectField];
         }
+
+        // Add the tags from the CSV file if they exist!
+        foreach($record as $key => $val) {
+            if($key == 'tags') {
+                // Get the old tags!
+                $tagSql = "SELECT tags FROM " . $this->tableName . " WHERE "
+                        . $where;
+                $tagCommand = Yii::app()->db->createCommand($tagSql);
+                $oldTags = $tagCommand->queryScalar($params);
+                Tag::model()->updateFrequency($oldTags, $val);
+            }
+        }
         
+        
+        $command = Yii::app()->db->createCommand();
         return $command->update($this->tableName, $record, $where, $params);
     }
     
@@ -487,9 +515,25 @@ class TableImporter extends CComponent
                 );
             }
         } else {
-            for($i = 0; $i < $insertRecordsTotal; $i++) {
-                $this->rowsInserted += $this->insertNewRecord($insertRecords[$i]);
-                unset($insertRecords[$i]);
+            try {
+                for($i = 0; $i < $insertRecordsTotal; $i++) {
+                    $this->rowsInserted += $this->insertNewRecord($insertRecords[$i]);
+                    unset($insertRecords[$i]);
+                }
+            }
+            catch(Exception $e)
+            {
+                if($e instanceof CDbException) {
+                    throw $e;
+                }
+                
+                $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+                $message = $e->getMessage();
+                throw new CDbException(
+                        'Failed to execute the SQL statement: ' . $message,
+                        (int)$e->getCode(),
+                        $errorInfo
+                );
             }
         }
         
@@ -504,6 +548,13 @@ class TableImporter extends CComponent
      */
     protected function insertNewRecord($record)
     {
+        // Add the tags from the CSV file if they exist!
+        foreach($record as $key => $val) {
+            if($key == 'tags') {
+                Tag::model()->updateFrequency('', $val);
+            }
+        }
+        
         $command = Yii::app()->db->createCommand();
 
         return $command->insert($this->tableName, $record);
@@ -693,5 +744,24 @@ class TableImporter extends CComponent
             unset($this->csvData[$csvK]);
         }
         return $insertArray;
+    }
+    
+    /**
+     * Returns a JSON encoded success string
+     * @return string JSON encoded success string
+     */
+    public function getJsonSuccessResponse()
+    {
+        return json_encode(
+                array(
+                    'success' => true,
+                    'error' => false,
+                    'importSummary' => array(
+                        'totalRecords' => (integer)$this->rowsTotal,
+                        'totalUpdated' => (integer)$this->rowsUpdated,
+                        'totalInserted' => (integer)$this->rowsInserted,
+                    ),
+                )
+        );
     }
 }

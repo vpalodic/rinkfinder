@@ -124,8 +124,22 @@ class RinkfinderUploadForm extends CFormModel
         $this->fileUploadPath .= Yii::app()->params['uploads']['directory'];
         $this->fileUploadUri = Yii::app()->params['uploads']['directory'];
 
+        // Each year gets its own directory
+        $datestr = date("Y");
+        $this->fileUploadPath .= DIRECTORY_SEPARATOR;
+        $this->fileUploadPath .= $datestr;
+        $this->fileUploadUri .= DIRECTORY_SEPARATOR;
+        $this->fileUploadUri .= $datestr;
+        
+        // Each month gets its own directory
+        $datestr = date("m");
+        $this->fileUploadPath .= DIRECTORY_SEPARATOR;
+        $this->fileUploadPath .= $datestr;
+        $this->fileUploadUri .= DIRECTORY_SEPARATOR;
+        $this->fileUploadUri .= $datestr;
+        
         // Each day gets its own directory
-        $datestr = date("Y-m-d");
+        $datestr = date("d");
         $this->fileUploadPath .= DIRECTORY_SEPARATOR;
         $this->fileUploadPath .= $datestr;
         $this->fileUploadUri .= DIRECTORY_SEPARATOR;
@@ -179,17 +193,20 @@ class RinkfinderUploadForm extends CFormModel
      * Checks if a file record already exists in the database
      * with the file name and upload type
      * @param string $deleteUrl Url to use to delete the file!
+     * @param string $overwriteUrl Url to use to overwrite the file!
      * @return mixed Returns false if the file doesn't have an
      * existing database record or else a JSON encoded error string
      */
-    public function getHasFileRecord($deleteUrl = '')
+    public function getHasFileRecord($deleteUrl = '', $overwriteUrl = '')
     {
         // Check for an existing record
         $fileUploadRecord = FileUpload::model()->find(
-                'upload_type_id = :upload_type_id AND name = :name',
+                'upload_type_id = :upload_type_id AND name = :name'
+                . ' AND path = :path',
                 array(
                     ':upload_type_id' => $this->fileUploadTypeId,
-                    ':name' => $this->fileName
+                    ':name' => $this->fileName,
+                    ':path' => $this->fileUploadPath
                 )
         );
 
@@ -218,6 +235,9 @@ class RinkfinderUploadForm extends CFormModel
                         ),
                         'deleteFile' => array(
                             'endpoint' => $deleteUrl,
+                        ),
+                        'overwriteFile' => array(
+                            'endpoint' => $overwriteUrl,
                         )
                     )
             );                    
@@ -228,7 +248,7 @@ class RinkfinderUploadForm extends CFormModel
     
     /**
      * Saves the uploaded file to the file system
-     * @return mixed Returns truee if the file was saved
+     * @return mixed Returns true if the file was saved
      * or else a JSON encoded error string
      */
     public function saveUploadedFile()
@@ -255,16 +275,31 @@ class RinkfinderUploadForm extends CFormModel
      */
     public function saveUploadedFileRecord()
     {
-        $this->fileUploadRecord = new FileUpload();
-        $this->fileUploadRecord->upload_type_id = $this->fileUploadTypeId;
-        $this->fileUploadRecord->user_id = $this->fileUploadUserId;
-        $this->fileUploadRecord->name = $this->fileInstance->getName();
-        $this->fileUploadRecord->path = $this->fileUploadPath;
-        $this->fileUploadRecord->uri = $this->fileUploadUri;
-        $this->fileUploadRecord->extension = $this->fileInstance->getExtensionName();
-        $this->fileUploadRecord->mime_type = $this->fileInstance->getType();
-        $this->fileUploadRecord->size = $this->fileInstance->getSize();
-        $this->fileUploadRecord->error_code = $this->fileInstance->getError();
+        // Check for an existing record
+        $fileUploadRecord = FileUpload::model()->find(
+                'upload_type_id = :upload_type_id AND name = :name'
+                . ' AND path = :path',
+                array(
+                    ':upload_type_id' => $this->fileUploadTypeId,
+                    ':name' => $this->fileName,
+                    ':path' => $this->fileUploadPath
+                )
+        );
+
+        if($fileUploadRecord !== null) {
+            $this->fileUploadRecord = $fileUploadRecord;
+        } else {
+            $this->fileUploadRecord = new FileUpload();
+            $this->fileUploadRecord->upload_type_id = $this->fileUploadTypeId;
+            $this->fileUploadRecord->user_id = $this->fileUploadUserId;
+            $this->fileUploadRecord->name = $this->fileInstance->getName();
+            $this->fileUploadRecord->path = $this->fileUploadPath;
+            $this->fileUploadRecord->uri = $this->fileUploadUri;
+            $this->fileUploadRecord->extension = $this->fileInstance->getExtensionName();
+            $this->fileUploadRecord->mime_type = $this->fileInstance->getType();
+            $this->fileUploadRecord->size = $this->fileInstance->getSize();
+            $this->fileUploadRecord->error_code = $this->fileInstance->getError();
+        }
 
         if(!$this->fileUploadRecord->save()) {
             // Something went horribly wrong!!!
@@ -304,7 +339,8 @@ class RinkfinderUploadForm extends CFormModel
                         'mime_type' => $this->fileUploadRecord->mime_type,
                         'size' => (integer)$this->fileUploadRecord->size,
                         'error_code' => (integer)$this->fileUploadRecord->error_code,
-                        'created_on' => date("m-d-Y H:i:s"), // Needed as we don't set the created_on database field
+                        'created_on' => isset($this->fileUploadRecord->created_on) ? $this->fileUploadRecord->created_on : date("m-d-Y H:i:s"), // Needed as we don't set the created_on database field
+                        'updated_on' => isset($this->fileUploadRecord->updated_on) ? $this->fileUploadRecord->updated_on : date("m-d-Y H:i:s"), // Needed as we don't set the created_on database field
                     ),
                     'deleteFile' => array(
                         'endpoint' => $deleteUrl,

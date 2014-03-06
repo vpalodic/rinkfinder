@@ -203,13 +203,12 @@ class ArenaController extends Controller
 
     public function actionUploadArenasFile()
     {
-        $this->sendJSONHeaders();
-        
         $model = new ArenaUploadForm();
         
         $instanceRetrieved = $model->getUploadFileInstance();
         
         if($instanceRetrieved !== true) {
+            $this->sendResponseHeaders(400);
             echo $instanceRetrieved;
             Yii::app()->end();
         }
@@ -223,6 +222,7 @@ class ArenaController extends Controller
             
         if($isValid !== true) {
             // What was suppose to be uploaded doesn't match what we got
+            $this->sendResponseHeaders(400);
             echo $isValid;                
             Yii::app()->end();
         }
@@ -234,6 +234,7 @@ class ArenaController extends Controller
 
         if($isDirPrepared !== true) {
             // Unable to prepare the upload directory
+            $this->sendResponseHeaders(500);
             echo $isDirPrepared;                
             Yii::app()->end();
         }
@@ -243,9 +244,11 @@ class ArenaController extends Controller
         );
             
         if($hasExistingRecord !== false) {
-            // Ok, we have an existing record, so we abort!
+            // Ok, we have an existing record, so we overwrite it!
+/*            $this->sendResponseHeaders(400);
             echo $hasExistingRecord;                    
             Yii::app()->end();
+ */
         }
 
         // We need to save it so we can process it later!
@@ -255,20 +258,50 @@ class ArenaController extends Controller
         // Ok, we can safely save off the file!
         if($fileSaved !== true) {
             // Something went horribly wrong!!!
+            $this->sendResponseHeaders(500);
             echo $fileSaved;                    
             Yii::app()->end();
         }
 
         // File has been saved, now we make a record of it!!
-        $fileRecordSaved = $model->saveUploadedFileRecord();
+        try {
+            $fileRecordSaved = $model->saveUploadedFileRecord();
+            
+            if($fileRecordSaved !== true) {
+                // Something went horribly wrong!!!
+                $this->sendResponseHeaders(500);
+                echo $fileRecordSaved;
+                Yii::app()->end();
+            }
+        } catch (CDbException $ex) {
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500);
 
-        if($fileRecordSaved !== true) {
-            // Something went horribly wrong!!!
-            echo $fileRecordSaved;
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
             Yii::app()->end();
         }
-
+        
         // We are ready to process the file so let the UI know that we are ready for it!
+        $this->sendResponseHeaders(200);
         echo $model->getJsonSuccessResponse(
                 $this->createUrl('arena/uploadArenasFileDelete'),
                 $this->createUrl('arena/uploadArenasProcessCSV')
@@ -324,8 +357,6 @@ class ArenaController extends Controller
     
     public function actionUploadArenasProcessCSV()
     {
-        
-        
         $step = isset($_GET['step']) ? (integer)$_GET['step'] : null;
  
         if(!isset($step)) {
@@ -401,7 +432,7 @@ class ArenaController extends Controller
     {
         $isGetMethod = $this->isGetMethod();
         
-        // This needs to come through as an actual DELETE request!!!
+        // This needs to come through as an actual GET request!!!
         if($isGetMethod !== true) {
             echo $isGetMethod;
             Yii::app()->end();
@@ -420,6 +451,7 @@ class ArenaController extends Controller
         if(!isset($fid) || !isset($name) || !isset($upload_type_id) ||
            !isset($skipRows) || !isset($delimiter) || !isset($enclosure) ||
            !isset($escapeChar)) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -440,6 +472,7 @@ class ArenaController extends Controller
         );
         
         if($fileUpload === null) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -467,6 +500,7 @@ class ArenaController extends Controller
         $csvFile = $csvImporter->open();
         
         if($csvFile !== true) {
+            $this->sendResponseHeaders(400);
             echo $csvFile;
             Yii::app()->end();
         }
@@ -475,6 +509,8 @@ class ArenaController extends Controller
         $csvRow = $csvImporter->getRows(1);
         $csvImporter->close();
         $tableFields = Arena::getImportAttributes();
+        
+        $this->sendResponseHeaders(200);
         
         echo json_encode(
                 array(
@@ -490,12 +526,12 @@ class ArenaController extends Controller
     
     protected function uploadArenasProcessCSVStep3()
     {
-        $isPutMethod = $this->isPutMethod();
+        $isPostMethod = $this->isPostMethod();
         
-        // This needs to come through as an actual DELETE request!!!
-        if($isPutMethod !== true) {
+        // This needs to come through as an actual PUT request!!!
+        if($isPostMethod !== true) {
             $this->sendResponseHeaders(400);
-            echo $isPutMethod;
+            echo $isPostMethod;
             Yii::app()->end();
         }
 
@@ -517,7 +553,7 @@ class ArenaController extends Controller
         
         // ensure all parameters have been passed in.
         if(!isset($step) || !isset($fileUpload) || !isset($csvOptions) ||
-           !isset($tableFields) || !isset($mappings)) {
+           !isset($mappings)) {
             $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
@@ -573,7 +609,6 @@ class ArenaController extends Controller
                 $inFields,
                 $createFields,
                 $updateFields,
-                $tableFields,
                 $csvOptions,
                 $fileUploadRecord,
                 $mappings
@@ -607,6 +642,36 @@ class ArenaController extends Controller
             );
             Yii::app()->end();
         }
+        
+        
+        try {
+            // Auto tag the updated records!!!
+            $transaction = Yii::app()->db->beginTransaction();
+            $arenas = Arena::model()->findAll(
+                    array(
+                        'order' => 'updated_on DESC',
+                        'limit' => $tableImporter->getRowsInserted() + $tableImporter->getRowsUpdated()
+                    )
+            );
+            
+            foreach($arenas as $arena) {
+                $arena->autoTag();
+                $arena->save();
+            }
+            $transaction->commit();
+            $autoTagged = true;
+        } catch (Exception $ex) {
+            $autoTagged = false;
+            $transaction->rollback();
+        }
+        // Data has been imported so let the user know!
+        $this->sendResponseHeaders(200);
+        $response = json_decode($tableImporter->getJsonSuccessResponse(), true);
+        $response['importSummary']['autoTagged'] = $autoTagged;
+        
+        echo json_encode($response);
+        
+        Yii::app()->end();
     }
     
     protected function uploadArenasProcessCSVStep4()

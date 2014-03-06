@@ -44,6 +44,11 @@
 class Arena extends RinkfinderActiveRecord
 {
     /**
+     * @var string $oldTags
+     */
+    private $oldTags;
+    
+    /**
      * @return string the associated database table name
      */
     public function tableName()
@@ -541,4 +546,66 @@ class Arena extends RinkfinderActiveRecord
                 )
         ) == 1;
     }
+    
+    /**
+     * @return array a list of links that point to the arena list filtered by every tag of this arena
+     */
+    public function getTagLinks()
+    {
+        $links = array();
+        foreach(Tag::string2array($this->tags) as $tag)
+            $links[] = CHtml::link(CHtml::encode($tag), array('arena/search', 'tag' => $tag), array('class' => 'btn btn-small'));
+        return $links;
+    }
+
+    /**
+     * Normalizes the user-entered tags.
+     */
+    public function normalizeTags($attribute, $params)
+    {
+        $this->tags = Tag::array2string(array_unique(Tag::string2array($this->tags)));
+    }
+
+    /**
+     * Tags the record with the Arena's name, city, and state, plus full state name.
+     */
+    public function autoTag()
+    {
+        $tags = Tag::string2array($this->tags);
+        
+        $tags[] = $this->name;
+        $tags[] = $this->city;
+        $tags[] = $this->state;
+        $tags[] = UnitedStatesNames::getName($this->state);
+        
+        $this->tags = Tag::array2string(array_unique($tags));
+    }
+
+    /**
+     * This is invoked when a record is populated with data from a find() call.
+     */
+    protected function afterFind()
+    {
+        parent::afterFind();
+        $this->oldTags = $this->tags;
+    }
+
+    /**
+     * This is invoked after the record is saved.
+     */
+    protected function afterSave()
+    {
+        parent::afterSave();
+        Tag::model()->updateFrequency($this->oldTags, $this->tags);
+    }
+
+    /**
+     * This is invoked after the record is deleted.
+     */
+    protected function afterDelete()
+    {
+        parent::afterDelete();
+        Tag::model()->updateFrequency($this->tags, '');
+    }
+
 }

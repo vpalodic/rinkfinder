@@ -49,10 +49,10 @@
             return false;
         }
 
-        $("#arenaUploadStep1").animate({opacity: 1.0}, 100).fadeOut("slow");
+        $("#arenaUploadStep1").hide();
         $("#step2Continue").prop("disabled", false);
         $("#step2Continue").removeClass("disabled");
-        $("#arenaUploadStep2").animate({opacity: 1.0}, 100).fadeIn("slow");
+        $("#arenaUploadStep2").show();
 
         this.uploadType = response.uploadType;
         this.userFullName = response.userFullName;
@@ -72,9 +72,18 @@
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
-        var response = JSON.parse(xhr.responseText);
+        var response = false;
+
+        try
+        {
+            response = JSON.parse(xhr.responseText);
+        }
+        catch (err)
+        {
+            response = false;
+        }
         
-        if (response.existingFile) {
+        if (response !== false && response.existingFile) {
             if($("#deleteButton").css("display") === "none") {
                 $("#deleteButton").prop("disabled", false);
                 $("#deleteButton").removeClass("disabled");
@@ -141,9 +150,56 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
+                var response = false;
+                
+                try
+                {
+                    response = JSON.parse(xhr.responseText);
+                }
+                catch (err)
+                {
+                    response = false;
+                }
+                
                 $("#arenaModalLabel").html("Delete Request");
-                $("#arenaModalBody").html("<p>Failed to delete the file.<br />Status: " + status + "<br />Error Thrown: " + errorThrown + "</p>");
+
+                var htmlOutput = "<p class=\"text-error\">Failed to delete the file.</p>";
+                
+                htmlOutput += "<h4>Web Server Response</h4>";
+                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
+                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
+                
+                if (response !== false)
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    
+                    if (response.exception == true)
+                    {
+                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
+                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
+                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
+                        
+                        if (response.errorInfo != null)
+                        {
+                            htmlOutput += "</pre><h4>Database Server Response</h4>";
+                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
+                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
+                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
+                        }
+                    }
+                    
+                    htmlOutput += "</pre>";
+                }
+                else 
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
+                }
+                
+                $("#arenaModalBody").html(htmlOutput);
                 $("#arenaModal").modal('show');
+                
                 $("#loadingScreen").html("");
             }
         });
@@ -190,8 +246,54 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                $("#arenaModalLabel").html("CSV Options");
-                $("#arenaModalBody").html("<p>Failed to apply CSV Options.<br />Status: " + status + "<br />Error Thrown: " + errorThrown + "</p>");
+                var response = false;
+                
+                try
+                {
+                    response = JSON.parse(xhr.responseText);
+                }
+                catch (err)
+                {
+                    response = false;
+                }
+                
+                $("#arenaModalLabel").html("Import Options");
+                
+                var htmlOutput = "<p class=\"text-error\">Failed to apply Import Options.</p>";
+                
+                htmlOutput += "<h4>Web Server Response</h4>";
+                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
+                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
+                
+                if (response !== false)
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    
+                    if (response.exception == true)
+                    {
+                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
+                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
+                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
+                        
+                        if (response.errorInfo != null)
+                        {
+                            htmlOutput += "</pre><h4>Database Server Response</h4>";
+                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
+                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
+                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
+                        }
+                    }
+                    
+                    htmlOutput += "</pre>";
+                }
+                else 
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
+                }
+                
+                $("#arenaModalBody").html(htmlOutput);
                 $("#arenaModal").modal('show');
                 
                 $("#step2Continue").prop("disabled", false);
@@ -217,7 +319,7 @@
         
         $.ajax({                        
             url: this.endpoints.processFile + "?step=3",
-            type: "PUT",
+            type: "POST",
             dataType: "json",
             data: {
                 step: 3,
@@ -227,27 +329,36 @@
                     upload_type_id: this.fileUpload.upload_type_id
                 },
                 csvOptions: this.csvOptions,
-                tableFields: this.tableFields,
                 mappings: this.mappings
             },
             success: function(result, status, xhr) {
                 $("#step4Continue").prop("disabled", false);
                 $("#step4Continue").removeClass("disabled");
+                that.showSummary(result.importSummary);
                 $("#arenaUploadStep4").show();
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                var response = JSON.parse(xhr.responseText);
+                var response = false;
                 
-                $("#arenaModalLabel").html("Process CSV");
+                try
+                {
+                    response = JSON.parse(xhr.responseText);
+                }
+                catch (err)
+                {
+                    response = false;
+                }
                 
-                var htmlOutput = "<p class=\"text-error\">Failed to process the CSV file.</p>";
+                $("#arenaModalLabel").html("Import Data");
+                
+                var htmlOutput = "<p class=\"text-error\">Failed to import the the data file.</p>";
                 
                 htmlOutput += "<h4>Web Server Response</h4>";
                 htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
                 htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
                 
-                if (response)
+                if (response !== false)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
                     htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
@@ -268,6 +379,11 @@
                     }
                     
                     htmlOutput += "</pre>";
+                }
+                else 
+                {
+                    htmlOutput += "<h4>Error Details</h4>";
+                    htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
                 }
                 
                 $("#arenaModalBody").html(htmlOutput);
@@ -290,6 +406,7 @@
         $("#ArenaUploadForm_fileName").fineUploader("clearStoredFiles");
         $("#mappingTable").html("");
         $("#arenaUploadStep4").hide();
+        this.clearSummary();
         $("#arenaUploadStep1").show();
         return true;
     };
@@ -439,6 +556,31 @@
                 });
             }
         }
+    };
+    
+    uploadArenas.showSummary = function(importSummary) {
+        $("#arenaSummaryUpdated").html("<strong>" + importSummary.totalUpdated + "</strong>");
+        $("#arenaSummaryCreated").html("<strong>" + importSummary.totalInserted + "</strong>");
+        $("#arenaSummaryTotal").html("<strong>" + importSummary.totalRecords + "</strong>");
+        if (importSummary.autoTagged)
+        {
+            $("#arenaSummaryAutoTagged").addClass("text-success");
+            $("#arenaSummaryAutoTagged").html("<strong>Yes</strong>");
+        }
+        else
+        {
+            $("#arenaSummaryAutoTagged").addClass("text-error");
+            $("#arenaSummaryAutoTagged").html("<strong>No</strong>");
+        }
+    };
+    
+    uploadArenas.clearSummary = function() {
+        $("#arenaSummaryUpdated").html("");
+        $("#arenaSummaryCreated").html("");
+        $("#arenaSummaryTotal").html("");
+        $("#arenaSummaryAutoTagged").html("");
+        $("#arenaSummaryAutoTagged").removeClass("text-success");
+        $("#arenaSummaryAutoTagged").removeClass("text-error");
     };
     
 }( window.uploadArenas = window.uploadArenas || {}, jQuery ));

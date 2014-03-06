@@ -201,21 +201,26 @@ class CsvImporter extends CComponent
 
         while ($line_count < $max_lines &&
                ($row = fgetcsv($this->fp, $this->length, $this->delimiter, $this->enclosure, $this->escape)) !== FALSE) {
-            if($this->parse_header) { 
-                foreach($this->header as $i => $heading_i)
-                { 
-                    $row_new[$heading_i] = $row[$i]; 
+            if($this->parse_header && count($this->header) == count($row)) { 
+                foreach($this->header as $i => $heading_i) {
+                    $row_new[$heading_i] = $row[$i];
                 } 
                 $data[] = $row_new; 
-            } else { 
-                $data[] = $row; 
-            }
 
-            if($max_lines > 0) {
-                $line_count++;
-            }
+                if($max_lines > 0) {
+                    $line_count++;
+                }
             
-            $this->rowCount++;
+                $this->rowCount++;
+            } elseif(!$this->parse_header) { 
+                $data[] = $row; 
+                
+                if($max_lines > 0) {
+                    $line_count++;
+                }
+            
+                $this->rowCount++;
+            }
         } 
         return $data; 
     }

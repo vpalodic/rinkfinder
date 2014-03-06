@@ -276,9 +276,28 @@
     <h3 class="sectionSubHeader">
         Step 4: <h4>Import Summary</h4>
     </h3>
-    <p class="sectionSubHeaderContent">
-    Click the button below to select a CSV file that contains the arenas you wish to upload.
-    </p>
+    <dl class="dl-horizontal">
+        <dt>
+            Records Updated
+        </dt>
+        <dd id="arenaSummaryUpdated" class="text-success">
+        </dd>
+        <dt>
+            Records Created
+        </dt>
+        <dd id="arenaSummaryCreated" class="text-success">
+        </dd>
+        <dt>
+            Records In File
+        </dt>
+        <dd id="arenaSummaryTotal" class="text-success">
+        </dd>
+        <dt>
+            Records Auto Tagged?
+        </dt>
+        <dd id="arenaSummaryAutoTagged">
+        </dd>
+    </dl>
     <div class="control-group">
         <div class="controls">
             <button id="step4Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
@@ -296,7 +315,6 @@
     <h3 id="arenaModalLabel">Modal header</h3>
   </div>
   <div id="arenaModalBody" class="modal-body">
-    <p>One fine body…</p>
   </div>
   <div id="arenaModalFooter" class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
