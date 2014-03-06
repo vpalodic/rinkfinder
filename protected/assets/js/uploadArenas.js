@@ -135,7 +135,10 @@
             htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
             $("#arenaModalBody").html(htmlOutput);
             $("#arenaModal").modal('show');
-        }                
+        } else {
+            $("#arenaModalBody").html(htmlOutput);
+            $("#arenaModal").modal('show');
+        }
         
         $("#loadingScreen").html("");
         
