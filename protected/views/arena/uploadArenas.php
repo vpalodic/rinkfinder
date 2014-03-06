@@ -247,9 +247,9 @@
             <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
                 <i class="icon-arrow-right icon-white"></i> Continue
             </button>
-            <a id="resetButton" href="#" class="btn btn-large btn-primary pull-right" aria-hidden="true">
+            <button id="resetButton" class="btn btn-large btn-primary pull-right" type="button" aria-hidden="true">
                 <i class="icon-repeat icon-white"></i> Restart Import
-            </a>
+            </button>
         </div>
     </div>
 </div><!-- step 2 -->
@@ -267,9 +267,9 @@
             <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
                 <i class="icon-upload icon-white"></i> Import
             </button>
-            <a id="resetButton" href="#" class="btn btn-large btn-primary pull-right" aria-hidden="true">
+            <button id="resetButton" class="btn btn-large btn-primary pull-right" type="button" aria-hidden="true">
                 <i class="icon-repeat icon-white"></i> Restart Import
-            </a>
+            </button>
         </div>
     </div>
 </div><!-- step 3 -->
@@ -318,16 +318,16 @@
   <div id="arenaModalBody" class="modal-body">
   </div>
   <div id="arenaModalFooter" class="modal-footer">
-    <a href="#" class="btn btn-large" data-dismiss="modal" aria-hidden="true">
+    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
-    </a>
-    <a id="resetButton" href="#" class="btn btn-large btn-primary" aria-hidden="true">
+    </button>
+    <button id="resetButton" class="btn btn-large btn-primary pull-right" type="button" aria-hidden="true">
         <i class="icon-repeat icon-white"></i> Restart Import
-    </a>
+    </button>
   </div>
 </div><!-- Error Modal Dialog -->
 
-<!-- Error Modal Dialog -->
+<!-- Instructions Modal Dialog -->
 <div id="arenaModalMapping" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalMappingLabel" aria-hidden="true">
   <div id="arenaModalMappingHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -412,8 +412,8 @@
     </dl>
   </div>
   <div id="arenaModalFooter" class="modal-footer">
-    <a href="#" class="btn btn-large" data-dismiss="modal" aria-hidden="true">
+    <button href="#" class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
-    </a>
+    </button>
   </div>
-</div><!-- Error Modal Dialog -->
+</div><!-- Instructions Modal Dialog -->
