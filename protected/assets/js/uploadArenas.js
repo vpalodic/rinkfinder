@@ -129,10 +129,10 @@
             $("#arenaModalBody").html(htmlOutput);
             $("#arenaModal").modal('show');
         }
-        else 
+        else if (xhr && xhr.responseText)
         {
             htmlOutput += "<h4>Error Details</h4>";
-            htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
+            htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
             $("#arenaModalBody").html(htmlOutput);
             $("#arenaModal").modal('show');
         }                
@@ -235,10 +235,10 @@
                     
                     htmlOutput += "</pre>";
                 }
-                else 
+                else if (xhr && xhr.responseText)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
+                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
                 }
                 
                 $("#arenaModalBody").html(htmlOutput);
@@ -334,7 +334,7 @@
                     
                     htmlOutput += "</pre>";
                 }
-                else 
+                else if (xhr && xhr.responseText)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
                     htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
@@ -430,10 +430,10 @@
                     
                     htmlOutput += "</pre>";
                 }
-                else 
+                else if (xhr && xhr.responseText) 
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
+                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
                 }
                 
                 $("#arenaModalBody").html(htmlOutput);
