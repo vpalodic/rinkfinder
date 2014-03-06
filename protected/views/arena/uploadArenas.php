@@ -25,6 +25,9 @@
             . '$("#uploadButton").on("click", function () {'
             . '    return uploadArenas.onUploadButtonClick();'
             . '});'
+            . '$("#resetButton").on("click", function () {'
+            . '    return uploadArenas.onResetButtonClick();'
+            . '});'
             . 'uploadArenas.baseUrl = "' . Yii::app()->request->baseUrl . '";',
             CClientScript::POS_READY
     );
@@ -70,7 +73,7 @@
                             )
                     ),
                     'pluginOptions' => array(
-                        'debug' => false,
+                        'debug' => true,
                         'multiple' => false,
                         'autoUpload' => false,
                         'deleteFile' => array(
@@ -244,6 +247,9 @@
             <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
                 <i class="icon-arrow-right icon-white"></i> Continue
             </button>
+            <a id="resetButton" href="#" class="btn btn-large btn-primary pull-right" aria-hidden="true">
+                <i class="icon-repeat icon-white"></i> Restart Import
+            </a>
         </div>
     </div>
 </div><!-- step 2 -->
@@ -251,24 +257,19 @@
     <h3 class="sectionSubHeader">
         Step 3: <h4>Import Mappings</h4>
     </h3>
-    <p class="sectionSubHeaderContent">
-    Use the drop-down lists to map fields in the CSV file to fields in the Arena table.
-    Please remember that fields with a <span class="required">*</span> are required to be mapped.
-    A field will automatically be mapped if the field name appears in the CSV header.
-    Data in the CSV file that exceeds the length of the database field will be truncated. Any
-    characters in the data from the CSV file that do not conform to the database field type
-    will be stripped before being imported. For example, for the phone number field, all
-    formatting characters such as () and - will be removed before being imported.
-    Please note that you will not be able to continue until all required table fields have
-    been mapped to a CSV field. 
-    </p>
+    <a href="#arenaModalMapping" role="button" class="btn btn-large" data-toggle="modal">
+        <i class="icon-info-sign"></i> Instructions
+    </a>
     <table id="mappingTable" class="items table table-striped table-bordered table-condensed table-hover" style="padding: 0px;">
     </table>
     <div class="control-group">
         <div class="controls">
-            <button id="step3Continue" class="btn btn-primary btn-large disabled" type="button" name="yt3" disabled>
+            <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
                 <i class="icon-upload icon-white"></i> Import
             </button>
+            <a id="resetButton" href="#" class="btn btn-large btn-primary pull-right" aria-hidden="true">
+                <i class="icon-repeat icon-white"></i> Restart Import
+            </a>
         </div>
     </div>
 </div><!-- step 3 -->
@@ -308,15 +309,111 @@
 </div><!-- step 4 -->
 <div id="loadingScreen" class="row-fluid">
 </div><!-- Loading Screen -->
-<!-- Modal Dialog -->
+<!-- Error Modal Dialog -->
 <div id="arenaModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalLabel" aria-hidden="true">
   <div id="arenaModalHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalLabel">Modal header</h3>
+    <h3 id="arenaModalLabel"></h3>
   </div>
   <div id="arenaModalBody" class="modal-body">
   </div>
   <div id="arenaModalFooter" class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
+    <a href="#" class="btn btn-large" data-dismiss="modal" aria-hidden="true">
+        <i class="icon-remove-sign"></i> Close
+    </a>
+    <a id="resetButton" href="#" class="btn btn-large btn-primary" aria-hidden="true">
+        <i class="icon-repeat icon-white"></i> Restart Import
+    </a>
   </div>
-</div><!-- Modal Dialog -->
+</div><!-- Error Modal Dialog -->
+
+<!-- Error Modal Dialog -->
+<div id="arenaModalMapping" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalMappingLabel" aria-hidden="true">
+  <div id="arenaModalMappingHeader" class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="arenaModalMappingLabel">Mapping Instructions</h3>
+  </div>
+  <div id="arenaModalMappingBody" class="modal-body">
+    <dl>
+        <dt>
+            How to Map Fields
+        </dt>
+        <dd>
+            Use the drop-down lists to map fields in the data file to fields in the Arena table.
+        </dd>
+        <dt>
+            What Fields to Map
+        </dt>
+        <dd>
+            Fields with a <span class="required">*</span> are required to be mapped.
+        </dd>
+        <dt>
+            Map To Multiple Fields
+        </dt>
+        <dd>
+            You can map a data file field to multiple Arena table fields.
+        </dd>
+        <dt>
+            Automatic Field Mappings
+        </dt>
+        <dd>
+            A field will automatically be mapped if the field name appears in the data file header.
+        </dd>
+        <dt>
+            Data File Header Row
+        </dt>
+        <dd>
+            Although not absolutely required, if your data file does not have a header row, then the
+            first data row will be used as the header and will not be imported.
+        </dd>
+        <dt>
+            Field Information
+        </dt>
+        <dd>
+            Placing your cursor over a field in the mapping table will display a tool-tip
+            that will display information about the field such as its size and type.
+        </dd>
+        <dt>
+            Field Size
+        </dt>
+        <dd>
+            Data in the file that exceeds the size of the database field will be truncated.
+        </dd>
+        <dt>
+            Field Type
+        </dt>
+        <dd>
+            Any characters in the data from the file that do not conform to the database field type
+            will be stripped before being imported. For example, for the phone number field, all
+            formatting characters such as () and - will be removed before being imported.
+        </dd>
+        <dt>
+            Data Type Conversion
+        </dt>
+        <dd>
+            The importer will attempt to auto detect and convert certain data types before importing
+            the data in to the database. For example, if there is a date field and the data file
+            contains November 25, 2013 as the value, it will be converted to 2013-11-25 before being
+            stored in the database.
+        </dd>
+        <dt>
+            Auto Tagging
+        </dt>
+        <dd>
+            Imported records will automatically be tagged with the name, city, and state.
+        </dd>
+        <dt>
+            How to Continue
+        </dt>
+        <dd>
+            You will not be able to continue until all required <span class="required">*</span>
+            table fields have been mapped to a data file field.
+        </dd>
+    </dl>
+  </div>
+  <div id="arenaModalFooter" class="modal-footer">
+    <a href="#" class="btn btn-large" data-dismiss="modal" aria-hidden="true">
+        <i class="icon-remove-sign"></i> Close
+    </a>
+  </div>
+</div><!-- Error Modal Dialog -->

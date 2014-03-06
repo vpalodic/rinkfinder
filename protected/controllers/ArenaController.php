@@ -16,7 +16,7 @@ class ArenaController extends Controller
         return array(
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
-            'ajaxOnly + uploadArenasFile uploadArenasFileDelete uploadArenasProcessCSV', // we only upload, delete, and process files via ajax!
+            //'ajaxOnly + uploadArenasFile uploadArenasFileDelete uploadArenasProcessCSV', // we only upload, delete, and process files via ajax!
         );
     }
 
@@ -176,11 +176,18 @@ class ArenaController extends Controller
 		));
 	}
 
-	/**
-	 * Manages all models.
-	 */
+    /**
+     * Main page to upload many areans through a data file
+     */
     public function actionUploadArenas()
     {
+        if(!Yii::app()->user->checkAccess('uploadArena')) {
+            throw new CHttpException(
+                    403,
+                    'Permission denied. You are not authorized to perform this action.'
+            );
+        }
+        
         $model = new ArenaUploadForm();
                 
         $model->unsetAttributes();  // clear any default values
@@ -203,6 +210,16 @@ class ArenaController extends Controller
 
     public function actionUploadArenasFile()
     {
+        if(!Yii::app()->user->checkAccess('uploadArena')) {
+            $this->sendResponseHeaders(403);
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
         $model = new ArenaUploadForm();
         
         $instanceRetrieved = $model->getUploadFileInstance();
@@ -311,12 +328,21 @@ class ArenaController extends Controller
     
     public function actionUploadArenasFileDelete()
     {
-        $this->sendJSONHeaders();
+        if(!Yii::app()->user->checkAccess('uploadArena')) {
+            $this->sendResponseHeaders(403);
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
         
         $isDeleteMethod = $this->isDeleteMethod();
         
         // This needs to come through as an actual DELETE request!!!
         if($isDeleteMethod !== true) {
+            $this->sendResponseHeaders(400);
             echo $isDeleteMethod;
             Yii::app()->end();
         }
@@ -324,6 +350,7 @@ class ArenaController extends Controller
         $paramstr =  $this->getParamsFromPhp();
 
         if($paramstr === false) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -341,6 +368,7 @@ class ArenaController extends Controller
         // (name) to be sent in the delete request.
 
         if(!isset($fid) || !isset($name)) {
+            $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
@@ -351,12 +379,23 @@ class ArenaController extends Controller
         }
         
         // Delete the file and send the response!
+        $this->sendResponseHeaders(200);
         echo RinkfinderUploadForm::deleteUploadedFile($fid, $name, FileUpload::TYPE_ARENA_CSV);
         Yii::app()->end();
     }
     
     public function actionUploadArenasProcessCSV()
     {
+        if(!Yii::app()->user->checkAccess('uploadArena')) {
+            $this->sendResponseHeaders(403);
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
         $step = isset($_GET['step']) ? (integer)$_GET['step'] : null;
  
         if(!isset($step)) {

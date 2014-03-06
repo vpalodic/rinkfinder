@@ -76,7 +76,10 @@
         
         try
         {
-            response = JSON.parse(xhr.responseText);
+            if (xhr && xhr.responseText)
+            {
+                response = JSON.parse(xhr.responseText);
+            }
         }
         catch (err)
         {
@@ -192,7 +195,10 @@
                 
                 try
                 {
-                    response = JSON.parse(xhr.responseText);
+                    if (xhr && xhr.responseText)
+                    {
+                        response = JSON.parse(xhr.responseText);
+                    }
                 }
                 catch (err)
                 {
@@ -288,7 +294,10 @@
                 
                 try
                 {
-                    response = JSON.parse(xhr.responseText);
+                    if (xhr && xhr.responseText)
+                    {
+                        response = JSON.parse(xhr.responseText);
+                    }
                 }
                 catch (err)
                 {
@@ -381,7 +390,10 @@
                 
                 try
                 {
-                    response = JSON.parse(xhr.responseText);
+                    if (xhr && xhr.responseText)
+                    {
+                        response = JSON.parse(xhr.responseText);
+                    }
                 }
                 catch (err)
                 {
@@ -462,8 +474,8 @@
         // that we need about the CSV file and the database table.
         var that = this;
         // First add the table headers
-        var strOutput = "<thead><tr><th>Table Column</th><th>CSV Column</th>" +
-                "<th>CSV Example</th></tr></thead><tbody></tbody>";
+        var strOutput = "<thead><tr><th>Table Column</th><th>Data File Column</th>" +
+                "<th>Data File Example</th></tr></thead><tbody></tbody>";
         
         $(elementID).append(strOutput);
         
@@ -619,6 +631,36 @@
         $("#arenaSummaryAutoTagged").html("");
         $("#arenaSummaryAutoTagged").removeClass("text-success");
         $("#arenaSummaryAutoTagged").removeClass("text-error");
+    };
+    
+    uploadArenas.reset = function() {
+        // Reset the steps 1 at a time!
+        $("#step4Continue").prop("disabled", true);
+        $("#step4Continue").addClass("disabled");
+        $("#arenaUploadStep4").hide();
+        this.clearSummary();
+        
+        $("#step3Continue").prop("disabled", true);
+        $("#step3Continue").addClass("disabled");
+        $("#arenaUploadStep3").hide();
+        $("#mappingTable").html("");
+        
+        $("#step2Continue").prop("disabled", true);
+        $("#step2Continue").addClass("disabled");
+        $("#arenaUploadStep2").hide();
+        
+        $("#ArenaUploadForm_fileName").fineUploader("clearStoredFiles");
+        $("#uploadButton").prop("disabled", true);
+        $("#uploadButton").addClass("disabled");
+        $("#deleteButton").prop("disabled", true);
+        $("#deleteButton").addClass("disabled");
+        $("#arenaUploadStep1").show();
+    };
+    
+    uploadArenas.onResetButtonClick = function () {
+        this.reset();
+        $("#arenaModal").modal('hide');
+        return true;
     };
     
 }( window.uploadArenas = window.uploadArenas || {}, jQuery ));
