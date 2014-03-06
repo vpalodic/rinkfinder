@@ -85,7 +85,7 @@
         
         $("#arenaModalLabel").html("Upload File");
         
-        var htmlOutput = "<p class=\"text-error\">Failed to upload the data file.</p>";
+        var htmlOutput = "<p class=\"text-error\"><strong>Failed to upload the data file.</strong></p>";
         
         htmlOutput += "<h4>Web Server Response</h4>";
         htmlOutput += "<pre>Message: <strong>" + errorReason + "</strong>\n</pre>";
@@ -201,7 +201,7 @@
                 
                 $("#arenaModalLabel").html("Delete Request");
 
-                var htmlOutput = "<p class=\"text-error\">Failed to delete the file.</p>";
+                var htmlOutput = "<p class=\"text-error\"><strong>Failed to delete the file.</strong></p>";
                 
                 htmlOutput += "<h4>Web Server Response</h4>";
                 htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
@@ -297,7 +297,7 @@
                 
                 $("#arenaModalLabel").html("Import Options");
                 
-                var htmlOutput = "<p class=\"text-error\">Failed to apply Import Options.</p>";
+                var htmlOutput = "<p class=\"text-error\"><strong>Failed to apply Import Options.</strong></p>";
                 
                 htmlOutput += "<h4>Web Server Response</h4>";
                 htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
@@ -390,7 +390,7 @@
                 
                 $("#arenaModalLabel").html("Import Data");
                 
-                var htmlOutput = "<p class=\"text-error\">Failed to import the the data file.</p>";
+                var htmlOutput = "<p class=\"text-error\"><strong>Failed to import the the data file.</strong></p>";
                 
                 htmlOutput += "<h4>Web Server Response</h4>";
                 htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
