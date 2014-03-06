@@ -73,7 +73,7 @@
         $("#uploadButton").addClass("disabled");
         
         var response = false;
-
+        
         try
         {
             response = JSON.parse(xhr.responseText);
@@ -83,6 +83,13 @@
             response = false;
         }
         
+        $("#arenaModalLabel").html("Upload File");
+        
+        var htmlOutput = "<p class=\"text-error\">Failed to upload the data file.</p>";
+        
+        htmlOutput += "<h4>Web Server Response</h4>";
+        htmlOutput += "<pre>Message: <strong>" + errorReason + "</strong>\n</pre>";
+
         if (response !== false && response.existingFile) {
             if($("#deleteButton").css("display") === "none") {
                 $("#deleteButton").prop("disabled", false);
@@ -95,6 +102,37 @@
                 });
             }
         }
+        else if (response !== false)
+        {
+            htmlOutput += "<h4>Error Details</h4>";
+            htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+            
+            if (response.exception == true)
+            {
+                htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
+                htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
+                htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
+                
+                if (response.errorInfo != null)
+                {
+                    htmlOutput += "</pre><h4>Database Server Response</h4>";
+                    htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
+                    htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
+                    htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
+                }
+            }
+            
+            htmlOutput += "</pre>";
+            $("#arenaModalBody").html(htmlOutput);
+            $("#arenaModal").modal('show');
+        }
+        else 
+        {
+            htmlOutput += "<h4>Error Details</h4>";
+            htmlOutput += "<p>Error: " + xhr.responseText + "</p>";
+            $("#arenaModalBody").html(htmlOutput);
+            $("#arenaModal").modal('show');
+        }                
         
         $("#loadingScreen").html("");
         
