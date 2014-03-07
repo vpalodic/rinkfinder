@@ -85,6 +85,12 @@ class RinkfinderUploadForm extends CFormModel
      */
     public function isValidUploadedFile()
     {
+        // Work around for IE 7 - 9!
+        if($this->fileSize == 0 && $this->fileName == '') {
+            $this->fileSize = $this->fileInstance->size;
+            $this->fileName = $this->fileInstance->name;
+        }
+
         if($this->fileInstance->size != $this->fileSize || strcmp($this->fileInstance->name, $this->fileName) != 0) {
             return json_encode(
                     array(

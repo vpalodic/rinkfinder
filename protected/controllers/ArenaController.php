@@ -235,12 +235,7 @@ class ArenaController extends Controller
         $model->fileSize = isset($_GET['qqtotalfilesize']) ? (integer)$_GET['qqtotalfilesize'] : 0;
         $model->fileName = isset($_GET['ArenaUploadForm']['fileName']) ? $_GET['ArenaUploadForm']['fileName'] : '';
 
-        // Work around for IE 7 - 9!
-        if($model->fileSize > 0 && $model->fileName != '') {
-            $isValid = $model->isValidUploadedFile();
-        } else {
-            $isValid = true;
-        }            
+        $isValid = $model->isValidUploadedFile();
             
         if($isValid !== true) {
             // What was suppose to be uploaded doesn't match what we got
