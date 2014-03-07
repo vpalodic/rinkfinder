@@ -275,7 +275,7 @@
     </table>
     <div class="control-group">
         <div class="controls">
-            <button id="step3Previous" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
+            <button id="step3Previous" class="btn btn-large disabled" type="button" name="yt2" disabled>
                 <i class="icon-arrow-left icon-white"></i> Previous
             </button>
             <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
