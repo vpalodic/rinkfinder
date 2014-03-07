@@ -289,6 +289,9 @@
                 that.tableFields = result.tableFields;
                 that.setupMappingTable("#mappingTable");
                 
+                $("#step3Previous").prop("disabled", false);
+                $("#step3Previous").removeClass("disabled");
+
                 $("#arenaUploadStep3").show();
                 $("#loadingScreen").html("");
             },
@@ -362,6 +365,8 @@
         uploadArenas.setLoadingScreen("#loadingScreen");
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
+        $("#step3Previous").prop("disabled", true);
+        $("#step3Previous").addClass("disabled");
         $("#arenaUploadStep3").hide();
         $("#mappingTable").html("");
         
@@ -658,6 +663,8 @@
         $("#arenaUploadStep4").hide();
         this.clearSummary();
         
+        $("#step3Previous").prop("disabled", true);
+        $("#step3Previous").addClass("disabled");
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
         $("#arenaUploadStep3").hide();
