@@ -16,7 +16,7 @@ class ArenaController extends Controller
         return array(
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
-            //'ajaxOnly + uploadArenasFile uploadArenasFileDelete uploadArenasProcessCSV', // we only upload, delete, and process files via ajax!
+            'ajaxOnly + uploadArenasFileDelete uploadArenasProcessCSV', // we only delete and process files via ajax!
         );
     }
 
@@ -254,18 +254,6 @@ class ArenaController extends Controller
             $this->sendResponseHeaders(500);
             echo $isDirPrepared;                
             Yii::app()->end();
-        }
-
-        $hasExistingRecord = $model->getHasFileRecord(
-                $this->createUrl('arena/uploadArenasFileDelete')
-        );
-            
-        if($hasExistingRecord !== false) {
-            // Ok, we have an existing record, so we overwrite it!
-/*            $this->sendResponseHeaders(400);
-            echo $hasExistingRecord;                    
-            Yii::app()->end();
- */
         }
 
         // We need to save it so we can process it later!
