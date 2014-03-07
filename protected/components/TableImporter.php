@@ -160,6 +160,19 @@ class TableImporter extends CComponent
     }
 
     /**
+     * Returns the id of the FileUpload record
+     * @return integer
+     */
+    public function getFileUploadId() 
+    {
+        if(isset($this->fileUpload) && isset($this->fileUpload->id)) {
+            return $this->fileUpload->id;
+        }
+        
+        return 0;
+    }
+
+    /**
      * Imports the CSV data in to the table
      * @param boolean $transaction If set to true, import will be run inside a
      * transaction

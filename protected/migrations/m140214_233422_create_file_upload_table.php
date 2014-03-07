@@ -14,8 +14,9 @@ class m140214_233422_create_file_upload_table extends CDbMigration
     
     private function createFileUploadTable()
     {
+        // the user_id field references user.id and
         // the arena_id field references arena.id and
-        // the event_type_id field references event_type.id
+        // the ice_sheet_id field references ice_sheet.id
         // the created_by_id field references user.id and
         // the updated_by_id field references user.id
         // so we add Foreign Keys for these fields

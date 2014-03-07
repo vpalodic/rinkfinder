@@ -151,7 +151,7 @@ class FileUpload extends RinkfinderActiveRecord
     }
 
     /**
-     * @return array customized attribute labels (name=>label)
+     * @return array customized attribute labels (name => label)
      */
     public function attributeLabels()
     {

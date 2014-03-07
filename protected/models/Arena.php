@@ -298,8 +298,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 32,
                 'required' => false,
-                'tooltip' => 'Here you can enter the ID of the arena in your system. '
+                'tooltip' => 'The ID of the arena in your system. '
                 . 'You can enter up to a 32 character ID.',
+                'example' => '1234ABCD',
             ),
             array(
                 'name' => 'name',
@@ -307,8 +308,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 128,
                 'required' => true,
-                'tooltip' => 'Here you can enter the name of the Arena. '
-                . 'There is a 128 character limit for the name. This field is required.'
+                'tooltip' => 'The name of the Arena. '
+                . 'There is a 128 character limit for the name. This field is required.',
+                'example' => 'My Home Arena',
             ),
             array(
                 'name' => 'address_line1',
@@ -316,8 +318,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 128,
                 'required' => true,
-                'tooltip' => 'Here you can enter the first line of the Arena\'s address. '
-                . 'There is a 128 character limit for the address line. This field is required.'
+                'tooltip' => 'The first line of the Arena\'s address. '
+                . 'There is a 128 character limit for the address line. This field is required.',
+                'example' => '123 Main St',
             ),
             array(
                 'name' => 'address_line2',
@@ -325,8 +328,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 128,
                 'required' => false,
-                'tooltip' => 'Here you can enter the second line of the Arena\'s address. '
-                . 'There is a 128 character limit for the address line.'
+                'tooltip' => 'The second line of the Arena\'s address. '
+                . 'There is a 128 character limit for the address line.',
+                'example' => 'Suite #456',
             ),
             array(
                 'name' => 'city',
@@ -334,8 +338,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 128,
                 'required' => true,
-                'tooltip' => 'Here you can enter the city of the Arena\'s address. '
-                . 'There is a 128 character limit for the city. This field is required.'
+                'tooltip' => 'The city of the Arena\'s address. '
+                . 'There is a 128 character limit for the city. This field is required.',
+                'example' => 'Some City',
             ),
             array(
                 'name' => 'state',
@@ -343,8 +348,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 2,
                 'required' => true,
-                'tooltip' => 'Here you can enter the state of the Arena\'s address. '
-                . 'There is a 2 character limit for the state. This field is required.'
+                'tooltip' => 'The two character state abbreviation of the Arena\'s address. '
+                . 'There is a 2 character limit for the state. This field is required.',
+                'example' => 'MN',
             ),
             array(
                 'name' => 'zip',
@@ -352,9 +358,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 5,
                 'required' => true,
-                'tooltip' => 'Here you can enter the 5 digit zip code of the Arena\'s address. '
-                . 'There is a 5 character limit for the zip code. This field is required.'
-
+                'tooltip' => 'The five digit zip code of the Arena\'s address. '
+                . 'There is a 5 character limit for the zip code. This field is required.',
+                'example' => '12345',
             ),
             array(
                 'name' => 'lat',
@@ -362,8 +368,9 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'float',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'Here you can enter the lattitude of the Arena. '
-                . 'This field may be overwritten if the Arena is later geocoded.'
+                'tooltip' => 'The lattitude of the Arena. '
+                . 'This field may be overwritten if the Arena is later geocoded.',
+                'example' => '43.12345678',
             ),
             array(
                 'name' => 'lng',
@@ -371,40 +378,48 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'float',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'Here you can enter the longitude of the Arena. '
-                . 'This field may be overwritten if the Arena is later geocoded.'
+                'tooltip' => 'The longitude of the Arena. '
+                . 'This field may be overwritten if the Arena is later geocoded.',
+                'example' => '-72.987654321',
             ),
             array(
                 'name' => 'phone',
                 'display' => 'Phone',
-                'type' => 'string',
+                'type' => 'phone',
                 'size' => 10,
                 'required' => false,
-                'tooltip' => 'Here you can enter the 10 digit phone number of the Arena. '
+                'tooltip' => 'The ten digit phone number of the Arena. '
+                . 'There is a 10 character limit for the phone number.',
+                'example' => '0123456789',
             ),
             array(
                 'name' => 'ext',
                 'display' => 'Extension',
-                'type' => 'string',
+                'type' => 'phone',
                 'size' => 10,
                 'required' => false,
-                'tooltip' => 'Here you can enter up to a 10 digit extension for the phone number of the Arena. '
+                'tooltip' => 'The ten digit extension for the phone number of the Arena. '
+                . 'There is a 10 character limit for the extension.',
+                'example' => '0123456789',
             ),
             array(
                 'name' => 'fax',
                 'display' => 'Fax',
-                'type' => 'string',
+                'type' => 'phone',
                 'size' => 10,
                 'required' => false,
-                'tooltip' => 'Here you can enter the 10 digit fax number of the Arena. '
+                'tooltip' => 'The ten digit fax number of the Arena. '
+                . 'There is a 10 character limit for the fax number.',
+                'example' => '0123456789',
             ),
             array(
                 'name' => 'fax_ext',
                 'display' => 'Fax Extension',
-                'type' => 'string',
+                'type' => 'phone',
                 'size' => 10,
                 'required' => false,
-                'tooltip' => 'Here you can enter up to a 10 digit extension for the fax number of the Arena. '
+                'tooltip' => 'The ten digit extension for the fax number of the Arena. ',
+                'example' => '0123456789',
             ),
             array(
                 'name' => 'url',
@@ -412,9 +427,10 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 511,
                 'required' => false,
-                'tooltip' => 'Here you can enter the hompage for the Arena. '
+                'tooltip' => 'The hompage for the Arena. '
                 . 'Don\'t forget to add http:// or https://. '
-                . 'There is a 511 character limit for this field.'
+                . 'There is a 511 character limit for this field.',
+                'example' => 'http://www.myarena.com',
             ),
             array(
                 'name' => 'description',
@@ -422,11 +438,12 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'text',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'Here you can enter a description for the Arena. '
-                . 'The description can contain HTML markup. '
+                'tooltip' => 'The description for the Arena. '
+                . 'The description may contain HTML markup. '
                 . 'The description will appear at the top of the Arena\'s page '
                 . 'on this site. '
-                . 'There is no limit to the amount of text you may enter.'
+                . 'There is no limit to the amount of text you may enter.',
+                'example' => CHtml::encode('<h1>My Heading</h1><p>My Paragraph</p>'),
             ),
             array(
                 'name' => 'tags',
@@ -434,9 +451,10 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 1024,
                 'required' => false,
-                'tooltip' => 'Here you can enter tags for the Arena. '
-                . 'Tags should be seperated by a comma (,).'
-                . 'There is a 1024 character limit for this field'
+                'tooltip' => 'The tags for the Arena. '
+                . 'Multiple tags must be seperated by a comma (,). '
+                . 'There is a 1024 character limit for this field',
+                'example' => 'tag1, tag2, tag3, tag4',
             ),
             array(
                 'name' => 'notes',
@@ -444,11 +462,12 @@ class Arena extends RinkfinderActiveRecord
                 'type' => 'text',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'Here you can enter any notes for the Arena. '
-                . 'The notes can contain HTML markup. '
+                'tooltip' => 'The notes for the Arena. '
+                . 'The notes may contain HTML markup. '
                 . 'The notes will appear at the bottom of the Arena\'s page '
                 . 'on this site. '
-                . 'There is no limit to the amount of text you may enter.'
+                . 'There is no limit to the amount of text you may enter.',
+                'example' => CHtml::encode('<h1>My Heading</h1><p>My Paragraph</p>'),
             ),
             array(
                 'name' => 'status_id',
@@ -458,8 +477,9 @@ class Arena extends RinkfinderActiveRecord
                 'required' => false,
                 'tooltip' => 'Here you may enter the Status ID of the Arena. '
                 . 'Please note that entering in an invalid Status ID will result '
-                . 'with the import failing. It is best to leave this field blank '
-                . 'unless you know what you are doing.'
+                . 'with the import failing. It is best to not map this field '
+                . 'unless you know what you are doing.',
+                'example' => '1',
             ),
         );
     }

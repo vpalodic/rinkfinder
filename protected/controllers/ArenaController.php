@@ -204,6 +204,7 @@ class ArenaController extends Controller
                 'uploadArenas',
                 array(
                     'model' => $model,
+                    'fields' => Arena::getImportAttributes(),
                 )
         );
     }
@@ -406,9 +407,6 @@ class ArenaController extends Controller
                 break;
             case 3:
                 $this->uploadArenasProcessCSVStep3();
-                break;
-            case 4:
-                $this->uploadArenasProcessCSVStep4();
                 break;
             default:
                 $this->sendResponseHeaders(400);
@@ -691,6 +689,25 @@ class ArenaController extends Controller
             $autoTagged = false;
             $transaction->rollback();
         }
+        
+        // Save the file import information to the database
+        try {
+            $fileImport = new FileImport();
+            
+            $fileImport->file_upload_id = $tableImporter->getFileUploadId();
+            $fileImport->table_count = 1;
+            $fileImport->tables = 'arena';
+            $fileImport->total_records = $tableImporter->getRowsTotal();
+            $fileImport->total_updated = $tableImporter->getRowsUpdated();
+            $fileImport->total_created = $tableImporter->getRowsInserted();
+            $fileImport->auto_tagged = $autoTagged;
+            
+            $fileImport->save();
+        } catch (Exception $ex) {
+            // We don't care if we can't save the file import record if the
+            // import has been completed!
+        }
+        
         // Data has been imported so let the user know!
         $this->sendResponseHeaders(200);
         $response = json_decode($tableImporter->getJsonSuccessResponse(), true);
@@ -699,10 +716,5 @@ class ArenaController extends Controller
         echo json_encode($response);
         
         Yii::app()->end();
-    }
-    
-    protected function uploadArenasProcessCSVStep4()
-    {
-        
     }
 }

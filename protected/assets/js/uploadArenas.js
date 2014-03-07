@@ -356,6 +356,21 @@
         return true;
     };
     
+    uploadArenas.onPreviousStep3ButtonClick = function () {
+        var that = this;
+        
+        uploadArenas.setLoadingScreen("#loadingScreen");
+        $("#step3Continue").prop("disabled", true);
+        $("#step3Continue").addClass("disabled");
+        $("#arenaUploadStep3").hide();
+        $("#mappingTable").html("");
+        
+        $("#step2Continue").prop("disabled", false);
+        $("#step2Continue").removeClass("disabled");
+        $("#arenaUploadStep2").show();
+        $("#loadingScreen").html("");        
+    };
+    
     uploadArenas.onContinueStep3ButtonClick = function () {
         var that = this;
         
