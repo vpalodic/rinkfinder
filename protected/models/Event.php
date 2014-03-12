@@ -254,7 +254,10 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'string',
                 'size' => 128,
                 'required' => true,
-                'tooltip' => 'The location of the event. '
+                'tooltip' => 'The location of the event. This should be the name '
+                . 'of an existing ice-sheet / rink. If the location does not exist '
+                . 'in the database, it will be created. Please be careful when '
+                . 'specifying the value of this field!'
                 . 'You can enter up to a 128 characters. This field is required.',
                 'example' => 'Rink A',
             ),
@@ -291,10 +294,11 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'date',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'The end date for this event. If not provided, the '
+                'tooltip' => 'The end date for this event. If not provided or it'
+                . ' is invalid and the event occurs in the future, the '
                 . 'end_date will automatically be calculated from the duration. '
                 . 'If duration is also not provided, a default duration of 60 '
-                . 'minutes will be used',
+                . 'minutes will be used.',
                 'example' => '11/01/2014',
             ),
             array(
@@ -303,10 +307,11 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'time',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'The end time for this event. If not provided, the '
-                . 'end_time will automatically be calculated from the duration.'
+                'tooltip' => 'The end time for this event. If not provided or it'
+                . ' is invalid and the event occurs in the future, the '
+                . 'end_time will automatically be calculated from the duration. '
                 . 'If duration is also not provided, a default duration of 60 '
-                . 'minutes will be used',
+                . 'minutes will be used.',
                 'example' => '8:00 PM',
             ),
             array(
@@ -317,8 +322,9 @@ class Event extends RinkfinderActiveRecord
                 'required' => false,
                 'tooltip' => 'The duration of the event in minutes. For example '
                 . 'an hour and a half must be specified as 90 and not 1:30. No '
-                . 'conversion will be done for this field. If not provided, the '
-                . 'duration will be calcuated from the end_date and end_time. If '
+                . 'conversion will be done for this field. If not provided and'
+                . ' the event occurs in the future, the duration will be'
+                . ' calcuated from the end_date and end_time. If '
                 . 'those fields are also not provided, then duration will default '
                 . 'to 60 minutes.',
                 'example' => '90',
@@ -362,8 +368,10 @@ class Event extends RinkfinderActiveRecord
                 'required' => false,
                 'tooltip' => 'Here you may enter the Status ID of the Event. '
                 . 'Please note that entering in an invalid Status ID will result '
-                . 'with the import failing. It is best to not map this field '
-                . 'unless you know what you are doing.',
+                . 'with the import failing. The default status is Open but, if '
+                . 'the event occurs in the past, the status will be updated to '
+                . 'Expired. It is best to not map this field unless you know'
+                . ' what you are doing.',
                 'example' => '1',
             ),
         );
