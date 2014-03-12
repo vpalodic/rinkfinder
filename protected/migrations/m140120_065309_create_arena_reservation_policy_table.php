@@ -38,10 +38,10 @@ class m140120_065309_create_arena_reservation_policy_table extends CDbMigration
                 'KEY arena_reservation_policy_event_type_id_fk (event_type_id)',
                 'KEY arena_reservation_policy_created_by_id_fk (created_by_id)',
                 'KEY arena_reservation_policy_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT arena_reservation_policy_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_reservation_policy_event_type_id_fk FOREIGN KEY (event_type_id) REFERENCES event_type (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_reservation_policy_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_reservation_policy_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT arena_reservation_policy_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_reservation_policy_event_type_id_fk FOREIGN KEY (event_type_id) REFERENCES event_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_reservation_policy_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_reservation_policy_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

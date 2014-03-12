@@ -51,8 +51,8 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
                 'KEY active (active)',
                 'KEY contact_created_by_id_fk (created_by_id)',
                 'KEY contact_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT contact_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT contact_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT contact_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT contact_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -82,8 +82,8 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
                 'KEY active (active)',
                 'KEY event_request_type_created_by_id_fk (created_by_id)',
                 'KEY event_request_type_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_request_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_request_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 4'
         );
@@ -113,8 +113,8 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
                 'KEY active (active)',
                 'KEY event_request_status_created_by_id_fk (created_by_id)',
                 'KEY event_request_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_request_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_request_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -160,15 +160,15 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
                 'KEY event_request_status_id_fk (status_id)',
                 'KEY event_request_created_by_id_fk (created_by_id)',
                 'KEY event_request_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_request_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_requester_id_fk FOREIGN KEY (requester_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_acknowledger_id_fk FOREIGN KEY (acknowledger_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_accepter_id_fk FOREIGN KEY (accepter_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_rejector_id_fk FOREIGN KEY (rejector_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_type_id_fk FOREIGN KEY (type_id) REFERENCES event_request_type (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_status_id_fk FOREIGN KEY (status_id) REFERENCES event_request_status (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_request_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_request_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_requester_id_fk FOREIGN KEY (requester_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_acknowledger_id_fk FOREIGN KEY (acknowledger_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_accepter_id_fk FOREIGN KEY (accepter_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_rejector_id_fk FOREIGN KEY (rejector_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_type_id_fk FOREIGN KEY (type_id) REFERENCES event_request_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_status_id_fk FOREIGN KEY (status_id) REFERENCES event_request_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_request_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

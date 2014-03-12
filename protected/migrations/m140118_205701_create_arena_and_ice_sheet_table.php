@@ -57,8 +57,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY arena_status_created_by_id_fk (created_by_id)',
                 'KEY arena_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT arena_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT arena_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -105,9 +105,9 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY arena_status_id_fk (status_id)',
                 'KEY arena_created_by_id_fk (created_by_id)',
                 'KEY arena_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT arena_status_id_fk FOREIGN KEY (status_id) REFERENCES arena_status (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT arena_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT arena_status_id_fk FOREIGN KEY (status_id) REFERENCES arena_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -137,8 +137,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY ice_sheet_type_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_type_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -168,8 +168,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY ice_sheet_base_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_base_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_base_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_base_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_base_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_base_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -202,8 +202,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY ice_sheet_refrigeration_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_refrigeration_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_refrigeration_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_refrigeration_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_refrigeration_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_refrigeration_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -236,8 +236,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY ice_sheet_resurfacer_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_resurfacer_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_resurfacer_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_resurfacer_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_resurfacer_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_resurfacer_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -270,8 +270,8 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY active (active)',
                 'KEY ice_sheet_status_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -294,7 +294,7 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'arena_id' => 'INT(11) NOT NULL',
                 'external_id' => 'VARCHAR(32) NULL',
                 'name' => 'VARCHAR(128) NOT NULL',
-                'description' => 'TEXT NOT NULL',
+                'description' => 'TEXT NOT NULL DEFAULT \'\'',
                 'tags' => 'VARCHAR(1024) NULL',
                 'length' => 'FLOAT(5, 2) NULL',
                 'width' => 'FLOAT(5, 2) NULL',
@@ -314,6 +314,7 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'PRIMARY KEY id (id)',
                 'UNIQUE KEY external_id (external_id)',
                 'KEY name (name)',
+                'UNIQUE KEY arena_id_name (arena_id, name)',
                 'KEY tags (tags)',
                 'KEY ice_sheet_arena_id_fk (arena_id)',
                 'KEY ice_sheet_base_id_fk (base_id)',
@@ -323,14 +324,14 @@ class m140118_205701_create_arena_and_ice_sheet_table extends CDbMigration
                 'KEY ice_sheet_status_id_fk (status_id)',
                 'KEY ice_sheet_created_by_id_fk (created_by_id)',
                 'KEY ice_sheet_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT ice_sheet_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_base_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_base (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_refrigeration_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_refrigeration (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_resurfacer_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_resurfacer (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_type_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_type (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_status_id_fk FOREIGN KEY (status_id) REFERENCES ice_sheet_status (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT ice_sheet_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT ice_sheet_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_base_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_base (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_refrigeration_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_refrigeration (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_resurfacer_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_resurfacer (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_type_id_fk FOREIGN KEY (type_id) REFERENCES ice_sheet_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_status_id_fk FOREIGN KEY (status_id) REFERENCES ice_sheet_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT ice_sheet_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

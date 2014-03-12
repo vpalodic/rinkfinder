@@ -14,7 +14,7 @@
  * @property boolean $all_day
  * @property string $start_date
  * @property string $start_time
- * @property string $duration
+ * @property integer $duration
  * @property string $end_date
  * @property string $end_time
  * @property string $location
@@ -62,7 +62,8 @@ class Event extends RinkfinderActiveRecord
         // will receive user inputs.
         return array(
             array('arena_id, start_date, start_time, location, created_on, updated_on', 'required'),
-            array('arena_id, ice_sheet_id, all_day, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
+            array('arena_id, ice_sheet_id, duration, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
+            array('all_day', 'boolean'),
             array('external_id', 'length', 'max'=>32),
             array('name, location', 'length', 'max'=>128),
             array('tags', 'length', 'max'=>1024),
@@ -290,7 +291,10 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'date',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'The end date for this event.',
+                'tooltip' => 'The end date for this event. If not provided, the '
+                . 'end_date will automatically be calculated from the duration. '
+                . 'If duration is also not provided, a default duration of 60 '
+                . 'minutes will be used',
                 'example' => '11/01/2014',
             ),
             array(
@@ -299,17 +303,25 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'time',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'The end time for this event.',
+                'tooltip' => 'The end time for this event. If not provided, the '
+                . 'end_time will automatically be calculated from the duration.'
+                . 'If duration is also not provided, a default duration of 60 '
+                . 'minutes will be used',
                 'example' => '8:00 PM',
             ),
             array(
                 'name' => 'duration',
                 'display' => 'Duration',
-                'type' => 'time',
+                'type' => 'integer',
                 'size' => 0,
                 'required' => false,
-                'tooltip' => 'The duration of the event. Must be specified as 00:00',
-                'example' => '1:30',
+                'tooltip' => 'The duration of the event in minutes. For example '
+                . 'an hour and a half must be specified as 90 and not 1:30. No '
+                . 'conversion will be done for this field. If not provided, the '
+                . 'duration will be calcuated from the end_date and end_time. If '
+                . 'those fields are also not provided, then duration will default '
+                . 'to 60 minutes.',
+                'example' => '90',
             ),
             array(
                 'name' => 'price',
@@ -431,11 +443,59 @@ class Event extends RinkfinderActiveRecord
         Tag::model()->updateFrequency($this->tags, '');
     }
 
-    public function autoSetDurationAndEndDateTime()
+    /**
+     * Corrects the the record's status, duration, end_date, and end_time fields.
+     * @throws CDbException
+     */
+    public function autoDurationEndDateTimeStatus()
     {
-        // Get our date objects
-        $dtEventStartTime = new DateTime($this->start_date . ' ' . $this->start_time);
-        $dtDuration = 
+        // First do some date calculations as we only want to update events that
+        // have not happened yet!!!
+        $dtCurrentTime = new DateTime();
+        $dtEventStartDateTime = new DateTime($this->start_date . ' ' . $this->start_time);
         
+        if($dtCurrentTime == $dtEventStartDateTime || $dtCurrentTime > $dtEventStartDateTime) {
+            // Expire the event!!!
+            if($this->status->name == 'OPEN') {
+                $sql = 'SELECT id FROM event_status WHERE name = :name';
+                $command = Yii::app()->db->createCommand($sql);
+                $tempid = $command->queryScalar(array(':name' => 'EXPIRED'));
+            
+                if($tempid > 0) {
+                    $this->status_id = $tempid;
+                }
+            }
+            return;
+        }
+        
+        $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
+        $this->duration = $this->duration ? $this->duration : 60;
+        $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
+        $bAllDay = $this->all_day;
+        
+        if($dtEventEndDateTime == $dtEventStartDateTime ||
+                $dtEventEndDateTime < $dtEventStartDateTime) {
+            // End date and time isn't set correctly so we calculate it
+            if($bAllDay) {
+                $this->end_date = $this->start_date;
+                $this->end_time = '23:59:59';
+            } else {
+                $dtEventEndDateTime = $dtEventStartDateTime->add($intvalDuration);
+                
+                $this->end_date = $dtEventEndDateTime->format('Y-m-d');
+                $this->end_time = $dtEventEndDateTime->format('H:i:s');
+            }
+        } else {
+            // End date and time are valid so calculate the duration
+            $intvalDiff = $dtEventStartDateTime->diff($dtEventEndDateTime);
+            
+            $this->duration = (integer)(
+                    ($intvalDiff->y * 525949) + 
+                    ($intvalDiff->m * 43829.1) + 
+                    ($intvalDiff->d * 1440) + 
+                    ($intvalDiff->h * 60) +
+                    $intvalDiff->i
+            );
+        }
     }
 }

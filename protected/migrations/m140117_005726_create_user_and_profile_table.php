@@ -47,8 +47,8 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'KEY status_id (status_id)',
                 'KEY user_created_by_id_fk (created_by_id)',
                 'KEY user_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT user_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT user_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT user_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT user_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 3'
         );
@@ -85,9 +85,9 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'UNIQUE KEY profile_user_id_fk (user_id)',
                 'KEY profile_created_by_id_fk (created_by_id)',
                 'KEY profile_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT profile_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT profile_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT profile_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT profile_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT profile_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT profile_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 3'
         );
@@ -125,8 +125,8 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'KEY varname (varname, widget, visible)',
                 'KEY profile_field_created_by_id_fk (created_by_id)',
                 'KEY profile_field_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT profile_field_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT profile_field_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT profile_field_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT profile_field_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -554,6 +554,35 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'user_id' => 1,
                 'first_name' => 'Rinkfinder',
                 'last_name' => 'Administrator',
+                'address_line1' => '123 Main St.',
+                'city' => 'Saint Paul',
+                'state' => 'MN',
+                'zip' => '55122',
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        // First insert the user account
+        $this->insert('user', array(
+                'id' => 2,
+                'username' => 'cronadmin',
+                'email' => 'cronadmin@rinkfinder.com',
+                'password' => '$2y$11$4SOqQpalypKG9tgx0076pOXwonA4gcPZ.skwwW3xXEgxBRl00ZzhK',
+                'status_id' => 1,
+                'failed_logins' => 0,
+                'user_key' => '834198d9c507807b2b1ae6e0ecb5089abec8dd02744ea8c3e43cfb20fa399b20',
+                'activated_on' => new CDbExpression('NOW()'),
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        // Now insert the account profile
+        $this->insert('profile', array(
+                'user_id' => 2,
+                'first_name' => 'Cron',
+                'last_name' => 'Job',
                 'address_line1' => '123 Main St.',
                 'city' => 'Saint Paul',
                 'state' => 'MN',

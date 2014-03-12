@@ -731,12 +731,14 @@ class EventController extends Controller
                         'with' => array(
                             'arena' => array('select' => 'name'),
                             'type' => array('select' => 'display_name'),
+                            'status' => array('select' => 'name'),
                         )
                     )
             );
             
             foreach($events as $event) {
                 $event->autoTag();
+                $event->autoDurationEndDateTimeStatus();
                 $event->save();
             }
             $transaction->commit();
