@@ -13,6 +13,8 @@
 
                     <?php echo $form->textFieldControlGroup($model,'id',array('span'=>5)); ?>
 
+                    <?php echo $form->textFieldControlGroup($model,'arena_id',array('span'=>5)); ?>
+
                     <?php echo $form->textFieldControlGroup($model,'ice_sheet_id',array('span'=>5)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'external_id',array('span'=>5,'maxlength'=>32)); ?>
@@ -34,6 +36,8 @@
                     <?php echo $form->textFieldControlGroup($model,'end_date',array('span'=>5)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'end_time',array('span'=>5)); ?>
+
+                    <?php echo $form->textFieldControlGroup($model,'location',array('span'=>5,'maxlength'=>128)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'price',array('span'=>5,'maxlength'=>10)); ?>
 

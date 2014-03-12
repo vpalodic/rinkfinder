@@ -27,6 +27,7 @@ $this->menu=array(
     'data'=>$model,
     'attributes'=>array(
 		'id',
+		'arena_id',
 		'ice_sheet_id',
 		'external_id',
 		'name',
@@ -38,6 +39,7 @@ $this->menu=array(
 		'duration',
 		'end_date',
 		'end_time',
+		'location',
 		'price',
 		'notes',
 		'type_id',

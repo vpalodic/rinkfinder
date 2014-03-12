@@ -1,32 +1,34 @@
 /* 
- * This is the jQuery plugin for the uploadArenas action
+ * This is the jQuery plugin for the uploadEvents action
  * @author Vincent J Palodichuk <vj.palodichuk@gmail.com>
  * @copyright Copyright &copy; MIAMA 2014
  * @package app.assets.js
  */
 
-(function ( uploadArenas, $, undefined ) {
+(function ( uploadEvents, $, undefined ) {
     "use strict";
     // public properties
-    uploadArenas.endpoints = {
+    uploadEvents.endpoints = {
         uploadFile: "/server/endpoint",
         deleteFile: "/server/endpoint",
         processFile: "/server/endpoint"
     };
     
-    uploadArenas.uploadType = "";
-    uploadArenas.userFullName = "";
-    uploadArenas.fileUpload = {};
-    uploadArenas.tableFields = [{}];
-    uploadArenas.csvFields = [{}];
-    uploadArenas.csvRows = [{}];
-    uploadArenas.csvOptions = {};
-    uploadArenas.mappings = [{}];
-    uploadArenas.baseUrl = "";
-    uploadArenas.step = 1;
+    uploadEvents.uploadType = "";
+    uploadEvents.userFullName = "";
+    uploadEvents.fileUpload = {};
+    uploadEvents.tableFields = [{}];
+    uploadEvents.csvFields = [{}];
+    uploadEvents.csvRows = [{}];
+    uploadEvents.csvOptions = {};
+    uploadEvents.mappings = [{}];
+    uploadEvents.baseUrl = "";
+    uploadEvents.arenaId = 0;
+    uploadEvents.step = 0;
+    uploadEvents.eventType = 0;
     
     // public methods
-    uploadArenas.addUploadAndDeleteButtons = function () {
+    uploadEvents.addUploadAndDeleteButtons = function () {
         $('<span>   </span><button id="uploadButton" class="btn btn-success ' +
           'btn-large disabled" name="yt0" type="button"><i class="icon-upload' +
           ' icon-white"></i> Begin Upload</button> ' +
@@ -35,7 +37,7 @@
           '<i class="icon-trash icon-white"></i> Delete File</button>').insertAfter($(".qq-upload-button"));
     };
     
-    uploadArenas.onUploadCancel = function (event, id, name) {
+    uploadEvents.onUploadCancel = function (event, id, name) {
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
@@ -45,27 +47,17 @@
         return true;
     };
     
-    uploadArenas.onUploadComplete = function (event, id, name, response, xhr) {
+    uploadEvents.onUploadComplete = function (event, id, name, response, xhr) {
         if (response.success !== true) {
             return false;
         }
-
-        $("#arenaUploadStep1").hide();
-        $("#step2Continue").prop("disabled", false);
-        $("#step2Continue").removeClass("disabled");
-        $("#arenaUploadStep2").show();
-
-        this.uploadType = response.uploadType;
-        this.userFullName = response.userFullName;
-        this.fileUpload = response.fileUpload;
-        this.endpoints.deleteFile = response.deleteFile.endpoint;
-        this.endpoints.processFile = response.processFile.endpoint;
-        $("#loadingScreen").html("");
+        
+        this.goStep2(response);
         
         return true;
     };
     
-    uploadArenas.onUploadError = function (event, id, name, errorReason, xhr) {
+    uploadEvents.onUploadError = function (event, id, name, errorReason, xhr) {
         if (id === null || xhr === null) {
             return false;
         }
@@ -87,7 +79,7 @@
             response = false;
         }
         
-        $("#arenaModalLabel").html("Upload File");
+        $("#eventModalLabel").html("Upload File");
         
         var htmlOutput = "<p class=\"text-error\"><strong>Failed to upload the data file.</strong></p>";
         
@@ -102,7 +94,7 @@
                 
                 // register a click handler on the delete button!
                 $("#deleteButton").on("click", function () {
-                    uploadArenas.onDeleteButtonClick(response);
+                    uploadEvents.onDeleteButtonClick(response);
                 });
             }
         }
@@ -127,18 +119,18 @@
             }
             
             htmlOutput += "</pre>";
-            $("#arenaModalBody").html(htmlOutput);
-            $("#arenaModal").modal('show');
+            $("#eventModalBody").html(htmlOutput);
+            $("#eventModal").modal('show');
         }
         else if (xhr && xhr.responseText)
         {
             htmlOutput += "<h4>Error Details</h4>";
             htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
-            $("#arenaModalBody").html(htmlOutput);
-            $("#arenaModal").modal('show');
+            $("#eventModalBody").html(htmlOutput);
+            $("#eventModal").modal('show');
         } else {
-            $("#arenaModalBody").html(htmlOutput);
-            $("#arenaModal").modal('show');
+            $("#eventModalBody").html(htmlOutput);
+            $("#eventModal").modal('show');
         }
         
         $("#loadingScreen").html("");
@@ -146,7 +138,7 @@
         return true;
     };
 
-    uploadArenas.onUploadSubmit = function (event, id, name) {
+    uploadEvents.onUploadSubmit = function (event, id, name) {
         $("#uploadButton").prop("disabled", false);
         $("#uploadButton").removeClass("disabled");
         
@@ -156,14 +148,14 @@
         return true;
     };
     
-    uploadArenas.onUploadRetry = function (event, id, name) {
-        uploadArenas.setLoadingScreen("#loadingScreen");
+    uploadEvents.onUploadRetry = function (event, id, name) {
+        uploadEvents.setLoadingScreen("#loadingScreen");
         
         return true;
     };
     
-    uploadArenas.onUploadButtonClick = function () {
-        uploadArenas.setLoadingScreen("#loadingScreen");
+    uploadEvents.onUploadButtonClick = function () {
+        uploadEvents.setLoadingScreen("#loadingScreen");
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
@@ -171,13 +163,13 @@
             $("#deleteButton").animate({opacity: 1.0}, 100).fadeOut("fast");
         }
         
-        $("#ArenaUploadForm_fileName").fineUploader("uploadStoredFiles");
+        $("#EventUploadForm_fileName").fineUploader("uploadStoredFiles");
 
         return true;
     };
     
-    uploadArenas.onDeleteButtonClick = function (response) {
-        uploadArenas.setLoadingScreen("#loadingScreen");
+    uploadEvents.onDeleteButtonClick = function (response) {
+        uploadEvents.setLoadingScreen("#loadingScreen");
         
         $.ajax({                        
             url: response.deleteFile.endpoint,
@@ -189,9 +181,9 @@
                 $("#deleteButton").prop("disabled", true);
                 $("#deleteButton").addClass("disabled");
                 $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");
-                $("#arenaModalLabel").html("Delete Request");
-                $("#arenaModalBody").html("<p>File has been deleted, please retry your upload.</p>");
-                $("#arenaModal").modal('show');
+                $("#eventModalLabel").html("Delete Request");
+                $("#eventModalBody").html("<p>File has been deleted, please retry your upload.</p>");
+                $("#eventModal").modal('show');
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
@@ -209,7 +201,7 @@
                     response = false;
                 }
                 
-                $("#arenaModalLabel").html("Delete Request");
+                $("#eventModalLabel").html("Delete Request");
 
                 var htmlOutput = "<p class=\"text-error\"><strong>Failed to delete the file.</strong></p>";
                 
@@ -245,8 +237,8 @@
                     htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
                 }
                 
-                $("#arenaModalBody").html(htmlOutput);
-                $("#arenaModal").modal('show');
+                $("#eventModalBody").html(htmlOutput);
+                $("#eventModal").modal('show');
                 
                 $("#loadingScreen").html("");
             }
@@ -254,7 +246,40 @@
         return true;
     };
     
-    uploadArenas.onContinueStep2ButtonClick = function () {
+    uploadEvents.goStep2 = function(param) {
+        this.step = 2;
+        
+        $("#uploadEventsStep1").hide();
+        $("#step2Continue").prop("disabled", false);
+        $("#step2Continue").removeClass("disabled");
+        $("#uploadEventsStep2").show();
+
+        this.uploadType = param.uploadType;
+        this.userFullName = param.userFullName;
+        this.fileUpload = param.fileUpload;
+        this.arenaId = param.fileUpload.arena_id;
+        this.endpoints.deleteFile = param.deleteFile.endpoint;
+        this.endpoints.processFile = param.processFile.endpoint;
+        
+        $("#loadingScreen").html("");        
+    };
+    
+    uploadEvents.goStep3 = function(param) {
+        this.step = 3;
+        
+        this.csvFields = param.csvFields;
+        this.csvRows = param.csvRows;
+        this.tableFields = param.tableFields;
+        this.setupMappingTable("#mappingTable");
+                
+        $("#step3Previous").prop("disabled", false);
+        $("#step3Previous").removeClass("disabled");
+
+        $("#uploadEventsStep3").show();
+        $("#loadingScreen").html("");
+    };
+    
+    uploadEvents.onContinueStep2ButtonClick = function () {
         this.csvOptions = {
             delimiter: $("#delimiter").val(),
             enclosure: $("#enclosure").val(),
@@ -263,13 +288,15 @@
             updateExisting: $("#update-existing").is(':checked') ? 1 : 0
         };
 
+        this.eventType = $("#eventType").val();
+        
         var that = this;
         
-        uploadArenas.setLoadingScreen("#loadingScreen");
+        uploadEvents.setLoadingScreen("#loadingScreen");
         
         $("#step2Continue").prop("disabled", true);
         $("#step2Continue").addClass("disabled");
-        $("#arenaUploadStep2").hide();
+        $("#uploadEventsStep2").hide();
 
         $.ajax({                        
             url: this.endpoints.processFile,
@@ -282,19 +309,13 @@
                     name: this.fileUpload.name,
                     upload_type_id: this.fileUpload.upload_type_id
                 },
+                arenaId: this.fileUpload.arena_id,
+                eventType: this.eventType,
                 csvOptions: this.csvOptions
             },
             success: function(result, status, xhr) {
-                that.csvFields = result.csvFields;
-                that.csvRows = result.csvRows;
-                that.tableFields = result.tableFields;
-                that.setupMappingTable("#mappingTable");
-                
-                $("#step3Previous").prop("disabled", false);
-                $("#step3Previous").removeClass("disabled");
-
-                $("#arenaUploadStep3").show();
-                $("#loadingScreen").html("");
+                that.goStep3(result);
+                return true;
             },
             error: function(xhr, status, errorThrown) {
                 var response = false;
@@ -311,7 +332,7 @@
                     response = false;
                 }
                 
-                $("#arenaModalLabel").html("Import Options");
+                $("#eventModalLabel").html("Import Options");
                 
                 var htmlOutput = "<p class=\"text-error\"><strong>Failed to apply Import Options.</strong></p>";
                 
@@ -347,12 +368,12 @@
                     htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
                 }
                 
-                $("#arenaModalBody").html(htmlOutput);
-                $("#arenaModal").modal('show');
+                $("#eventModalBody").html(htmlOutput);
+                $("#eventModal").modal('show');
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
-                $("#arenaUploadStep2").show();
+                $("#uploadEventsStep2").show();
                 $("#loadingScreen").html("");
             }
         });
@@ -360,32 +381,32 @@
         return true;
     };
     
-    uploadArenas.onPreviousStep3ButtonClick = function () {
-        var that = this;
+    uploadEvents.onPreviousStep3ButtonClick = function () {
+        this.step = 2;
         
-        uploadArenas.setLoadingScreen("#loadingScreen");
+        uploadEvents.setLoadingScreen("#loadingScreen");
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
         $("#step3Previous").prop("disabled", true);
         $("#step3Previous").addClass("disabled");
-        $("#arenaUploadStep3").hide();
+        $("#uploadEventsStep3").hide();
         $("#mappingTable").html("");
         
         $("#step2Continue").prop("disabled", false);
         $("#step2Continue").removeClass("disabled");
-        $("#arenaUploadStep2").show();
+        $("#uploadEventsStep2").show();
         $("#loadingScreen").html("");        
     };
     
-    uploadArenas.onContinueStep3ButtonClick = function () {
+    uploadEvents.onContinueStep3ButtonClick = function () {
         var that = this;
         
-        uploadArenas.setLoadingScreen("#loadingScreen");
-        uploadArenas.getMappings();
+        uploadEvents.setLoadingScreen("#loadingScreen");
+        uploadEvents.getMappings();
         
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
-        $("#arenaUploadStep3").hide();
+        $("#uploadEventsStep3").hide();
         
         
         $.ajax({                        
@@ -399,6 +420,8 @@
                     name: this.fileUpload.name,
                     upload_type_id: this.fileUpload.upload_type_id
                 },
+                arenaId: this.fileUpload.arena_id,
+                eventType: this.eventType,
                 csvOptions: this.csvOptions,
                 mappings: this.mappings
             },
@@ -406,7 +429,7 @@
                 $("#step4Continue").prop("disabled", false);
                 $("#step4Continue").removeClass("disabled");
                 that.showSummary(result.importSummary);
-                $("#arenaUploadStep4").show();
+                $("#uploadEventsStep4").show();
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
@@ -424,7 +447,7 @@
                     response = false;
                 }
                 
-                $("#arenaModalLabel").html("Import Data");
+                $("#eventModalLabel").html("Import Data");
                 
                 var htmlOutput = "<p class=\"text-error\"><strong>Failed to import the the data file.</strong></p>";
                 
@@ -460,13 +483,13 @@
                     htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
                 }
                 
-                $("#arenaModalBody").html(htmlOutput);
-                $("#arenaModal").modal('show');
+                $("#eventModalBody").html(htmlOutput);
+                $("#eventModal").modal('show');
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
                 $("#mappingTable").html("");
-                $("#arenaUploadStep2").show();
+                $("#uploadEventsStep2").show();
                 $("#loadingScreen").html("");
             }
         });
@@ -474,18 +497,18 @@
         return true;
     };
     
-    uploadArenas.onContinueStep4ButtonClick = function () {
+    uploadEvents.onContinueStep4ButtonClick = function () {
         $("#step4Continue").prop("disabled", true);
         $("#step4Continue").addClass("disabled");
         $("#ArenaUploadForm_fileName").fineUploader("clearStoredFiles");
         $("#mappingTable").html("");
-        $("#arenaUploadStep4").hide();
+        $("#uploadEventsStep4").hide();
         this.clearSummary();
-        $("#arenaUploadStep1").show();
+        $("#uploadEventsStep1").show();
         return true;
     };
     
-    uploadArenas.setLoadingScreen = function (elementID) {
+    uploadEvents.setLoadingScreen = function (elementID) {
         var strOutput = "<div id=\"loading\"><img src=\"" + this.baseUrl +
                 "/images/ajax-loader-roller-bg_red-fg_blue.gif\"" + 
                 "alt=\"Loading...\" /><br />Please wait...</div>";
@@ -493,7 +516,7 @@
 	return strOutput;
     };
     
-    uploadArenas.setupMappingTable = function (elementID) {
+    uploadEvents.setupMappingTable = function (elementID) {
         // Now we get to build our mapping table as we have all of the information
         // that we need about the CSV file and the database table.
         var that = this;
@@ -576,7 +599,7 @@
         this.checkStep3Button();
     };
     
-    uploadArenas.checkStep3Button = function() {
+    uploadEvents.checkStep3Button = function() {
         // If all of the required fields are mapped
         // Then we can enable the button if it is disabled.
         // If they are not all mapped, then we disable the
@@ -613,7 +636,7 @@
         }
     };
     
-    uploadArenas.getMappings = function() {
+    uploadEvents.getMappings = function() {
         // Build the mappings object!!!
         
         // Let's go through each table item
@@ -632,61 +655,61 @@
         }
     };
     
-    uploadArenas.showSummary = function(importSummary) {
-        $("#arenaSummaryUpdated").html("<strong>" + importSummary.totalUpdated + "</strong>");
-        $("#arenaSummaryCreated").html("<strong>" + importSummary.totalInserted + "</strong>");
-        $("#arenaSummaryTotal").html("<strong>" + importSummary.totalRecords + "</strong>");
+    uploadEvents.showSummary = function(importSummary) {
+        $("#uploadEventsSummaryUpdated").html("<strong>" + importSummary.totalUpdated + "</strong>");
+        $("#uploadEventsSummaryCreated").html("<strong>" + importSummary.totalInserted + "</strong>");
+        $("#uploadEventsSummaryTotal").html("<strong>" + importSummary.totalRecords + "</strong>");
         if (importSummary.autoTagged)
         {
-            $("#arenaSummaryAutoTagged").addClass("text-success");
-            $("#arenaSummaryAutoTagged").html("<strong>Yes</strong>");
+            $("#uploadEventsSummaryAutoTagged").addClass("text-success");
+            $("#uploadEventsSummaryAutoTagged").html("<strong>Yes</strong>");
         }
         else
         {
-            $("#arenaSummaryAutoTagged").addClass("text-error");
-            $("#arenaSummaryAutoTagged").html("<strong>No</strong>");
+            $("#uploadEventsSummaryAutoTagged").addClass("text-error");
+            $("#uploadEventsSummaryAutoTagged").html("<strong>No</strong>");
         }
     };
     
-    uploadArenas.clearSummary = function() {
-        $("#arenaSummaryUpdated").html("");
-        $("#arenaSummaryCreated").html("");
-        $("#arenaSummaryTotal").html("");
-        $("#arenaSummaryAutoTagged").html("");
-        $("#arenaSummaryAutoTagged").removeClass("text-success");
-        $("#arenaSummaryAutoTagged").removeClass("text-error");
+    uploadEvents.clearSummary = function() {
+        $("#uploadEventsSummaryUpdated").html("");
+        $("#uploadEventsSummaryCreated").html("");
+        $("#uploadEventsSummaryTotal").html("");
+        $("#uploadEventsSummaryAutoTagged").html("");
+        $("#uploadEventsSummaryAutoTagged").removeClass("text-success");
+        $("#uploadEventsSummaryAutoTagged").removeClass("text-error");
     };
     
-    uploadArenas.reset = function() {
+    uploadEvents.reset = function() {
         // Reset the steps 1 at a time!
         $("#step4Continue").prop("disabled", true);
         $("#step4Continue").addClass("disabled");
-        $("#arenaUploadStep4").hide();
+        $("#uploadEventsStep4").hide();
         this.clearSummary();
         
         $("#step3Previous").prop("disabled", true);
         $("#step3Previous").addClass("disabled");
         $("#step3Continue").prop("disabled", true);
         $("#step3Continue").addClass("disabled");
-        $("#arenaUploadStep3").hide();
+        $("#uploadEventsStep3").hide();
         $("#mappingTable").html("");
         
         $("#step2Continue").prop("disabled", true);
         $("#step2Continue").addClass("disabled");
-        $("#arenaUploadStep2").hide();
+        $("#uploadEventsStep2").hide();
         
-        $("#ArenaUploadForm_fileName").fineUploader("clearStoredFiles");
+        $("#EventUploadForm_fileName").fineUploader("clearStoredFiles");
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         $("#deleteButton").prop("disabled", true);
         $("#deleteButton").addClass("disabled");
-        $("#arenaUploadStep1").show();
+        $("#uploadEventsStep1").show();
     };
     
-    uploadArenas.onResetButtonClick = function () {
+    uploadEvents.onResetButtonClick = function () {
         this.reset();
-        $("#arenaModal").modal('hide');
+        $("#eventModal").modal('hide');
         return true;
     };
     
-}( window.uploadArenas = window.uploadArenas || {}, jQuery ));
+}( window.uploadEvents = window.uploadEvents || {}, jQuery ));

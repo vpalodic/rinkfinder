@@ -1,76 +1,80 @@
 <?php
-    /* @var $this ArenaController */
-    /* @var $model ArenaUploadForm */
+    /* @var $this EventController */
+    /* @var $model EventUploadForm */
     /* @var $form TbActiveForm */
     /* @var $fields array[][] */
+    /* @var $arenaId integer */
+    /* @var $eventTypes array[] */
 
-    $this->pageTitle = Yii::app()->name . ' - Upload Arenas';
+    $this->pageTitle = Yii::app()->name . ' - Upload Events';
     $this->breadcrumbs = array(
-        'Upload Arenas'
+        'Upload Events'
     );
 ?>
 <?php
     Yii::app()->clientScript->registerScript(
             'addUploadButton',
-            'uploadArenas.addUploadAndDeleteButtons();'
+            'uploadEvents.addUploadAndDeleteButtons();'
             . '$("#step2Continue").on("click", function () {'
-            . '    return uploadArenas.onContinueStep2ButtonClick();'
+            . '    return uploadEvents.onContinueStep2ButtonClick();'
             . '});'
             . '$("#step3Previous").on("click", function () {'
-            . '    return uploadArenas.onPreviousStep3ButtonClick();'
+            . '    return uploadEvents.onPreviousStep3ButtonClick();'
             . '});'
             . '$("#step3Continue").on("click", function () {'
-            . '    return uploadArenas.onContinueStep3ButtonClick();'
+            . '    return uploadEvents.onContinueStep3ButtonClick();'
             . '});'
             . '$("#step4Continue").on("click", function () {'
-            . '    return uploadArenas.onContinueStep4ButtonClick();'
+            . '    return uploadEvents.onContinueStep4ButtonClick();'
             . '});'
             . '$("#uploadButton").on("click", function () {'
-            . '    return uploadArenas.onUploadButtonClick();'
+            . '    return uploadEvents.onUploadButtonClick();'
             . '});'
             . '$("#resetButton1").on("click", function () {'
-            . '    return uploadArenas.onResetButtonClick();'
+            . '    return uploadEvents.onResetButtonClick();'
             . '});'
             . '$("#resetButton2").on("click", function () {'
-            . '    return uploadArenas.onResetButtonClick();'
+            . '    return uploadEvents.onResetButtonClick();'
             . '});'
             . '$("#resetButton3").on("click", function () {'
-            . '    return uploadArenas.onResetButtonClick();'
+            . '    return uploadEvents.onResetButtonClick();'
             . '});'
-            . 'uploadArenas.baseUrl = "' . Yii::app()->request->baseUrl . '";',
+            . 'uploadEvents.baseUrl = "' . Yii::app()->request->baseUrl . '";'
+            . 'uploadEvents.step = 1;'
+            . 'uploadEvents.arenaId = ' . $arenaId . ';',
             CClientScript::POS_READY
     );
     Yii::app()->clientScript->registerScript(
-            'uploadArenaCSV',
-            '$("#ArenaUploadForm_fileName").on("complete", function (event, id, name, response, xhr) {'
-            . '    return uploadArenas.onUploadComplete(event, id, name, response, xhr);'
+            'uploadEventsCSV',
+            '$("#EventUploadForm_fileName").on("complete", function (event, id, name, response, xhr) {'
+            . '    return uploadEvents.onUploadComplete(event, id, name, response, xhr);'
             . '});'
-            . '$("#ArenaUploadForm_fileName").on("submit", function (event, id, name) {'
-            . '    return uploadArenas.onUploadSubmit(event, id, name);'
+            . '$("#EventUploadForm_fileName").on("submit", function (event, id, name) {'
+            . '    return uploadEvents.onUploadSubmit(event, id, name);'
             . '});'
-            . '$("#ArenaUploadForm_fileName").on("cancel", function (event, id, name) {'
-            . '    return uploadArenas.onUploadCancel(event, id, name);'
+            . '$("#EventUploadForm_fileName").on("cancel", function (event, id, name) {'
+            . '    return uploadEvents.onUploadCancel(event, id, name);'
             . '});'
-            . '$("#ArenaUploadForm_fileName").on("manualRetry", function (event, id, name) {'
-            . '    return uploadArenas.onUploadRetry(event, id, name);'
+            . '$("#EventUploadForm_fileName").on("manualRetry", function (event, id, name) {'
+            . '    return uploadEvents.onUploadRetry(event, id, name);'
             . '});'
-            . '$("#ArenaUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {'
-            . '    return uploadArenas.onUploadError(event, id, name, errorReason, xhr);'
+            . '$("#EventUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {'
+            . '    return uploadEvents.onUploadError(event, id, name, errorReason, xhr);'
             . '});',
             CClientScript::POS_READY
     );
 ?>
 
-<h2 class="sectionHeader">Upload Arenas</h2>
+<h2 class="sectionHeader">Upload Events</h2>
 
-<div id="arenaUploadStep1" class="row-fluid">
+<div id="uploadEventsStep1" class="row-fluid">
     <h3 class="sectionSubHeader">
         Step 1: <h4>Select A File To Upload</h4>
     </h3>
-    <a href="#arenaModalFileUpload" role="button" class="btn btn-large" data-toggle="modal">
+    <a href="#eventModalFileUpload" role="button" class="btn btn-large" data-toggle="modal">
         <i class="icon-info-sign"></i> Instructions
     </a>
-    <a href="#arenaModalFields" role="button" class="btn btn-large" data-toggle="modal">
+    <a href="#eventModalFields" role="button" class="btn btn-large" data-toggle="modal">
         <i class="icon-info-sign"></i> Field Information
     </a>
     <br><br>
@@ -81,8 +85,9 @@
                     'model' => $model,
                     'attribute' => 'fileName',
                     'uploadAction' => $this->createUrl(
-                            'arena/uploadArenasFile',
+                            'event/uploadEventsFile',
                             array(
+                                'aid' => $arenaId
                             )
                     ),
                     'pluginOptions' => array(
@@ -92,9 +97,10 @@
                         'deleteFile' => array(
                             'enabled' => true,
                             'endpoint' => $this->createUrl(
-                                    'arena/uploadArenasFileDelete',
+                                    'event/uploadEventsFileDelete',
                                     array(
-                                        )
+                                        'aid' => $arenaId
+                                    )
                             )
                         ),                                
                         'dragAndDrop' => array(
@@ -138,14 +144,25 @@
         </div>
     </div>
 </div><!-- step 1 -->
-<div id="arenaUploadStep2" class="row-fluid" style="display: none;">
+<div id="uploadEventsStep2" class="row-fluid" style="display: none;">
     <h3 class="sectionSubHeader">
         Step 2: <h4>Import Options</h4>
     </h3>
-    <a href="#arenaModalSettings" role="button" class="btn btn-large" data-toggle="modal">
+    <a href="#eventModalSettings" role="button" class="btn btn-large" data-toggle="modal">
         <i class="icon-info-sign"></i> Instructions
     </a>
     <br><br>
+    <?php
+        echo TbHtml::dropDownListControlGroup(
+                'eventType',
+                1,
+                $eventTypes,
+                array(
+                    'span' => 5,
+                    'label' => 'Event Type'
+                )
+        );
+    ?>
     <?php
         $headerArr = array(
             1 => '1',
@@ -243,7 +260,7 @@
         <div class="controls">
         <?php
             echo TbHtml::label(
-                    'Update existing records? (If you select No and an arena '
+                    'Update existing records? (If you select No and an event '
                     . 'exists in the database that you are trying to import, '
                     . 'the import will fail.)',
                     'update-existing',
@@ -265,11 +282,11 @@
         </div>
     </div>
 </div><!-- step 2 -->
-<div id="arenaUploadStep3" class="row-fluid" style="display: none;">
+<div id="uploadEventsStep3" class="row-fluid" style="display: none;">
     <h3 class="sectionSubHeader">
         Step 3: <h4>Import Mappings</h4>
     </h3>
-    <a href="#arenaModalMapping" role="button" class="btn btn-large" data-toggle="modal">
+    <a href="#eventModalMapping" role="button" class="btn btn-large" data-toggle="modal">
         <i class="icon-info-sign"></i> Instructions
     </a>
     <br><br>
@@ -292,7 +309,7 @@
         </div>
     </div>
 </div><!-- step 3 -->
-<div id="arenaUploadStep4" class="row-fluid" style="display: none;">
+<div id="uploadEventsStep4" class="row-fluid" style="display: none;">
     <h3 class="sectionSubHeader">
         Step 4: <h4>Import Summary</h4>
     </h3>
@@ -300,22 +317,22 @@
         <dt>
             Records Updated
         </dt>
-        <dd id="arenaSummaryUpdated" class="text-success">
+        <dd id="uploadEventsSummaryUpdated" class="text-success">
         </dd>
         <dt>
             Records Created
         </dt>
-        <dd id="arenaSummaryCreated" class="text-success">
+        <dd id="uploadEventsSummaryCreated" class="text-success">
         </dd>
         <dt>
             Records In File
         </dt>
-        <dd id="arenaSummaryTotal" class="text-success">
+        <dd id="uploadEventsSummaryTotal" class="text-success">
         </dd>
         <dt>
             Records Auto Tagged?
         </dt>
-        <dd id="arenaSummaryAutoTagged">
+        <dd id="uploadEventsSummaryAutoTagged">
         </dd>
     </dl>
     <div class="control-group">
@@ -329,14 +346,14 @@
 <div id="loadingScreen" class="row-fluid">
 </div><!-- Loading Screen -->
 <!-- Error Modal Dialog -->
-<div id="arenaModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalLabel" aria-hidden="true">
-  <div id="arenaModalHeader" class="modal-header">
+<div id="eventModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+  <div id="eventModalHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalLabel"></h3>
+    <h3 id="eventModalLabel"></h3>
   </div>
-  <div id="arenaModalBody" class="modal-body">
+  <div id="eventModalBody" class="modal-body">
   </div>
-  <div id="arenaModalFooter" class="modal-footer">
+  <div id="eventModalFooter" class="modal-footer">
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>
@@ -347,12 +364,12 @@
 </div><!-- Error Modal Dialog -->
 
 <!-- Mapping Instructions Modal Dialog -->
-<div id="arenaModalMapping" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalMappingLabel" aria-hidden="true">
-  <div id="arenaModalMappingHeader" class="modal-header">
+<div id="eventModalMapping" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="eventModalMappingLabel" aria-hidden="true">
+  <div id="eventModalMappingHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalMappingLabel">Mapping Instructions</h3>
+    <h3 id="eventModalMappingLabel">Mapping Instructions</h3>
   </div>
-  <div id="arenaModalMappingBody" class="modal-body">
+  <div id="eventModalMappingBody" class="modal-body">
     <dl>
         <dt>
             What Fields to Map
@@ -413,11 +430,10 @@
         </dt>
         <dd>
             Any characters in the data from the file that do not conform to the database field type
-            will be stripped before being imported. For example, for the phone number field, all
-            formatting characters such as () and - will be removed before being imported. If the
+            will be stripped before being imported. For example, for the price field, all
+            formatting characters such as $ will be removed before being imported. If the
             tool-tip does not explicitly state a field type, then the type is implied by the name
-            of the field. For example, the &quot;lat&quot; field type is implied to be a floating
-            point number as that is how lattitude is specified.
+            of the field.
         </dd>
         <dt>
             Data Type Conversion
@@ -432,8 +448,9 @@
             Auto Tagging
         </dt>
         <dd>
-            Imported records will automatically be tagged with the name, city, and state. You may also
-            provide your own tags and they will be processed correctly in addition to the automatic tags.
+            Imported records will automatically be tagged with the arena name, event type, event name,
+            and location. You may also provide your own tags and they will be processed correctly in
+            addition to the automatic tags.
         </dd>
         <dt>
             How to Continue
@@ -444,28 +461,36 @@
         </dd>
     </dl>
   </div>
-  <div id="arenaModalMappingFooter" class="modal-footer">
+  <div id="eventModalMappingFooter" class="modal-footer">
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
 </div><!-- Mapping Instructions Modal Dialog -->
 <!-- Settings Instructions Modal Dialog -->
-<div id="arenaModalSettings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalSettingsLabel" aria-hidden="true">
-  <div id="arenaModalSettingsHeader" class="modal-header">
+<div id="eventModalSettings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="eventModalSettingsLabel" aria-hidden="true">
+  <div id="eventModalSettingsHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalSettingsLabel">Import Options Instructions</h3>
+    <h3 id="eventModalSettingsLabel">Import Options Instructions</h3>
   </div>
-  <div id="arenaModalSettingsBody" class="modal-body">
+  <div id="eventModalSettingsBody" class="modal-body">
     <dl>
         <dt>
             What Settings to change
         </dt>
         <dd>
-            If you are uploading a standard CSV file with field headers as the
-            first row and the file contains only new records, then you can
-            simply click the continue button below. Otherwise, please select
-            the options for your file and click the continue button to proceed.
+            If you are uploading <strong>Ice For Sale</strong> in a standard
+            CSV file with field headers as the first row and the file contains
+            only new records, then you can simply click the continue button
+            below. Otherwise, please select the options for your file and click
+            the continue button to proceed.
+        </dd>
+        <dt>
+            Event Type
+        </dt>
+        <dd>
+            Specify which type of events you are uploading. The default is set
+            to Ice For Sale.
         </dd>
         <dt>
             Field Header Row
@@ -526,9 +551,9 @@
             Existing Records
         </dt>
         <dd>
-            The arena name, city, and state are used to form a unique key. 
-            Therefore, only a single record for an arena name, city, and state
-            combination can exist. If the data file you are importing contains
+            The external_id is used to form a unique key. 
+            Therefore, only a single record for an arena with that external_id
+            can exist. If the data file you are importing contains
             rows that will cause the unique key to be violated and the option
             to update existing records is set to No, then the import will fail
             with a unique constraint violation. By setting the update existing 
@@ -540,19 +565,19 @@
         </dd>
     </dl>
   </div>
-  <div id="arenaModalSettingsFooter" class="modal-footer">
+  <div id="eventModalSettingsFooter" class="modal-footer">
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
 </div><!-- Settings Instructions Modal Dialog -->
 <!-- File Uploading Instructions Modal Dialog -->
-<div id="arenaModalFileUpload" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalFileUploadLabel" aria-hidden="true">
-  <div id="arenaModalFileUploadHeader" class="modal-header">
+<div id="eventModalFileUpload" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="eventModalFileUploadLabel" aria-hidden="true">
+  <div id="eventModalFileUploadHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalFileUploadLabel">Import Instructions</h3>
+    <h3 id="eventModalFileUploadLabel">Import Instructions</h3>
   </div>
-  <div id="arenaModalFileUploadBody" class="modal-body">
+  <div id="eventModalFileUploadBody" class="modal-body">
     <h3>
       Important Information
     </h3>
@@ -574,6 +599,13 @@
             that the file was saved using MS-DOS / MS-Windows line endings.
         </dd>
         <dt>
+            Event Type
+        </dt>
+        <dd>
+            Specify which type of events you are uploading. The default is set
+            to Ice For Sale.
+        </dd>
+        <dt>
             Field Header Row
         </dt>
         <dd>
@@ -586,9 +618,9 @@
             Existing Records
         </dt>
         <dd>
-            The arena name, city, and state are used to form a unique key. 
-            Therefore, only a single record for an arena name, city, and state
-            combination can exist. If the data file you are importing contains
+            The external_id is used to form a unique key. 
+            Therefore, only a single record for an arena with that external_id
+            can exist. If the data file you are importing contains
             rows that will cause the unique key to be violated and the option
             to update existing records is set to No, then the import will fail
             with a unique constraint violation. By setting the update existing 
@@ -615,15 +647,19 @@
             Auto Tagging
         </dt>
         <dd>
-            Imported records will automatically be tagged with the name, city,
-            and state. You may also provide your own tags and they will be
-            processed correctly in addition to the automatic tags.
+            Imported records will automatically be tagged with the arena name, event type, event name,
+            and location. You may also provide your own tags and they will be processed correctly in
+            addition to the automatic tags.
         </dd>
         <dt>
             Map To Multiple Fields
         </dt>
         <dd>
-            You may map a data file field to multiple table fields.
+            You may map a data file field to multiple table fields. This is useful
+            if your import file contains the start date and time for an event in a
+            single field. In this case you can map that single field to both the
+            start_date and start_time fields and the importer will correctly
+            import the data.
         </dd>
         <dt>
             Automatic Field Mappings
@@ -658,7 +694,7 @@
         <dd>
             Any characters in a data file field that do not conform to the
             database field type will be stripped before being imported. For
-            example, the phone number field only holds the ten digit phone
+            example, a phone number field only holds the ten digit phone
             number, therefore all non-numeric characters such as () and - will
             be stripped from the data before being imported.
         </dd>
@@ -696,11 +732,11 @@
             Step 2
         </dt>
         <dd>
-            Set your import settings.
+            Set your import options.
             <ol>
                 <li>
                     Click the <strong>Instructions</strong> button to review
-                    detailed information on how to set the settings for this step.
+                    detailed information on how to set the options for this step.
                 </li>
                 <li>
                     Once you have selected your options, click the <strong>
@@ -749,19 +785,19 @@
         </dd>
     </dl>
   </div>
-  <div id="arenaModalFileUploadFooter" class="modal-footer">
+  <div id="eventModalFileUploadFooter" class="modal-footer">
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
 </div><!-- File Uploading Instructions Modal Dialog -->
 <!-- Fields and File Information Modal Dialog -->
-<div id="arenaModalFields" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="arenaModalFieldsLabel" aria-hidden="true">
-  <div id="arenaModalFieldsHeader" class="modal-header">
+<div id="eventModalFields" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="eventModalFieldsLabel" aria-hidden="true">
+  <div id="eventModalFieldsHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3 id="arenaModalFieldsLabel">Fields Information</h3>
+    <h3 id="eventModalFieldsLabel">Fields Information</h3>
   </div>
-  <div id="arenaModalFieldsBody" class="modal-body">
+  <div id="eventModalFieldsBody" class="modal-body">
     <h3>
         Tips
     </h3>
@@ -972,7 +1008,7 @@
         <?php endforeach; ?>
     </dl>
   </div>
-  <div id="arenaModalFieldsFooter" class="modal-footer">
+  <div id="eventModalFieldsFooter" class="modal-footer">
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>

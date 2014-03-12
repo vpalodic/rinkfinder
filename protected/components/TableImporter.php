@@ -622,19 +622,19 @@ class TableImporter extends CComponent
                         if(strlen($csvV) > $matchField['fieldSize']) {
                             $csvV = substr($csvV, 0, $matchField['fieldSize']);
                         }
-                    } elseif($matchField['fieldType'] == 'float') {
+                    } elseif($matchField['fieldType'] == 'float' && !empty($csvV)) {
                         $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                         $csvV = floatval($str);
-                    } elseif($matchField['fieldType'] == 'integer') {
+                    } elseif($matchField['fieldType'] == 'integer' && !empty($csvV)) {
                         $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_INT);
                         $csvV = intval($str);
-                    } elseif($matchField['fieldType'] == 'date') {
+                    } elseif($matchField['fieldType'] == 'date' && !empty($csvV)) {
                         $csvV = date("Y-m-d", strtotime($csvV));
-                    } elseif($matchField['fieldType'] == 'datetime') {
+                    } elseif($matchField['fieldType'] == 'datetime' && !empty($csvV)) {
                         $csvV = date("Y-m-d H:i:s", strtotime($csvV));
-                    } elseif($matchField['fieldType'] == 'time') {
+                    } elseif($matchField['fieldType'] == 'time' && !empty($csvV)) {
                         $csvV = date("H:i:s", strtotime($csvV));
-                    } elseif($matchField['fieldType'] == 'phone') {
+                    } elseif($matchField['fieldType'] == 'phone' && !empty($csvV)) {
                         $csvV = preg_replace('/[^0-9]/s', '', $csvV);
                     }
                     
@@ -654,19 +654,19 @@ class TableImporter extends CComponent
                             if(strlen($csvV) > $mapping['fieldSize']) {
                                 $csvV = substr($csvV, 0, $mapping['fieldSize']);
                             }
-                        } elseif($mapping['fieldType'] == 'float') {
+                        } elseif($mapping['fieldType'] == 'float' && !empty($csvV)) {
                             $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                             $csvV = floatval($str);
-                        } elseif($mapping['fieldType'] == 'integer') {
+                        } elseif($mapping['fieldType'] == 'integer' && !empty($csvV)) {
                             $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_INT);
                             $csvV = intval($str);
-                        } elseif($mapping['fieldType'] == 'date') {
+                        } elseif($mapping['fieldType'] == 'date' && !empty($csvV)) {
                             $csvV = date("Y-m-d", strtotime($csvV));
-                        } elseif($mapping['fieldType'] == 'datetime') {
+                        } elseif($mapping['fieldType'] == 'datetime' && !empty($csvV)) {
                             $csvV = date("Y-m-d H:i:s", strtotime($csvV));
-                        } elseif($mapping['fieldType'] == 'time') {
+                        } elseif($mapping['fieldType'] == 'time' && !empty($csvV)) {
                             $csvV = date("H:i:s", strtotime($csvV));
-                        } elseif($mapping['fieldType'] == 'phone') {
+                        } elseif($mapping['fieldType'] == 'phone' && !empty($csvV)) {
                             $csvV = preg_replace('/[^0-9]/s', '', $csvV);
 
                             if(strlen($csvV) > $mapping['fieldSize']) {
@@ -716,19 +716,19 @@ class TableImporter extends CComponent
                     if(strlen($csvV) > $mapping['fieldSize']) {
                         $csvV = substr($csvV, 0, $mapping['fieldSize']);
                     }
-                } elseif($mapping['fieldType'] == 'float') {
+                } elseif($mapping['fieldType'] == 'float' && !empty($csvV)) {
                     $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                     $csvV = floatval($str);
-                } elseif($mapping['fieldType'] == 'integer') {
+                } elseif($mapping['fieldType'] == 'integer' && !empty($csvV)) {
                     $str = filter_var($csvV, FILTER_SANITIZE_NUMBER_INT);
                     $csvV = intval($str);
-                } elseif($mapping['fieldType'] == 'date') {
+                } elseif($mapping['fieldType'] == 'date' && !empty($csvV)) {
                     $csvV = date("Y-m-d", strtotime($csvV));
-                } elseif($mapping['fieldType'] == 'datetime') {
+                } elseif($mapping['fieldType'] == 'datetime' && !empty($csvV)) {
                     $csvV = date("Y-m-d H:i:s", strtotime($csvV));
-                } elseif($mapping['fieldType'] == 'time') {
+                } elseif($mapping['fieldType'] == 'time' && !empty($csvV)) {
                     $csvV = date("H:i:s", strtotime($csvV));
-                } elseif($mapping['fieldType'] == 'phone') {
+                } elseif($mapping['fieldType'] == 'phone' && !empty($csvV)) {
                     $csvV = preg_replace('/[^0-9]/s', '', $csvV);
 
                     if(strlen($csvV) > $mapping['fieldSize']) {

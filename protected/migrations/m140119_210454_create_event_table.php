@@ -83,6 +83,7 @@ class m140119_210454_create_event_table extends CDbMigration
 
     private function createEventTable()
     {
+        // the arena_id field references ice_sheet.id and
         // the ice_sheet_id field references ice_sheet.id and
         // the type_id field references event_type.id and
         // the status_id field references event_status.id and
@@ -92,17 +93,19 @@ class m140119_210454_create_event_table extends CDbMigration
         // when we create the table
         $this->createTable('event', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
-                'ice_sheet_id' => 'INT(11) NOT NULL',
+                'arena_id' => 'INT(11) NOT NULL',
+                'ice_sheet_id' => 'INT(11) NULL',
                 'external_id' => 'VARCHAR(32) NULL',
-                'name' => 'VARCHAR(128) NOT NULL',
-                'description' => 'TEXT NOT NULL',
+                'name' => 'VARCHAR(128) NOT NULL DEFAULT \'\'',
+                'description' => 'TEXT NOT NULL DEFAULT \'\'',
                 'tags' => 'VARCHAR(1024) NULL',
-                'all_day' => 'INT(1) NOT NULL DEFAULT 0',
+                'all_day' => 'BOOLEAN NOT NULL DEFAULT 0',
                 'start_date' => 'DATE NOT NULL',
                 'start_time' => 'TIME NOT NULL',
-                'duration' => 'TIME NOT NULL',
-                'end_date' => 'DATE NOT NULL',
-                'end_time' => 'TIME NOT NULL',
+                'duration' => 'TIME NOT NULL DEFAULT 00:00:00',
+                'end_date' => 'DATE NOT NULL DEFAULT 0000-00-00',
+                'end_time' => 'TIME NOT NULL DEFAULT 00:00:00',
+                'location' => 'VARCHAR(128) NOT NULL',
                 'price' => 'NUMERIC( 10 , 2 ) NOT NULL DEFAULT 0.00',
                 'notes' => 'TEXT NULL',
                 'type_id' => 'INT(3) NOT NULL DEFAULT 1',
@@ -113,7 +116,7 @@ class m140119_210454_create_event_table extends CDbMigration
                 'updated_by_id' => 'INT(11) NOT NULL DEFAULT 1',
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
-                'UNIQUE KEY external_id (external_id)',
+                'UNIQUE KEY arena_id_external_id (arena_id, external_id)',
                 'KEY name (name)',
                 'KEY tags (tags)',
                 'KEY start_date (start_date)',
@@ -122,16 +125,18 @@ class m140119_210454_create_event_table extends CDbMigration
                 'KEY end_date (end_date)',
                 'KEY end_time (end_time)',
                 'KEY price (price)',
+                'KEY event_arena_id_fk (arena_id)',
                 'KEY event_ice_sheet_id_fk (ice_sheet_id)',
                 'KEY event_type_id_fk (type_id)',
                 'KEY event_status_id_fk (status_id)',
                 'KEY event_created_by_id_fk (created_by_id)',
                 'KEY event_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_ice_sheet_id_fk FOREIGN KEY (ice_sheet_id) REFERENCES ice_sheet (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_type_id_fk FOREIGN KEY (type_id) REFERENCES event_type (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_status_id_fk FOREIGN KEY (status_id) REFERENCES event_status (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_ice_sheet_id_fk FOREIGN KEY (ice_sheet_id) REFERENCES ice_sheet (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_type_id_fk FOREIGN KEY (type_id) REFERENCES event_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_status_id_fk FOREIGN KEY (status_id) REFERENCES event_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -256,9 +261,21 @@ class m140119_210454_create_event_table extends CDbMigration
         
         $this->insert('event_status', array(
                 'id' => 3,
+                'name' => 'EXPIRED',
+                'display_name' => 'Expired',
+                'display_order' => 3,
+                'description' => 'The event end time, if set, has past or else.'
+                    . 'it is one hour past the event start time',
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        $this->insert('event_status', array(
+                'id' => 4,
                 'name' => 'DELETED',
                 'display_name' => 'Deleted',
-                'display_order' => 3,
+                'display_order' => 4,
                 'description' => 'The event has been removed from the system.',
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
@@ -269,6 +286,7 @@ class m140119_210454_create_event_table extends CDbMigration
     private function dropEventTable()
     {
         // First drop the Foreign Keys!
+        $this->dropForeignKey('event_arena_id_fk', 'event');
         $this->dropForeignKey('event_ice_sheet_id_fk', 'event');
         $this->dropForeignKey('event_type_id_fk', 'event');
         $this->dropForeignKey('event_status_id_fk', 'event');

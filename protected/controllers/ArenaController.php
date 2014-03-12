@@ -2,11 +2,11 @@
 
 class ArenaController extends Controller
 {
-	/**
-	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
-	 * using two-column layout. See 'protected/views/layouts/column2.php'.
-	 */
-	public $layout='//layouts/column1';
+    /**
+     * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
+     * using two-column layout. See 'protected/views/layouts/column2.php'.
+     */
+    public $layout='//layouts/column1';
 
     /**
      * @return array action filters
@@ -71,16 +71,19 @@ class ArenaController extends Controller
         );
     }
 
-	/**
-	 * Displays a particular model.
-	 * @param integer $id the ID of the model to be displayed
-	 */
-	public function actionView($id)
-	{
-		$this->render('view',array(
-			'model'=>$this->loadModel($id),
-		));
-	}
+    /**
+     * Displays a particular model.
+     * @param integer $id the ID of the model to be displayed
+     */
+    public function actionView($id)
+    {
+        $this->render(
+                'view',
+                array(
+                    'model' => $this->loadModel($id),
+		)
+        );
+    }
 
 	/**
 	 * Creates a new model.
@@ -668,14 +671,17 @@ class ArenaController extends Controller
             Yii::app()->end();
         }
         
-        
         try {
             // Auto tag the updated records!!!
             $transaction = Yii::app()->db->beginTransaction();
             $arenas = Arena::model()->findAll(
                     array(
+                        'condition' => 'updated_by_id = :uid',
                         'order' => 'updated_on DESC',
-                        'limit' => $tableImporter->getRowsInserted() + $tableImporter->getRowsUpdated()
+                        'limit' => $tableImporter->getRowsInserted() + $tableImporter->getRowsUpdated(),
+                        'params' => array(
+                            ':uid' => Yii::app()->user->id
+                        )
                     )
             );
             

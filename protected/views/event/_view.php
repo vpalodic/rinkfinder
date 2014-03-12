@@ -9,6 +9,10 @@
 	<?php echo CHtml::link(CHtml::encode($data->id),array('view','id'=>$data->id)); ?>
 	<br />
 
+	<b><?php echo CHtml::encode($data->getAttributeLabel('arena_id')); ?>:</b>
+	<?php echo CHtml::encode($data->arena_id); ?>
+	<br />
+
 	<b><?php echo CHtml::encode($data->getAttributeLabel('ice_sheet_id')); ?>:</b>
 	<?php echo CHtml::encode($data->ice_sheet_id); ?>
 	<br />
@@ -29,11 +33,11 @@
 	<?php echo CHtml::encode($data->tags); ?>
 	<br />
 
+	<?php /*
 	<b><?php echo CHtml::encode($data->getAttributeLabel('all_day')); ?>:</b>
 	<?php echo CHtml::encode($data->all_day); ?>
 	<br />
 
-	<?php /*
 	<b><?php echo CHtml::encode($data->getAttributeLabel('start_date')); ?>:</b>
 	<?php echo CHtml::encode($data->start_date); ?>
 	<br />
@@ -52,6 +56,10 @@
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('end_time')); ?>:</b>
 	<?php echo CHtml::encode($data->end_time); ?>
+	<br />
+
+	<b><?php echo CHtml::encode($data->getAttributeLabel('location')); ?>:</b>
+	<?php echo CHtml::encode($data->location); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('price')); ?>:</b>

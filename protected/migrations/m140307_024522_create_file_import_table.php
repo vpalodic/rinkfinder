@@ -45,7 +45,7 @@ class m140307_024522_create_file_import_table extends CDbMigration
         );
     }
 
-    private function dropFileUploadTable()
+    private function dropFileImportTable()
     {
         // First drop the Foreign Keys!
         $this->dropForeignKey('file_import_file_upload_id_fk', 'file_import');
