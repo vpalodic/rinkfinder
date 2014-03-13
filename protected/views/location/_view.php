@@ -1,6 +1,6 @@
 <?php
-/* @var $this IceSheetController */
-/* @var $data IceSheet */
+/* @var $this LocationController */
+/* @var $data Location */
 ?>
 
 <div class="view">

@@ -1,24 +1,24 @@
 <?php
-/* @var $this IceSheetController */
-/* @var $model IceSheet */
+/* @var $this LocationController */
+/* @var $model Location */
 ?>
 
 <?php
 $this->breadcrumbs=array(
-	'Ice Sheets'=>array('index'),
+	'Locations'=>array('index'),
 	$model->name,
 );
 
 $this->menu=array(
-	array('label'=>'List IceSheet', 'url'=>array('index')),
-	array('label'=>'Create IceSheet', 'url'=>array('create')),
-	array('label'=>'Update IceSheet', 'url'=>array('update', 'id'=>$model->id)),
-	array('label'=>'Delete IceSheet', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-	array('label'=>'Manage IceSheet', 'url'=>array('admin')),
+	array('label'=>'List Location', 'url'=>array('index')),
+	array('label'=>'Create Location', 'url'=>array('create')),
+	array('label'=>'Update Location', 'url'=>array('update', 'id'=>$model->id)),
+	array('label'=>'Delete Location', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
+	array('label'=>'Manage Location', 'url'=>array('admin')),
 );
 ?>
 
-<h1>View IceSheet #<?php echo $model->id; ?></h1>
+<h1>View Location #<?php echo $model->id; ?></h1>
 
 <?php $this->widget('zii.widgets.CDetailView',array(
     'htmlOptions' => array(

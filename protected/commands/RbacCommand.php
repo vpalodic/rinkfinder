@@ -40,7 +40,7 @@ class RbacCommand extends CConsoleCommand
             $this->createAuthObjects();            
             $this->createUserObjects();            
             $this->createArenaObjects();
-            $this->createIceSheetObjects();
+            $this->createLocationObjects();
             $this->createEventObjects();
             $this->createEventRequestObjects();
             $this->createReservationObjects();
@@ -50,8 +50,9 @@ class RbacCommand extends CConsoleCommand
             $this->createRoles();
             
             // ensure we have at least one admin user by assigning the
-            // default sysadmin account to the Administrator role
+            // default sysadmin and cron accounts to the Administrator role
             $this->_authManager->assign("Administrator", 1);
+            $this->_authManager->assign("Administrator", 2);
 
             // provide a message indicating success
             echo "Authorization hierarchy successfully generated.\n";
@@ -235,24 +236,24 @@ class RbacCommand extends CConsoleCommand
         $task->addChild('adminArena');
     }
 
-    protected function createIceSheetObjects()
+    protected function createLocationObjects()
     {
-        // create the lowest level operations for ice sheets
-        $this->_authManager->createOperation("createIceSheet", "Create a new ice sheet.");
-        $this->_authManager->createOperation("readIceSheet", "Read ice sheet information.");
-        $this->_authManager->createOperation("updateIceSheet", "Update ice sheet information.");
-        $this->_authManager->createOperation("deleteIceSheet", "Delete an ice sheet.");
-        $this->_authManager->createOperation("indexIceSheet", "List ice sheet(s).");
-        $this->_authManager->createOperation("adminIceSheet", "Manage all ice sheets.");
+        // create the lowest level operations for locations
+        $this->_authManager->createOperation("createLocation", "Create a new location.");
+        $this->_authManager->createOperation("readLocation", "Read location information.");
+        $this->_authManager->createOperation("updateLocation", "Update location information.");
+        $this->_authManager->createOperation("deleteLocation", "Delete an location.");
+        $this->_authManager->createOperation("indexLocation", "List location(s).");
+        $this->_authManager->createOperation("adminLocation", "Manage all locations.");
         
-        // create the task level operations for ice sheets
-        $task = $this->_authManager->createTask("administerAllIceSheets", "Manage all the ice sheets.", $this->applicationAdministratorBizRule);
-        $task->addChild('createIceSheet');
-        $task->addChild('readIceSheet');
-        $task->addChild('updateIceSheet');
-        $task->addChild('deleteIceSheet');
-        $task->addChild('indexIceSheet');
-        $task->addChild('adminIceSheet');
+        // create the task level operations for locations
+        $task = $this->_authManager->createTask("administerAllLocations", "Manage all the locations.", $this->applicationAdministratorBizRule);
+        $task->addChild('createLocation');
+        $task->addChild('readLocation');
+        $task->addChild('updateLocation');
+        $task->addChild('deleteLocation');
+        $task->addChild('indexLocation');
+        $task->addChild('adminLocation');
     }
 
     protected function createEventObjects()

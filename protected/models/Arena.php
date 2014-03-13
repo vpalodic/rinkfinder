@@ -38,7 +38,7 @@
  * @property ArenaReservationPolicy[] $arenaReservationPolicies
  * @property User[] $users
  * @property FileUpload[] $fileUploads
- * @property IceSheet[] $iceSheets
+ * @property Location[] $locations
  * @property Reservation[] $reservations
  */
 class Arena extends RinkfinderActiveRecord
@@ -158,9 +158,9 @@ class Arena extends RinkfinderActiveRecord
                 'FileUpload',
                 'arena_id'
             ),
-            'iceSheets' => array(
+            'locationss' => array(
                 self::HAS_MANY,
-                'IceSheet',
+                'Location',
                 'arena_id'
             ),
             'reservations' => array(

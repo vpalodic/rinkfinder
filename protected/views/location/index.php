@@ -1,20 +1,20 @@
 <?php
-/* @var $this IceSheetController */
+/* @var $this LocationController */
 /* @var $dataProvider CActiveDataProvider */
 ?>
 
 <?php
 $this->breadcrumbs=array(
-	'Ice Sheets',
+	'Locations',
 );
 
 $this->menu=array(
-	array('label'=>'Create IceSheet','url'=>array('create')),
-	array('label'=>'Manage IceSheet','url'=>array('admin')),
+	array('label'=>'Create Location','url'=>array('create')),
+	array('label'=>'Manage Location','url'=>array('admin')),
 );
 ?>
 
-<h1>Ice Sheets</h1>
+<h1>Locations</h1>
 
 <?php $this->widget('bootstrap.widgets.TbListView',array(
 	'dataProvider'=>$dataProvider,

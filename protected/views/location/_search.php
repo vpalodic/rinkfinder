@@ -1,6 +1,6 @@
 <?php
-/* @var $this IceSheetController */
-/* @var $model IceSheet */
+/* @var $this LocationController */
+/* @var $model Location */
 /* @var $form CActiveForm */
 ?>
 

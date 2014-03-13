@@ -1,6 +1,6 @@
 <?php
 
-class m140117_005888_create_tag_table extends CDbMigration
+class m140117_030122_create_tag_table extends CDbMigration
 {
     public function safeUp()
     {

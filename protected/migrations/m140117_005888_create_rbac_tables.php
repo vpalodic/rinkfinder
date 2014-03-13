@@ -1,6 +1,6 @@
 <?php
 
-class m140117_030122_create_rbac_tables extends CDbMigration
+class m140117_005888_create_rbac_tables extends CDbMigration
 {
     public function safeUp()
     {

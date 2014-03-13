@@ -7,7 +7,7 @@
  * @property integer $id
  * @property integer $user_id
  * @property integer $arena_id
- * @property integer $ice_sheet_id
+ * @property integer $location_id
  * @property integer $upload_type_id
  * @property string $name
  * @property string $path
@@ -25,7 +25,7 @@
  * The followings are the available model relations:
  * @property User $user
  * @property Arena $arena
- * @property IceSheet $iceSheet
+ * @property Location $location
  * @property User $createdBy
  * @property User $updatedBy
  */
@@ -60,7 +60,7 @@ class FileUpload extends RinkfinderActiveRecord
                 'required'
             ),
             array(
-                'user_id, arena_id, ice_sheet_id, upload_type_id, size, error_code',
+                'user_id, arena_id, location_id, upload_type_id, size, error_code',
                 'numerical',
                 'integerOnly' => true
             ),
@@ -92,7 +92,7 @@ class FileUpload extends RinkfinderActiveRecord
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
             array(
-                'id, user_id, arena_id, ice_sheet_id, upload_type_id, name, path, uri, extension, mime_type, size, error_code, lock_version, created_by_id, created_on, updated_by_id, updated_on',
+                'id, user_id, arena_id, location_id, upload_type_id, name, path, uri, extension, mime_type, size, error_code, lock_version, created_by_id, created_on, updated_by_id, updated_on',
                 'safe',
                 'on' => 'search'
             ),
@@ -122,10 +122,10 @@ class FileUpload extends RinkfinderActiveRecord
                 'Arena',
                 'arena_id'
             ),
-            'iceSheet' => array(
+            'location' => array(
                 self::BELONGS_TO,
-                'IceSheet',
-                'ice_sheet_id'
+                'Location',
+                'location_id'
             ),
             'createdBy' => array(
                 self::BELONGS_TO,
@@ -159,7 +159,7 @@ class FileUpload extends RinkfinderActiveRecord
             'id' => 'Upload ID',
             'user_id' => 'Uploaded By',
             'arena_id' => 'In Arena',
-            'ice_sheet_id' => 'In Ice Sheet',
+            'location_id' => 'In Ice Sheet',
             'upload_type_id' => 'Upload Type',
             'name' => 'File Name',
             'path' => 'File Path',
@@ -227,7 +227,7 @@ class FileUpload extends RinkfinderActiveRecord
         $criteria->compare('id', $this->id);
         $criteria->compare('user_id', $this->user_id);
         $criteria->compare('arena_id', $this->arena_id);
-        $criteria->compare('ice_sheet_id', $this->ice_sheet_id);
+        $criteria->compare('location_id', $this->location_id);
         $criteria->compare('upload_type_id', $this->upload_type_id);
         $criteria->compare('name', $this->name, true);
         $criteria->compare('path', $this->path, true);

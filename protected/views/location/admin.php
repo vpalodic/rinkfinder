@@ -1,16 +1,16 @@
 <?php
-/* @var $this IceSheetController */
-/* @var $model IceSheet */
+/* @var $this LocationController */
+/* @var $model Location */
 
 
 $this->breadcrumbs=array(
-	'Ice Sheets'=>array('index'),
+	'Locations'=>array('index'),
 	'Manage',
 );
 
 $this->menu=array(
-	array('label'=>'List IceSheet', 'url'=>array('index')),
-	array('label'=>'Create IceSheet', 'url'=>array('create')),
+	array('label'=>'List Location', 'url'=>array('index')),
+	array('label'=>'Create Location', 'url'=>array('create')),
 );
 
 Yii::app()->clientScript->registerScript('search', "
@@ -19,7 +19,7 @@ $('.search-button').click(function(){
 	return false;
 });
 $('.search-form form').submit(function(){
-	$('#ice-sheet-grid').yiiGridView('update', {
+	$('#location-grid').yiiGridView('update', {
 		data: $(this).serialize()
 	});
 	return false;
@@ -27,7 +27,7 @@ $('.search-form form').submit(function(){
 ");
 ?>
 
-<h1>Manage Ice Sheets</h1>
+<h1>Manage Locations</h1>
 
 <p>
     You may optionally enter a comparison operator (<b>&lt;</b>, <b>&lt;=</b>, <b>&gt;</b>, <b>&gt;=</b>, <b>
@@ -43,7 +43,7 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 </div><!-- search-form -->
 
 <?php $this->widget('bootstrap.widgets.TbGridView',array(
-	'id'=>'ice-sheet-grid',
+	'id'=>'location-grid',
 	'dataProvider'=>$model->search(),
 	'filter'=>$model,
 	'columns'=>array(

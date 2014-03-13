@@ -6,7 +6,7 @@
  * The followings are the available columns in table 'event':
  * @property integer $id
  * @property integer $arena_id
- * @property integer $ice_sheet_id
+ * @property integer $location_id
  * @property string $external_id
  * @property string $name
  * @property string $description
@@ -30,7 +30,7 @@
  *
  * The followings are the available model relations:
  * @property Arena $arena
- * @property IceSheet $iceSheet
+ * @property Location $iceSheet
  * @property EventType $type
  * @property EventStatus $status
  * @property User $createdBy
@@ -61,8 +61,8 @@ class Event extends RinkfinderActiveRecord
         // NOTE: you should only define rules for those attributes that
         // will receive user inputs.
         return array(
-            array('arena_id, start_date, start_time, location, created_on, updated_on', 'required'),
-            array('arena_id, ice_sheet_id, duration, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
+            array('arena_id, location_id, start_date, start_time', 'required'),
+            array('arena_id, location_id, duration, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
             array('all_day', 'boolean'),
             array('external_id', 'length', 'max'=>32),
             array('name, location', 'length', 'max'=>128),
@@ -71,7 +71,7 @@ class Event extends RinkfinderActiveRecord
             array('duration, end_date, end_time, notes', 'safe'),
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
-            array('id, arena_id, ice_sheet_id, external_id, name, description, tags, all_day, start_date, start_time, duration, end_date, end_time, location, price, notes, type_id, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+            array('id, arena_id, location_id, external_id, name, description, tags, all_day, start_date, start_time, duration, end_date, end_time, location, price, notes, type_id, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
         );
     }
 
@@ -84,7 +84,7 @@ class Event extends RinkfinderActiveRecord
         // class name for the relations automatically generated below.
         return array(
             'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
-            'iceSheet' => array(self::BELONGS_TO, 'IceSheet', 'ice_sheet_id'),
+            'location' => array(self::BELONGS_TO, 'Location', 'location_id'),
             'type' => array(self::BELONGS_TO, 'EventType', 'type_id'),
             'status' => array(self::BELONGS_TO, 'EventStatus', 'status_id'),
             'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
@@ -102,7 +102,7 @@ class Event extends RinkfinderActiveRecord
         return array(
             'id' => 'ID',
             'arena_id' => 'Arena',
-            'ice_sheet_id' => 'Ice Sheet',
+            'location_id' => 'Venue',
             'external_id' => 'External',
             'name' => 'Name',
             'description' => 'Description',
@@ -146,7 +146,7 @@ class Event extends RinkfinderActiveRecord
 
         $criteria->compare('id',$this->id);
         $criteria->compare('arena_id',$this->arena_id);
-        $criteria->compare('ice_sheet_id',$this->ice_sheet_id);
+        $criteria->compare('location_id',$this->location_id);
         $criteria->compare('external_id',$this->external_id,true);
         $criteria->compare('name',$this->name,true);
         $criteria->compare('description',$this->description,true);
@@ -255,7 +255,7 @@ class Event extends RinkfinderActiveRecord
                 'size' => 128,
                 'required' => true,
                 'tooltip' => 'The location of the event. This should be the name '
-                . 'of an existing ice-sheet / rink. If the location does not exist '
+                . 'of an existing location. If the location does not exist '
                 . 'in the database, it will be created. Please be careful when '
                 . 'specifying the value of this field!'
                 . 'You can enter up to a 128 characters. This field is required.',

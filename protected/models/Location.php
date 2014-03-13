@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "ice_sheet".
+ * This is the model class for table "location".
  *
- * The followings are the available columns in table 'ice_sheet':
+ * The followings are the available columns in table 'location':
  * @property integer $id
  * @property integer $arena_id
  * @property string $external_id
@@ -28,21 +28,25 @@
  *
  * The followings are the available model relations:
  * @property Event[] $events
- * @property FileUpload[] $fileUploads
  * @property Arena $arena
- * @property IceSheetType $type
- * @property IceSheetStatus $status
+ * @property LocationType $type
+ * @property LocationStatus $status
  * @property User $createdBy
  * @property User $updatedBy
  */
-class IceSheet extends RinkfinderActiveRecord
+class Location extends RinkfinderActiveRecord
 {
+    /**
+     * @var string $oldTags
+     */
+    private $oldTags;
+    
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'ice_sheet';
+		return 'location';
 	}
 
 	/**
@@ -53,7 +57,7 @@ class IceSheet extends RinkfinderActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('arena_id, name, description, created_on, updated_on', 'required'),
+			array('arena_id, name,', 'required'),
 			array('arena_id, seating, base_id, refrigeration_id, resurfacer_id, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
 			array('length, width, radius', 'numerical'),
 			array('external_id', 'length', 'max'=>32),
@@ -66,61 +70,22 @@ class IceSheet extends RinkfinderActiveRecord
 		);
 	}
 
-    /**
-     * @return array relational rules.
-     */
-    public function relations()
-    {
-        // NOTE: you may need to adjust the relation name and the related
-        // class name for the relations automatically generated below.
-        return array(
-            'events' => array(
-                self::HAS_MANY,
-                'Event',
-                'ice_sheet_id'
-            ),
-            'fileUploads' => array(
-                self::HAS_MANY,
-                'FileUpload',
-                'ice_sheet_id'
-            ),
-            'arena' => array(
-                self::BELONGS_TO,
-                'Arena',
-                'arena_id'
-            ),
-            'type' => array(
-                self::BELONGS_TO,
-                'IceSheetType',
-                'type_id'
-            ),
-            'status' => array(
-                self::BELONGS_TO,
-                'IceSheetStatus',
-                'status_id'
-            ),
-            'createdBy' => array(
-                self::BELONGS_TO,
-                'User',
-                'created_by_id',
-                'select' => array(
-                    'id',
-                    'username',
-                    'status_id',
-                ),
-            ),
-            'updatedBy' => array(
-                self::BELONGS_TO,
-                'User',
-                'updated_by_id',
-                'select' => array(
-                    'id',
-                    'username',
-                    'status_id',
-                ),
-            ),
-        );
-    }
+	/**
+	 * @return array relational rules.
+	 */
+	public function relations()
+	{
+		// NOTE: you may need to adjust the relation name and the related
+		// class name for the relations automatically generated below.
+		return array(
+			'events' => array(self::HAS_MANY, 'Event', 'location_id'),
+			'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
+			'type' => array(self::BELONGS_TO, 'LocationType', 'type_id'),
+			'status' => array(self::BELONGS_TO, 'LocationStatus', 'status_id'),
+			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
+			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
+		);
+	}
 
 	/**
 	 * @return array customized attribute labels (name=>label)
@@ -201,10 +166,75 @@ class IceSheet extends RinkfinderActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return IceSheet the static model class
+	 * @return Location the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
 		return parent::model($className);
 	}
+        
+    /**
+     * @return array a list of links that point to the arena list filtered by every tag of this arena
+     */
+    public function getTagLinks()
+    {
+        $links = array();
+        foreach(Tag::string2array($this->tags) as $tag)
+            $links[] = CHtml::link(CHtml::encode($tag), array('location/search', 'tag' => $tag), array('class' => 'btn btn-small'));
+        return $links;
+    }
+
+    /**
+     * Normalizes the user-entered tags.
+     */
+    public function normalizeTags($attribute, $params)
+    {
+        $this->tags = Tag::array2string(array_unique(Tag::string2array($this->tags)));
+    }
+
+    /**
+     * Tags the record with the Arena's name, event type, and event name.
+     * @throws CDbException
+     */
+    public function autoTag()
+    {
+        $tags = Tag::string2array($this->tags);
+        
+        if(isset($this->name) && !empty($this->name)) {
+            $tags[] = $this->name;
+        }
+        
+        $tags[] = $this->arena->name;
+        $tags[] = $this->type->display_name;
+        
+        $this->tags = Tag::array2string(array_unique($tags));
+    }
+
+    /**
+     * This is invoked when a record is populated with data from a find() call.
+     */
+    protected function afterFind()
+    {
+        parent::afterFind();
+        $this->oldTags = $this->tags;
+    }
+
+    /**
+     * This is invoked after the record is saved.
+     */
+    protected function afterSave()
+    {
+        parent::afterSave();
+        Tag::model()->updateFrequency($this->oldTags, $this->tags);
+    }
+
+    /**
+     * This is invoked after the record is deleted.
+     */
+    protected function afterDelete()
+    {
+        parent::afterDelete();
+        Tag::model()->updateFrequency($this->tags, '');
+    }
+
 }

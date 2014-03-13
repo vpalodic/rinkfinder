@@ -83,8 +83,8 @@ class m140119_210454_create_event_table extends CDbMigration
 
     private function createEventTable()
     {
-        // the arena_id field references ice_sheet.id and
-        // the ice_sheet_id field references ice_sheet.id and
+        // the arena_id field references location.id and
+        // the location_id field references location.id and
         // the type_id field references event_type.id and
         // the status_id field references event_status.id and
         // the created_by_id field references user.id and
@@ -94,8 +94,9 @@ class m140119_210454_create_event_table extends CDbMigration
         $this->createTable('event', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
                 'arena_id' => 'INT(11) NOT NULL',
-                'ice_sheet_id' => 'INT(11) NULL',
+                'location_id' => 'INT(11) NULL',
                 'external_id' => 'VARCHAR(32) NULL',
+                'recurrence_id' => 'INT(11) NULL',
                 'name' => 'VARCHAR(128) NOT NULL DEFAULT \'\'',
                 'description' => 'TEXT NOT NULL DEFAULT \'\'',
                 'tags' => 'VARCHAR(1024) NULL',
@@ -105,7 +106,6 @@ class m140119_210454_create_event_table extends CDbMigration
                 'duration' => 'INT(11) NOT NULL DEFAULT 0',
                 'end_date' => 'DATE NOT NULL DEFAULT \'0000-00-00\'',
                 'end_time' => 'TIME NOT NULL DEFAULT \'00:00:00\'',
-                'location' => 'VARCHAR(128) NOT NULL',
                 'price' => 'NUMERIC( 10 , 2 ) NOT NULL DEFAULT 0.00',
                 'notes' => 'TEXT NULL',
                 'type_id' => 'INT(3) NOT NULL DEFAULT 1',
@@ -117,6 +117,11 @@ class m140119_210454_create_event_table extends CDbMigration
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
                 'UNIQUE KEY arena_id_external_id (arena_id, external_id)',
+                'KEY external_id (external_id)',
+                'KEY arena_id (arena_id)',
+                'KEY location_id (location_id)',
+                'KEY arena_id_location_id (arena_id, location_id)',
+                'KEY recurrence_id (recurrence_id)',
                 'KEY name (name)',
                 'KEY tags (tags)',
                 'KEY start_date (start_date)',
@@ -126,13 +131,15 @@ class m140119_210454_create_event_table extends CDbMigration
                 'KEY end_time (end_time)',
                 'KEY price (price)',
                 'KEY event_arena_id_fk (arena_id)',
-                'KEY event_ice_sheet_id_fk (ice_sheet_id)',
+                'KEY event_location_id_fk (location_id)',
+                'KEY event_recurrence_id_fk (recurrence_id)',
                 'KEY event_type_id_fk (type_id)',
                 'KEY event_status_id_fk (status_id)',
                 'KEY event_created_by_id_fk (created_by_id)',
                 'KEY event_updated_by_id_fk (updated_by_id)',
                 'CONSTRAINT event_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT event_ice_sheet_id_fk FOREIGN KEY (ice_sheet_id) REFERENCES ice_sheet (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT event_recurrence_id_fk FOREIGN KEY (recurrence_id) REFERENCES recurrence (id) ON UPDATE CASCADE ON DELETE SET NULL',
                 'CONSTRAINT event_type_id_fk FOREIGN KEY (type_id) REFERENCES event_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
                 'CONSTRAINT event_status_id_fk FOREIGN KEY (status_id) REFERENCES event_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
                 'CONSTRAINT event_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
@@ -287,7 +294,7 @@ class m140119_210454_create_event_table extends CDbMigration
     {
         // First drop the Foreign Keys!
         $this->dropForeignKey('event_arena_id_fk', 'event');
-        $this->dropForeignKey('event_ice_sheet_id_fk', 'event');
+        $this->dropForeignKey('event_location_id_fk', 'event');
         $this->dropForeignKey('event_type_id_fk', 'event');
         $this->dropForeignKey('event_status_id_fk', 'event');
         $this->dropForeignKey('event_created_by_id_fk', 'event');

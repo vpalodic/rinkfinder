@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "ice_sheet_base".
+ * This is the model class for table "location_status".
  *
- * The followings are the available columns in table 'ice_sheet_base':
+ * The followings are the available columns in table 'location_status':
  * @property integer $id
  * @property string $name
  * @property string $display_name
@@ -17,17 +17,18 @@
  * @property string $updated_on
  *
  * The followings are the available model relations:
+ * @property Location[] $locations
  * @property User $createdBy
  * @property User $updatedBy
  */
-class IceSheetBase extends RinkfinderActiveRecord
+class LocationStatus extends RinkfinderActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'ice_sheet_base';
+		return 'location_status';
 	}
 
 	/**
@@ -55,6 +56,7 @@ class IceSheetBase extends RinkfinderActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'locations' => array(self::HAS_MANY, 'Location', 'status_id'),
 			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
 			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
 		);
@@ -119,7 +121,7 @@ class IceSheetBase extends RinkfinderActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return IceSheetBase the static model class
+	 * @return LocationStatus the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
