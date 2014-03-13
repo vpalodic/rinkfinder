@@ -37,6 +37,7 @@
             . '$("#resetButton3").on("click", function () {'
             . '    return uploadArenas.onResetButtonClick();'
             . '});'
+            . 'uploadArenas.loginUrl = "' . $this->createUrl('site/login') . '";'
             . 'uploadArenas.baseUrl = "' . Yii::app()->request->baseUrl . '";',
             CClientScript::POS_READY
     );

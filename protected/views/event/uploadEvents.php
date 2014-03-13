@@ -39,6 +39,7 @@
             . '$("#resetButton3").on("click", function () {'
             . '    return uploadEvents.onResetButtonClick();'
             . '});'
+            . 'uploadEvents.loginUrl = "' . $this->createUrl('site/login') . '";'
             . 'uploadEvents.baseUrl = "' . Yii::app()->request->baseUrl . '";'
             . 'uploadEvents.step = 1;'
             . 'uploadEvents.arenaId = ' . $arenaId . ';',

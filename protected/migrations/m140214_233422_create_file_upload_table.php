@@ -45,11 +45,11 @@ class m140214_233422_create_file_upload_table extends CDbMigration
                 'KEY file_upload_location_id_fk (location_id)',
                 'KEY file_upload_created_by_id_fk (created_by_id)',
                 'KEY file_upload_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT file_upload_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_upload_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_upload_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_upload_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_upload_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT file_upload_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_upload_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_upload_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_upload_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_upload_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

@@ -37,8 +37,8 @@ class m140120_050743_create_assignment_tables extends CDbMigration
                 'KEY arena_user_assignment_updated_by_id_fk (updated_by_id)',
                 'CONSTRAINT arena_user_assignment_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
                 'CONSTRAINT arena_user_assignment_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_user_assignment_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_user_assignment_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_user_assignment_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT arena_user_assignment_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -69,8 +69,8 @@ class m140120_050743_create_assignment_tables extends CDbMigration
                 'KEY arena_contact_assignment_updated_by_id_fk (updated_by_id)',
                 'CONSTRAINT arena_contact_assignment_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
                 'CONSTRAINT arena_contact_assignment_contact_id_fk FOREIGN KEY (contact_id) REFERENCES contact (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_contact_assignment_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_contact_assignment_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_contact_assignment_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT arena_contact_assignment_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

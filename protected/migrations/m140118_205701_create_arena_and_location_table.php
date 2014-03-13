@@ -57,8 +57,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY arena_status_created_by_id_fk (created_by_id)',
                 'KEY arena_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT arena_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT arena_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -105,9 +105,9 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY arena_status_id_fk (status_id)',
                 'KEY arena_created_by_id_fk (created_by_id)',
                 'KEY arena_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT arena_status_id_fk FOREIGN KEY (status_id) REFERENCES arena_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT arena_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT arena_status_id_fk FOREIGN KEY (status_id) REFERENCES arena_status (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT arena_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT arena_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );
@@ -137,8 +137,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY location_type_created_by_id_fk (created_by_id)',
                 'KEY location_type_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -168,8 +168,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY location_base_created_by_id_fk (created_by_id)',
                 'KEY location_base_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_base_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_base_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_base_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_base_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -202,8 +202,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY location_refrigeration_created_by_id_fk (created_by_id)',
                 'KEY location_refrigeration_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_refrigeration_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_refrigeration_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_refrigeration_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_refrigeration_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -236,8 +236,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY location_resurfacer_created_by_id_fk (created_by_id)',
                 'KEY location_resurfacer_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_resurfacer_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_resurfacer_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_resurfacer_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_resurfacer_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -270,8 +270,8 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY active (active)',
                 'KEY location_status_created_by_id_fk (created_by_id)',
                 'KEY location_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -324,14 +324,14 @@ class m140118_205701_create_arena_and_location_table extends CDbMigration
                 'KEY location_status_id_fk (status_id)',
                 'KEY location_created_by_id_fk (created_by_id)',
                 'KEY location_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT location_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_base_id_fk FOREIGN KEY (base_id) REFERENCES location_base (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_refrigeration_id_fk FOREIGN KEY (refrigeration_id) REFERENCES location_refrigeration (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_resurfacer_id_fk FOREIGN KEY (resurfacer_id) REFERENCES location_resurfacer (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_type_id_fk FOREIGN KEY (type_id) REFERENCES location_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_status_id_fk FOREIGN KEY (status_id) REFERENCES location_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT location_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT location_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_base_id_fk FOREIGN KEY (base_id) REFERENCES location_base (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_refrigeration_id_fk FOREIGN KEY (refrigeration_id) REFERENCES location_refrigeration (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_resurfacer_id_fk FOREIGN KEY (resurfacer_id) REFERENCES location_resurfacer (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_type_id_fk FOREIGN KEY (type_id) REFERENCES location_type (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_status_id_fk FOREIGN KEY (status_id) REFERENCES location_status (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT location_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

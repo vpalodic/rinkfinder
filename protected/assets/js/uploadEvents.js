@@ -22,6 +22,7 @@
     uploadEvents.csvRows = [{}];
     uploadEvents.csvOptions = {};
     uploadEvents.mappings = [{}];
+    uploadEvents.loginUrl = "";
     uploadEvents.baseUrl = "";
     uploadEvents.arenaId = 0;
     uploadEvents.step = 0;
@@ -101,8 +102,15 @@
         else if (response !== false)
         {
             htmlOutput += "<h4>Error Details</h4>";
-            htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
-            
+
+            if(response.error == 'LOGIN_REQUIRED') {
+                htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
+                        "onClick='document.location.reload(true);return false;'>" +
+                        "<i class='icon-user'></i> login</a> again.</strong>\n";
+            } else {
+                htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+            }
+           
             if (response.exception == true)
             {
                 htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
@@ -125,7 +133,7 @@
         else if (xhr && xhr.responseText)
         {
             htmlOutput += "<h4>Error Details</h4>";
-            htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
+            htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
             $("#eventModalBody").html(htmlOutput);
             $("#eventModal").modal('show');
         } else {
@@ -212,7 +220,14 @@
                 if (response !== false)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+
+                    if(response.error == 'LOGIN_REQUIRED') {
+                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
+                        "onClick='document.location.reload(true);return false;'>" +
+                        "<i class='icon-user'></i> login</a> again.</strong>\n";
+                    } else {
+                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    }
                     
                     if (response.exception == true)
                     {
@@ -234,7 +249,7 @@
                 else if (xhr && xhr.responseText)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
+                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
                 }
                 
                 $("#eventModalBody").html(htmlOutput);
@@ -343,7 +358,14 @@
                 if (response !== false)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+
+                    if(response.error == 'LOGIN_REQUIRED') {
+                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
+                        "onClick='document.location.reload(true);return false;'>" +
+                        "<i class='icon-user'></i> login</a> again.</strong>\n";
+                    } else {
+                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    }
                     
                     if (response.exception == true)
                     {
@@ -365,7 +387,7 @@
                 else if (xhr && xhr.responseText)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
+                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
                 }
                 
                 $("#eventModalBody").html(htmlOutput);
@@ -458,7 +480,14 @@
                 if (response !== false)
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+
+                    if(response.error == 'LOGIN_REQUIRED') {
+                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
+                        "onClick='document.location.reload(true);return false;'>" +
+                        "<i class='icon-user'></i> login</a> again.</strong>\n";
+                    } else {
+                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
+                    }
                     
                     if (response.exception == true)
                     {
@@ -480,7 +509,7 @@
                 else if (xhr && xhr.responseText) 
                 {
                     htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: " + xhr.responseText + "</pre>";
+                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
                 }
                 
                 $("#eventModalBody").html(htmlOutput);

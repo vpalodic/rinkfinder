@@ -37,9 +37,9 @@ class m140307_024522_create_file_import_table extends CDbMigration
                 'KEY file_import_file_upload_id_fk (file_upload_id)',
                 'KEY file_import_created_by_id_fk (created_by_id)',
                 'KEY file_import_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT file_import_file_upload_id_fk FOREIGN KEY (file_upload_id) REFERENCES file_upload (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_import_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT file_import_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT file_import_file_upload_id_fk FOREIGN KEY (file_upload_id) REFERENCES file_upload (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_import_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_import_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

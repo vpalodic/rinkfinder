@@ -40,8 +40,8 @@ class m140120_033811_create_reservation_table extends CDbMigration
                 'KEY active (active)',
                 'KEY reservation_status_created_by_id_fk (created_by_id)',
                 'KEY reservation_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT reservation_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT reservation_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 6'
         );
@@ -78,13 +78,13 @@ class m140120_033811_create_reservation_table extends CDbMigration
                 'KEY reservation_status_id_fk (status_id)',
                 'KEY reservation_created_by_id_fk (created_by_id)',
                 'KEY reservation_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT reservation_source_id_fk FOREIGN KEY (source_id) REFERENCES event_request (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_for_id_fk FOREIGN KEY (for_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_status_id_fk FOREIGN KEY (status_id) REFERENCES reservation_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT reservation_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT reservation_source_id_fk FOREIGN KEY (source_id) REFERENCES event_request (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_for_id_fk FOREIGN KEY (for_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_status_id_fk FOREIGN KEY (status_id) REFERENCES reservation_status (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT reservation_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

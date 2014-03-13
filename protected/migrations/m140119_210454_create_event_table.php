@@ -43,8 +43,8 @@ class m140119_210454_create_event_table extends CDbMigration
                 'KEY active (active)',
                 'KEY event_type_created_by_id_fk (created_by_id)',
                 'KEY event_type_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_type_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_type_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 9'
         );
@@ -74,8 +74,8 @@ class m140119_210454_create_event_table extends CDbMigration
                 'KEY active (active)',
                 'KEY event_status_created_by_id_fk (created_by_id)',
                 'KEY event_status_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
-                'CONSTRAINT event_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE RESTRICT ON DELETE RESTRICT',
+                'CONSTRAINT event_status_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_status_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci AUTO_INCREMENT = 4'
         );
@@ -137,13 +137,13 @@ class m140119_210454_create_event_table extends CDbMigration
                 'KEY event_status_id_fk (status_id)',
                 'KEY event_created_by_id_fk (created_by_id)',
                 'KEY event_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT event_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT event_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT event_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE RESTRICT',
                 'CONSTRAINT event_recurrence_id_fk FOREIGN KEY (recurrence_id) REFERENCES recurrence (id) ON UPDATE CASCADE ON DELETE SET NULL',
-                'CONSTRAINT event_type_id_fk FOREIGN KEY (type_id) REFERENCES event_type (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT event_status_id_fk FOREIGN KEY (status_id) REFERENCES event_status (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT event_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
-                'CONSTRAINT event_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE',
+                'CONSTRAINT event_type_id_fk FOREIGN KEY (type_id) REFERENCES event_type (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_status_id_fk FOREIGN KEY (status_id) REFERENCES event_status (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT event_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

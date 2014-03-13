@@ -17,7 +17,6 @@
  * @property integer $duration
  * @property string $end_date
  * @property string $end_time
- * @property string $location
  * @property string $price
  * @property string $notes
  * @property integer $type_id
@@ -65,7 +64,7 @@ class Event extends RinkfinderActiveRecord
             array('arena_id, location_id, duration, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
             array('all_day', 'boolean'),
             array('external_id', 'length', 'max'=>32),
-            array('name, location', 'length', 'max'=>128),
+            array('name', 'length', 'max'=>128),
             array('tags', 'length', 'max'=>1024),
             array('price', 'length', 'max'=>10),
             array('duration, end_date, end_time, notes', 'safe'),
@@ -477,7 +476,7 @@ class Event extends RinkfinderActiveRecord
         }
         
         $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
-        $this->duration = $this->duration ? $this->duration : 60;
+        $this->duration = !empty($this->duration) ? abs($this->duration) : 60;
         $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
         $bAllDay = $this->all_day;
         
@@ -485,6 +484,7 @@ class Event extends RinkfinderActiveRecord
                 $dtEventEndDateTime < $dtEventStartDateTime) {
             // End date and time isn't set correctly so we calculate it
             if($bAllDay) {
+                $this->start_time = '00:00:00';
                 $this->end_date = $this->start_date;
                 $this->end_time = '23:59:59';
             } else {
