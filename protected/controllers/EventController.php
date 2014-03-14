@@ -739,7 +739,10 @@ class EventController extends Controller
             foreach($events as $event) {
                 $event->autoTag();
                 $event->autoDurationEndDateTimeStatus();
-                $event->save();
+                
+                if(!$event->save()) {
+                    Yii::log('Unable to save auto tags for Event', CLogger::LEVEL_ERROR, 'application.controllers');
+                }
             }
             $transaction->commit();
             $autoTagged = true;
@@ -748,31 +751,22 @@ class EventController extends Controller
             if($transaction->getActive()) {
                 $transaction->rollback();
             }
-            
+
             $errorInfo = null;
             
-/*            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
-            }
-*/            
-            $this->sendResponseHeaders(500);
-
-            echo json_encode(
-                    array(
-                        'success' => false,
-                        'error' => $ex->getMessage(),
-                        'exception' => true,
-                        'errorCode' => $ex->getCode(),
-                        'errorFile' => $ex->getFile(),
-                        'errorLine' => $ex->getLine(),
-                        'errorInfo' => $errorInfo,
-                    )
-            );
-            Yii::app()->end();
+            Yii::log(
+                    'Exception during auto tags for Event: ' . 
+                    json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )),
+                    CLogger::LEVEL_ERROR, 'application.controllers');
         }
         
         // Save the file import information to the database
@@ -787,10 +781,25 @@ class EventController extends Controller
             $fileImport->total_created = $tableImporter->getRowsInserted();
             $fileImport->auto_tagged = $autoTagged;
             
-            $fileImport->save();
+            if(!$fileImport->save()) {
+                Yii::log('Unable to save fileImport for Event', CLogger::LEVEL_ERROR, 'application.controllers');
+            }
         } catch (Exception $ex) {
-            // We don't care if we can't save the file import record if the
-            // import has been completed!
+            $errorInfo = null;
+            
+            Yii::log(
+                    'Exception saving fileImport for Event: ' . 
+                    json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )),
+                    CLogger::LEVEL_ERROR, 'application.controllers');
         }
         
         // Data has been imported so let the user know!

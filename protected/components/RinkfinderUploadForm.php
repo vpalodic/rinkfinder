@@ -125,7 +125,8 @@ class RinkfinderUploadForm extends CFormModel
         
         // We build our directory path by starting with the base and working
         // our way down the chain...
-        $this->fileUploadPath = Yii::app()->params['uploads']['path'];
+//        $this->fileUploadPath = Yii::app()->params['uploads']['path'];
+        $this->fileUploadPath = Yii::app()->params['uploads']['storagePath'];        
         $this->fileUploadPath .= DIRECTORY_SEPARATOR;
         $this->fileUploadPath .= Yii::app()->params['uploads']['directory'];
         $this->fileUploadUri = Yii::app()->params['uploads']['directory'];
@@ -202,6 +203,7 @@ class RinkfinderUploadForm extends CFormModel
      * @param string $overwriteUrl Url to use to overwrite the file!
      * @return mixed Returns false if the file doesn't have an
      * existing database record or else a JSON encoded error string
+     * @throws CDbException
      */
     public function getHasFileRecord($deleteUrl = '', $overwriteUrl = '')
     {
@@ -278,6 +280,7 @@ class RinkfinderUploadForm extends CFormModel
      * Saves the uploaded file details to the dabase!
      * @return mixed Returns truee if the file was saved
      * or else a JSON encoded error string
+     * @throws CDbException
      */
     public function saveUploadedFileRecord()
     {
@@ -374,6 +377,7 @@ class RinkfinderUploadForm extends CFormModel
      * @param string $name The name of the file to delete
      * @param integer $type_id The FileUpload Type ID to delete
      * @return string JSON encoded string
+     * @throws CDbException
      */
     public static function deleteUploadedFile($fid, $name, $type_id)
     {

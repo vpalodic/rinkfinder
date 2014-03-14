@@ -687,13 +687,35 @@ class ArenaController extends Controller
             
             foreach($arenas as $arena) {
                 $arena->autoTag();
-                $arena->save();
+                
+                if(!$arena->save()) {
+                    Yii::log('Unable to save auto tags for Arena', CLogger::LEVEL_ERROR, 'application.controllers');
+                }
             }
             $transaction->commit();
             $autoTagged = true;
         } catch (Exception $ex) {
             $autoTagged = false;
-            $transaction->rollback();
+
+            if($transaction->getActive()) {
+                $transaction->rollback();
+            }
+            
+            $errorInfo = null;
+            
+            Yii::log(
+                    'Exception during auto tags for Arena: ' . 
+                    json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )),
+                    CLogger::LEVEL_ERROR, 'application.controllers');
         }
         
         // Save the file import information to the database
@@ -708,10 +730,25 @@ class ArenaController extends Controller
             $fileImport->total_created = $tableImporter->getRowsInserted();
             $fileImport->auto_tagged = $autoTagged;
             
-            $fileImport->save();
+            if(!$fileImport->save()) {
+                Yii::log('Unable to save fileImport for Arena', CLogger::LEVEL_ERROR, 'application.controllers');
+            }
         } catch (Exception $ex) {
-            // We don't care if we can't save the file import record if the
-            // import has been completed!
+            $errorInfo = null;
+            
+            Yii::log(
+                    'Exception saving fileImport for Arena: ' . 
+                    json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )),
+                    CLogger::LEVEL_ERROR, 'application.controllers');
         }
         
         // Data has been imported so let the user know!
