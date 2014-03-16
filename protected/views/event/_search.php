@@ -15,7 +15,7 @@
 
                     <?php echo $form->textFieldControlGroup($model,'arena_id',array('span'=>5)); ?>
 
-                    <?php echo $form->textFieldControlGroup($model,'ice_sheet_id',array('span'=>5)); ?>
+                    <?php echo $form->textFieldControlGroup($model,'location_id',array('span'=>5)); ?>
 
                     <?php echo $form->textFieldControlGroup($model,'external_id',array('span'=>5,'maxlength'=>32)); ?>
 

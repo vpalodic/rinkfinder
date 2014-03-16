@@ -315,7 +315,7 @@ class RinkfinderUploadForm extends CFormModel
         }
 
         if($this->fileUploadIceSheetId !== null) {
-            $this->fileUploadRecord->ice_sheet_id = $this->fileUploadIceSheetId;
+            $this->fileUploadRecord->location_id = $this->fileUploadIceSheetId;
         }
 
         if(!$this->fileUploadRecord->save()) {
@@ -350,7 +350,7 @@ class RinkfinderUploadForm extends CFormModel
                         'upload_type_id' => (integer)$this->fileUploadRecord->upload_type_id,
                         'user_id' => Yii::app()->user->id,
                         'arena_id' => isset($this->fileUploadRecord->arena_id) ? (integer)$this->fileUploadRecord->arena_id : 0,
-                        'ice_sheet_id' => isset($this->fileUploadRecord->ice_sheet_id) ? (integer)$this->fileUploadRecord->ice_sheet_id : 0,
+                        'location_id' => isset($this->fileUploadRecord->location_id) ? (integer)$this->fileUploadRecord->location_id : 0,
                         'name' => $this->fileUploadRecord->name,
                         'path' => $this->fileUploadRecord->path,
                         'uri' => $this->fileUploadRecord->uri,

@@ -28,7 +28,7 @@ $this->menu=array(
     'attributes'=>array(
 		'id',
 		'arena_id',
-		'ice_sheet_id',
+		'location_id',
 		'external_id',
 		'name',
 		'description',

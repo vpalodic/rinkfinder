@@ -13,8 +13,8 @@
 	<?php echo CHtml::encode($data->arena_id); ?>
 	<br />
 
-	<b><?php echo CHtml::encode($data->getAttributeLabel('ice_sheet_id')); ?>:</b>
-	<?php echo CHtml::encode($data->ice_sheet_id); ?>
+	<b><?php echo CHtml::encode($data->getAttributeLabel('location_id')); ?>:</b>
+	<?php echo CHtml::encode($data->location_id); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('external_id')); ?>:</b>
