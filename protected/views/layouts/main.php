@@ -140,7 +140,7 @@ if(count($matches)>1):
             upgrade your version of Internet Explorer
         </a> or try using <a target="_blank" href="http://www.google.com/chrome">
             Google's Chrome
-        </a> or <a target="_blank" href="http://www.mozilla.org">
+        </a> or <a target="_blank" href="http://www.mozilla.org/firefox">
             Mozilla's FireFox
         </a> browser.
     </div>
