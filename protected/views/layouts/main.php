@@ -123,6 +123,30 @@
             ),
 )); ?>
 
+<?php
+preg_match('/MSIE (.*?);/', $_SERVER['HTTP_USER_AGENT'], $matches);
+
+if(count($matches)>1):
+  //Then we're using IE
+  $version = $matches[1];
+
+  if($version <= 9):
+?>      
+    <div class="alert alert-error alert-block">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <h4>Warning!</h4>
+        You are using an unsupported browser. For the best experience with this site, please
+        <a target="_blank" href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">
+            upgrade your version of Internet Explorer
+        </a> or try using <a target="_blank" href="http://www.google.com/chrome">
+            Google's Chrome
+        </a> or <a target="_blank" href="http://www.mozilla.org">
+            Mozilla's FireFox
+        </a> browser.
+    </div>
+  <?php endif; ?>
+<?php endif; ?>
+
 <div class="container-fluid" id="page">
     <div class="row-fluid">
         <div class="span12">
