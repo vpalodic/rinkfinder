@@ -18,7 +18,7 @@ class RinkfinderUploadForm extends CFormModel
     protected $fileUploadTypeId;
     protected $fileUploadUserId;
     protected $fileUploadArenaId;
-    protected $fileUploadIceSheetId;
+    protected $fileUploadLocationId;
     protected $fileUploadPath;
     protected $fileUploadUri;
     protected $fileUploadRecord;
@@ -110,18 +110,18 @@ class RinkfinderUploadForm extends CFormModel
     /**
      * Prepares a directory for saving the uploaded file to
      * The directory structure is as follows: BaseUploadDir
-     *  -> Date -> TypeId -> UserId -> ArenaId -> IceSheetId
+     *  -> Date -> TypeId -> UserId -> ArenaId -> LocationId
      * @param CUploadedFile $file The uploaded file instance
      * @return mixed Returns true if the reuqested directory
      * has been created or else a JSON encoded error string
      */
-    public function prepareUploadDirectory($uploadTypeId, $uploadUserId, $uploadArenaId = null, $uploadIceSheetId = null)
+    public function prepareUploadDirectory($uploadTypeId, $uploadUserId, $uploadArenaId = null, $uploadLocationId = null)
     {
         // Save the parameters to our protected attributes
         $this->fileUploadTypeId = $uploadTypeId;
         $this->fileUploadUserId = $uploadUserId;
         $this->fileUploadArenaId = $uploadArenaId;
-        $this->fileUploadIceSheetId = $uploadIceSheetId;
+        $this->fileUploadLocationId = $uploadLocationId;
         
         // We build our directory path by starting with the base and working
         // our way down the chain...
@@ -173,11 +173,11 @@ class RinkfinderUploadForm extends CFormModel
         }
         
         // Finally, each Ice Sheet gets its own subdirectory
-        if($uploadIceSheetId !== null) {
+        if($uploadLocationId !== null) {
             $this->fileUploadPath .= DIRECTORY_SEPARATOR;
-            $this->fileUploadPath .= (string)$uploadIceSheetId;
+            $this->fileUploadPath .= (string)$uploadLocationId;
             $this->fileUploadUri .= DIRECTORY_SEPARATOR;
-            $this->fileUploadUri .= (string)$uploadIceSheetId;
+            $this->fileUploadUri .= (string)$uploadLocationId;
         }
             
         // Check if the path exists. If it doesn't, then create it!
@@ -314,8 +314,8 @@ class RinkfinderUploadForm extends CFormModel
             $this->fileUploadRecord->arena_id = $this->fileUploadArenaId;
         }
 
-        if($this->fileUploadIceSheetId !== null) {
-            $this->fileUploadRecord->location_id = $this->fileUploadIceSheetId;
+        if($this->fileUploadLocationId !== null) {
+            $this->fileUploadRecord->location_id = $this->fileUploadLocationId;
         }
 
         if(!$this->fileUploadRecord->save()) {
