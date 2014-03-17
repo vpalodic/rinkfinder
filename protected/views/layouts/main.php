@@ -132,7 +132,7 @@ if(count($matches)>1):
 
   if($version <= 9):
 ?>      
-    <div class="alert alert-error alert-block">
+    <div class="alert alert-error alert-block fade-message">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <h4>Warning!</h4>
         You are using an unsupported browser. For the best experience with this site, please
@@ -172,7 +172,7 @@ if(count($matches)>1):
             <footer id="footer">
                 Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
                 All Rights Reserved.<br/>
-                <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> 
+                <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> | 
                 <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?>
                 <br />
             </footer><!-- footer -->
