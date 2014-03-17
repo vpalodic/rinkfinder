@@ -2,20 +2,22 @@
 
 /**
  * The followings are the available columns in table 'profile_field':
- * @var integer $id
- * @var string $varname
- * @var string $title
- * @var string $field_type
- * @var integer $field_size
- * @var integer $field_size_mix
- * @var integer $required
- * @var integer $match
- * @var string $range
- * @var string $error_message
- * @var string $other_validator
- * @var string $default
- * @var integer $position
- * @var integer $visible
+ * @property integer $id
+ * @property string $varname
+ * @property string $title
+ * @property string $field_type
+ * @property integer $field_size
+ * @property integer $field_size_mix
+ * @property integer $required
+ * @property integer $match
+ * @property string $range
+ * @property string $error_message
+ * @property string $other_validator
+ * @property string $default
+ * @property string $widget
+ * @property string $widget_params
+ * @property integer $position
+ * @property integer $visible
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -94,7 +96,7 @@ class ProfileField extends RinkfinderActiveRecord
                 'max' => 255,
             ),
             array(
-                'range, widgetparams',
+                'range, widget_params',
                 'length',
                 'max' => 5000,
             ),
@@ -139,11 +141,11 @@ class ProfileField extends RinkfinderActiveRecord
     {
         return array(
             'id' => 'Id',
-            'varname' => 'Variable name',
+            'varname' => 'Variable Name',
             'title' => 'Title',
             'field_type' => 'Field Type',
             'field_size' => 'Field Size',
-            'field_size_min' => 'Field Size min',
+            'field_size_min' => 'Field Size Min',
             'required' => 'Required',
             'match' => 'Match',
             'range' => 'Range',
@@ -151,7 +153,7 @@ class ProfileField extends RinkfinderActiveRecord
             'other_validator' => 'Other Validator',
             'default' => 'Default',
             'widget' => 'Widget',
-            'widgetparams' => 'Widget parametrs',
+            'widget_params' => 'Widget Parameters',
             'position' => 'Position',
             'visible' => 'Visible',
         );
@@ -191,7 +193,7 @@ class ProfileField extends RinkfinderActiveRecord
         if($this->widget && class_exists($this->widget)) {
             $widgetClass = new $this->widget;
 
-            $arr = $this->widgetparams;
+            $arr = $this->widget_params;
 
             if($arr) {
                 $newParams = $widgetClass->params;
@@ -219,7 +221,7 @@ class ProfileField extends RinkfinderActiveRecord
         if($this->widget && class_exists($this->widget)) {
             $widgetClass = new $this->widget;
             
-            $arr = $this->widgetparams;
+            $arr = $this->widget_params;
             
             if($arr) {
                 $newParams = $widgetClass->params;

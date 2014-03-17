@@ -1,10 +1,10 @@
 <?php
 $this->breadcrumbs=array(
-	UserModule::t('Profile Fields')=>array('admin'),
-	UserModule::t('Create'),
+	'Profile Fields' => array('admin'),
+	'Create',
 );
 ?>
-<h1><?php echo UserModule::t('Create Profile Field'); ?></h1>
+<h1><?php echo 'Create Profile Field'; ?></h1>
 
 <?php echo $this->renderPartial('_menu',array(
 		'list'=> array(),

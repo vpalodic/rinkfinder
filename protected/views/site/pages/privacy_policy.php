@@ -1,7 +1,10 @@
 <?php
     /* @var $this SiteController */
-    $this->pageTitle = Yii::app()->name . ' - Privacy Policy';
-    $this->breadcrumbs = array('Privacy Policy');
+    /* @var $noTitle boolean */
+    if(!isset($noTitle)) {
+        $this->pageTitle = Yii::app()->name . ' - Privacy Policy';
+        $this->breadcrumbs = array('Privacy Policy');
+    }
 ?>
 
 <h2 class="sectionHeader">Privacy Policy</h2>

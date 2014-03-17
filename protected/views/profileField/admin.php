@@ -1,14 +1,14 @@
 <?php
 $this->breadcrumbs=array(
-	UserModule::t('Profile Fields')=>array('admin'),
-	UserModule::t('Manage'),
+	'Profile Fields'=>array('admin'),
+	'Manage',
 );
 ?>
-<h1><?php echo UserModule::t('Manage Profile Fields'); ?></h1>
+<h1><?php echo 'Manage Profile Fields'; ?></h1>
 
 <?php echo $this->renderPartial('_menu', array(
 		'list'=> array(
-			CHtml::link(UserModule::t('Create Profile Field'),array('create')),
+			CHtml::link('Create Profile Field',array('create')),
 		),
 	));
 ?>
@@ -20,7 +20,7 @@ $this->breadcrumbs=array(
 		'varname',
 		array(
 			'name'=>'title',
-			'value'=>'UserModule::t($data->title)',
+			'value'=>'$data->title',
 		),
 		'field_type',
 		'field_size',

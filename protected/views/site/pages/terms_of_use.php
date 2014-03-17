@@ -1,7 +1,10 @@
 <?php
     /* @var $this SiteController */
-    $this->pageTitle = Yii::app()->name . ' - Terms of Use';
-    $this->breadcrumbs = array('Terms of Use');
+    /* @var $noTitle boolean */
+    if(!isset($noTitle)) {
+        $this->pageTitle = Yii::app()->name . ' - Terms of Use';
+        $this->breadcrumbs = array('Terms of Use');
+    }
 ?>
 
 <h2 class="sectionHeader">Terms of Use</h2>

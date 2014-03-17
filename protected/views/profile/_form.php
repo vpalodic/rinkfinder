@@ -29,9 +29,7 @@
                                 $model,
                                 $field->varname,
                                 array(
-                                    'htmlOptions' => array(
-                                        'class' => 'control-label',
-                                    )
+                                    'class' => 'control-label',
                                 )
                              );
                         echo '<div class="controls">';
@@ -48,6 +46,40 @@
                                     'span' => 5
                                 )
                             );
+                    } elseif($field->varname == 'lock_version') {
+                        echo CHtml::activeHiddenField($model, $field->varname);
+                    } elseif($field->varname == 'birth_day') {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.datetimepicker.WhDateTimePicker',
+                                array(
+                                    'model' => $model,
+                                    'attribute' => $field->varname,
+                                    'format' => 'MM/dd/yyyy',
+                                    'pluginOptions' => array(
+                                        'pickTime' => false,
+                                        'maskInput' => true,                                        
+                                    ),
+                                    'htmlOptions' => array(
+                                        'data-format' => 'MM/dd/yyyy',
+//                                        'class' => 'span5',
+                                    ),
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $model,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($model, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
                     } elseif($field->varname == "phone") {
                         $widget = $this->widget(
                                 'yiiwheels.widgets.maskinput.WhMaskInput',

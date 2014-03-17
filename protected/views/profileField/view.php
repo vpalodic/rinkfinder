@@ -1,18 +1,18 @@
 <?php
-    $this->breadcrumbs = array(UserModule::t('Profile Fields') => array('admin'),
-                               UserModule::t($model->title),
+    $this->breadcrumbs = array('Profile Fields' => array('admin'),
+                               $model->title,
                                );
 ?>
 
 <?php $this->widget('bootstrap.widgets.TbAlert'); ?>
 
-<h2><?php echo UserModule::t('View Profile Field: ') . $model->varname; ?></h2>
+<h2><?php echo 'View Profile Field: ' . $model->varname; ?></h2>
 
 <?php echo $this->renderPartial('_menu', array(
 		'list'=> array(
-			CHtml::link(UserModule::t('Create Profile Field'),array('create')),
-			CHtml::link(UserModule::t('Update Profile Field'),array('update','id'=>$model->id)),
-			CHtml::linkButton(UserModule::t('Delete Profile Field'),array('submit' => array('delete','id'=>$model->id),'confirm'=>'Are you sure to delete this item?')),
+			CHtml::link('Create Profile Field',array('create')),
+			CHtml::link('Update Profile Field',array('update','id'=>$model->id)),
+			CHtml::linkButton('Delete Profile Field',array('submit' => array('delete','id'=>$model->id),'confirm'=>'Are you sure to delete this item?')),
 		),
 	));
 ?>

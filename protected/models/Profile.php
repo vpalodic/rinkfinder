@@ -18,6 +18,7 @@
  * @property string $ext
  * @property string $avatar
  * @property string $url
+ * @property string $birth_day
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -114,7 +115,7 @@ class Profile extends RinkfinderActiveRecord
                     $field->varname,
                     'type',
                     'type' => 'date',
-                    'dateFormat' => 'yyyy-MM-dd',
+                    'dateFormat' => 'MM/dd/yyyy',
                     'allowEmpty' => true,
                 );
 				
@@ -215,6 +216,8 @@ class Profile extends RinkfinderActiveRecord
 */
         $labels = array(
             'user_id' => 'User ID',
+            'password' => 'Change Password',
+            'email' => 'E-mail'
         );
         
         $model = $this->getFields();
@@ -283,7 +286,7 @@ class Profile extends RinkfinderActiveRecord
 		
         foreach($model as $field) {
             if($field->widget) {
-                $data[$field->varname] = $field->widgetparams;
+                $data[$field->varname] = $field->widget_params;
             }
         }
     
@@ -328,7 +331,37 @@ class Profile extends RinkfinderActiveRecord
         // We ensure that the input mask for the phone number is removed!!!
         $this->phone = preg_replace('/[^0-9]/s', '', $this->phone);
         
+        // We ensure that the birth date is in the correct format
+        if(!empty($this->birth_day) && $this->birth_day != '0000-00-00') {
+            $bday = date_create_from_format('m/d/Y', $this->birth_day);
+            $this->birth_day = $bday->format('Y-m-d');
+        }
+        
         return parent::beforeSave();
+    }
+    
+    protected function afterSave()
+    {
+        // We ensure that the birth date is in the correct format
+        if(!empty($this->birth_day) && $this->birth_day != '0000-00-00') {
+            $bday = date_create_from_format('Y-m-d', $this->birth_day);
+            $this->birth_day = $bday->format('m/d/Y');
+        }
+        
+        return parent::afterSave();
+    }
+    
+    protected function afterFind()
+    {
+        // We ensure that the birth date is in the correct format
+        if(!empty($this->birth_day) && $this->birth_day != '0000-00-00') {
+            $bday = date_create_from_format('Y-m-d', $this->birth_day);
+            $this->birth_day = $bday->format('m/d/Y');
+        } elseif(!empty($this->birth_day) && $this->birth_day == '0000-00-00') {
+            $this->birth_day = '';
+        }
+        
+        return parent::afterFind();
     }
     
     /**

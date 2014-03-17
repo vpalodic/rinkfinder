@@ -76,6 +76,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'ext' => 'VARCHAR(10) NULL',
                 'avatar' => 'VARCHAR(511) NULL',
                 'url' => 'VARCHAR(511) NULL',
+                'birth_day' => 'DATE NULL DEFAULT \'0000-00-00\'',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
                 'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',
@@ -423,9 +424,31 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         
         $this->insert('profile_field', array(
                 'id' => 14,
+                'varname' => 'birth_day',
+                'title' => 'Birthday',
+                'field_type' => 'DATE',
+                'field_size' => 0,
+                'field_size_min' => 0,
+                'required' => 2,
+                'match' => '',
+                'range' => '',
+                'error_message' => '',
+                'other_validator' => '',
+                'default' => '0000-00-00',
+                'widget' => '',
+                'widget_params' => '',
+                'position' => 13,
+                'visible' => 1,
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        $this->insert('profile_field', array(
+                'id' => 15,
                 'varname' => 'lock_version',
                 'title' => 'Lock Version',
-                'field_type' => 'INT',
+                'field_type' => 'INTEGER',
                 'field_size' => 11,
                 'field_size_min' => 0,
                 'required' => 0,
@@ -434,28 +457,6 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'error_message' => '',
                 'other_validator' => '',
                 'default' => '',
-                'widget' => '',
-                'widget_params' => '',
-                'position' => 13,
-                'visible' => 0,
-                'created_on' => new CDbExpression('NOW()'),
-                'updated_on' => new CDbExpression('NOW()'),
-            )
-        );
-        
-        $this->insert('profile_field', array(
-                'id' => 15,
-                'varname' => 'created_by_id',
-                'title' => 'Created By',
-                'field_type' => 'INT',
-                'field_size' => 11,
-                'field_size_min' => 0,
-                'required' => 0,
-                'match' => '',
-                'range' => '',
-                'error_message' => '',
-                'other_validator' => '',
-                'default' => '1',
                 'widget' => '',
                 'widget_params' => '',
                 'position' => 14,
@@ -467,6 +468,28 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         
         $this->insert('profile_field', array(
                 'id' => 16,
+                'varname' => 'created_by_id',
+                'title' => 'Created By',
+                'field_type' => 'INTEGER',
+                'field_size' => 11,
+                'field_size_min' => 0,
+                'required' => 0,
+                'match' => '',
+                'range' => '',
+                'error_message' => '',
+                'other_validator' => '',
+                'default' => '1',
+                'widget' => '',
+                'widget_params' => '',
+                'position' => 15,
+                'visible' => 0,
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        $this->insert('profile_field', array(
+                'id' => 17,
                 'varname' => 'created_on',
                 'title' => 'Created On',
                 'field_type' => 'DATETIME',
@@ -480,7 +503,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'default' => '',
                 'widget' => '',
                 'widget_params' => '',
-                'position' => 15,
+                'position' => 16,
                 'visible' => 0,
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
@@ -488,10 +511,10 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         );
         
         $this->insert('profile_field', array(
-                'id' => 17,
+                'id' => 18,
                 'varname' => 'updated_by_id',
                 'title' => 'Updated By',
-                'field_type' => 'INT',
+                'field_type' => 'INTEGER',
                 'field_size' => 11,
                 'field_size_min' => 0,
                 'required' => 0,
@@ -502,7 +525,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'default' => '1',
                 'widget' => '',
                 'widget_params' => '',
-                'position' => 16,
+                'position' => 17,
                 'visible' => 0,
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
@@ -510,7 +533,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
         );
         
         $this->insert('profile_field', array(
-                'id' => 18,
+                'id' => 19,
                 'varname' => 'updated_on',
                 'title' => 'Updated On',
                 'field_type' => 'DATETIME',
@@ -524,7 +547,7 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'default' => '',
                 'widget' => '',
                 'widget_params' => '',
-                'position' => 17,
+                'position' => 18,
                 'visible' => 0,
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),

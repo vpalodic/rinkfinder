@@ -17,12 +17,12 @@
  * 
  * Optimistic Record Locking Usage:
  * 1. Add locking_version field to the database table
- * 2. Inherit model class from OptimisticLockingActiveRecord
+ * 2. Inherit model class from RinkfinderActiveRecord
  * 3. Add 'lock_version' hidden field to the edit form
  * 4. Handle StaleObjectError exception when saving record, for example
  *    try {
  *        $result = $model->save();
- *     } catch (StaleObjectError $e) {
+ *     } catch (StaleObjectException $e) {
  *        $model->addError('lock_version', $e->getMessage());
  *        return false;
  *     }

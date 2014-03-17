@@ -44,6 +44,7 @@ $this->menu=array(
 		'ext',
 		'avatar',
 		'url',
+                'birth_day',
 		'lock_version',
 		'created_by_id',
 		'created_on',

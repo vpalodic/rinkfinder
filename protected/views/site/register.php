@@ -118,6 +118,39 @@
                                     'span' => 5
                                 )
                             );
+                    } elseif($field->varname == 'birth_day') {
+                        $widget = $this->widget(
+                                'yiiwheels.widgets.datetimepicker.WhDateTimePicker',
+                                array(
+                                    'model' => $profile,
+                                    'attribute' => $field->varname,
+                                    'format' => 'MM/dd/yyyy',
+                                    'pluginOptions' => array(
+                                        'pickTime' => false,
+                                        'maskInput' => true,                                        
+                                    ),
+                                    'htmlOptions' => array(
+                                        'data-format' => 'MM/dd/yyyy',
+                                        'value' => '',
+//                                        'class' => 'span5',
+                                    ),
+                                ),
+                                true
+                        );
+                        
+                        echo '<div class="control-group">';
+                        echo $form->labelEx(
+                                $profile,
+                                $field->varname,
+                                array(
+                                    'class' => 'control-label',
+                                )
+                             );
+                        echo '<div class="controls">';
+                        echo $widget;
+                        echo $form->error($profile, $field->varname);
+                        echo '</div>';
+                        echo '</div>';
                     } elseif($field->varname == "phone") {
                         $widget = $this->widget(
                                 'yiiwheels.widgets.maskinput.WhMaskInput',
@@ -268,10 +301,10 @@
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <div id="terms-of-use" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
-  <?php $this->renderPartial('pages/terms_of_use'); ?>
+  <?php $this->renderPartial('pages/terms_of_use', array('noTitle' => true)); ?>
 </div>
 <div id="privacy-policy" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
-  <?php $this->renderPartial('pages/privacy_policy'); ?>
+  <?php $this->renderPartial('pages/privacy_policy', array('noTitle' => true)); ?>
 </div>
 <?php
     $this->widget(
