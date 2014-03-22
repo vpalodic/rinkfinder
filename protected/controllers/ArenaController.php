@@ -184,6 +184,8 @@ class ArenaController extends Controller
      */
     public function actionUploadArenas()
     {
+        Yii::trace("In actionUploadArenas.", "application.controllers.arena");
+        
         if(!Yii::app()->user->checkAccess('uploadArena')) {
             throw new CHttpException(
                     403,
