@@ -48,6 +48,8 @@ class UrlManager extends CUrlManager
  
     public function parseUrl($request)
     {
+        Yii::trace("In parseUrl.", "application.components.UrlManager");
+        
         $route = parent::parseUrl($request);
  
         // Perform a 301 redirection if the current protocol 
