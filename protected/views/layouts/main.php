@@ -29,9 +29,28 @@
                     'class' => 'bootstrap.widgets.TbNav',
                     'encodeLabel' => false,
                     'items' => array(
-                        array('label' => '<i class="icon-home"></i> Home', 'url' => array('/site/index')),
-                        array('label' => '<i class="icon-info-sign"></i> About', 'url' => array('/site/page', 'view' => 'about')),
-                        array('label' => '<i class="icon-envelope"></i> Contact', 'url' => array('/site/contact')),
+                        array(
+                            'label' => '<i class="icon-home"></i> Home',
+                            'url' => array('/site/index')
+                        ),
+                        array(
+                            'label' => '<i class="icon-briefcase"></i> Management',
+                            'url' => array('/site/management'),
+                            'visible' => Yii::app()->user->isRestrictedArenaManager()
+                        ),
+                        array(
+                            'label' => '<i class="icon-tasks"></i> Administration',
+                            'url' => array('/site/administration'),
+                            'visible' => Yii::app()->user->isApplicationAdministrator()
+                        ),
+                        array(
+                            'label' => '<i class="icon-envelope"></i> Contact',
+                            'url' => array('/site/contact')
+                        ),
+                        array(
+                            'label' => '<i class="icon-info-sign"></i> About',
+                            'url' => array('/site/page', 'view' => 'about')
+                        ),
                     ),
                 ),
                 array(
@@ -55,65 +74,24 @@
                             'items' => array(
                                 array('label' => 'Profile'),
                                 array(
-                                    'label' => 'View Profile',
+                                    'label' => '<i class="icon-list"></i> View Profile',
                                     'url' => array('/profile/' . Yii::app()->user->id),
                                     'visible'=> !Yii::app()->user->isGuest,
                                 ),
                                 array(
-                                    'label' => 'Edit Profile',
+                                    'label' => '<i class="icon-wrench"></i> Edit Profile',
                                     'url' => array('/profile/update/' . Yii::app()->user->id),
                                     'visible'=> !Yii::app()->user->isGuest,
                                 ),
                                 array(
-                                    'label' => 'Change Password',
+                                    'label' => '<i class="icon-edit"></i> Change Password',
                                     'url' => array('/user/changePassword/' . Yii::app()->user->id),
                                     'visible'=> !Yii::app()->user->isGuest,
                                 ),
                                 TbHtml::menuDivider(),
                                 array(
-                                    'label' => '<i class="icon-minus-sign"></i> Logout',
+                                    'label' => '<i class="icon-off"></i> Logout',
                                     'url' => array('/site/logout'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                            )
-                        ),
-                        array(
-                            'label'=> 'Site Administration',
-                            //'url' => array('/user/admin'),
-                            //'visible'=>Yii::app()->getModule('user')->isAdmin(),
-                            'items' => array(
-                                array('label' => 'User Options'),
-                                array(
-                                    'label' => 'Create New User',
-                                    'url' => array('/user/create'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'List Users',
-                                    'url' => array('/user'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'Manage Users',
-                                    'url' => array('/user/admin'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                TbHtml::menuDivider(),
-                                array('label' => 'Profile Field Options'),
-                                array(
-                                    'label' => 'Create New Profile Field',
-                                    'url' => array('/profileField/create'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'Manage Profile Fields',
-                                    'url' => array('/profileField/admin'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                TbHtml::menuDivider(),
-                                array(
-                                    'label' => 'Authorization & Access Control',
-                                    'url' => array('/rbam'),
                                     'visible'=> !Yii::app()->user->isGuest,
                                 ),
                             )

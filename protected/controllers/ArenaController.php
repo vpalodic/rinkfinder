@@ -203,7 +203,12 @@ class ArenaController extends Controller
 
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
-        Yii::app()->clientScript->registerScriptFile($path . '/uploadArenas.js');
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/arena/uploadArenas.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/arena/uploadArenas.min.js', CClientScript::POS_END);
+        }
         
         $this->render(
                 'uploadArenas',
@@ -214,6 +219,9 @@ class ArenaController extends Controller
         );
     }
 
+    /**
+     * Action method to upload a file.
+     */
     public function actionUploadArenasFile()
     {
         if(!Yii::app()->user->checkAccess('uploadArena')) {

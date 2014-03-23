@@ -22,6 +22,61 @@ class SiteController extends Controller
     }
 
     /**
+     * @return array action filters
+     */
+    public function filters()
+    {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+        );
+    }
+
+    /**
+     * Specifies the access control rules.
+     * This method is used by the 'accessControl' filter.
+     * @return array access control rules
+     */
+    public function accessRules()
+    {
+        return array(
+            array(
+                'allow',  // allow all users
+                'actions' => array(
+                    'index',
+                    'captcha',
+                    'page',
+                    'activateAccount',
+                    'contact',
+                    'error',
+                    'login',
+                    'register',
+                    'resetAccount',
+                ),
+                'users' => array(
+                    '*'
+                ),
+            ),
+            array(
+                'allow', // allow authenticated users
+                'actions' => array(
+                    'management',
+                    'administration',
+                    'logout',
+                ),
+                'users' => array(
+                    '@'
+                ),
+            ),
+            array(
+                'deny',  // deny all users
+                'users' => array(
+                    '*'
+                ),
+            ),
+        );
+    }
+
+    /**
      * This is the default 'index' action that is invoked
      * when an action is not explicitly requested by users.
      */
@@ -413,12 +468,6 @@ class SiteController extends Controller
                     )
             );
         } else {
-/*            $message = 'Please enter the E-mail Address you registered with to begin the Account Recovery process.';
-            Yii::app()->user->setFlash(
-                    TbHtml::ALERT_COLOR_WARNING,
-                    $message
-            );
-*/
             // Display the reset account form
             $this->render(
                     'resetAccount',
@@ -481,6 +530,75 @@ class SiteController extends Controller
     {
         Yii::app()->user->logout();
         $this->redirect(Yii::app()->homeUrl);
+    }
+    
+    public function actionAdministration()
+    {
+        Yii::trace("In actionAdministration.", "application.controllers.SiteController");
+        
+        if(!Yii::app()->user->isApplicationAdministrator()) {
+            throw new CHttpException(
+                    403,
+                    'Permission denied. You are not authorized to perform this action.'
+            );
+        }
+        
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/site/administration.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/site/administration.min.js', CClientScript::POS_END);
+        }
+        
+        // display the administration page
+        $this->render(
+                'administration',
+                array(
+//                    'model' => $users,
+                )
+        );        
+    }
+    
+    public function actionManagement()
+    {
+        Yii::trace("In actionManagement.", "application.controllers.SiteController");
+        
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            throw new CHttpException(
+                    403,
+                    'Permission denied. You are not authorized to perform this action.'
+            );
+        }
+        
+        // OK, we have to build up our variables to send to the view
+        // Start by finding all of the arenas, their locations, events,
+        // requests, and reservations!
+        
+        
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/site/management.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/site/management.min.js', CClientScript::POS_END);
+        }
+        
+        // Setup the endpoints for the webpage to be able to grab data!
+        $endpoints = array(
+            'counts' => $this->createUrl('/management/getCounts'),
+            'details' => $this->createUrl('/management/getDetails')
+        );
+        
+        // display the management page
+        $this->render(
+                'management',
+                array(
+                    'endpoints' => $endpoints,
+                )
+        );        
     }
     
     /**

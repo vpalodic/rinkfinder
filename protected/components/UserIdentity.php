@@ -54,6 +54,10 @@ class UserIdentity extends CUserIdentity
     private $_useemail;
     
     /**
+     * @var string[] Holds the roles assigned to the account 
+     */
+    private $_roles = array();
+    /**
      * Returns the first name of the user
      * @return string
      */
@@ -99,6 +103,15 @@ class UserIdentity extends CUserIdentity
     }
 
     /**
+     * Returns the roles of the user
+     * @return string[]
+     */
+    public function getRoles()
+    {
+        return $this->_roles;
+    }
+
+    /**
      * Sets the private property _user
      * 
      */
@@ -132,6 +145,7 @@ class UserIdentity extends CUserIdentity
                 $this->_lastName = $this->_user->lastName;
                 $this->_fullName = $this->_user->fullName;
                 $this->_email = $this->_user->email;
+                $this->_roles = $this->_user->roles;
                 $this->errorCode = self::ERROR_NONE;
                 $this->_user->loginSuccessful();
                 break;

@@ -208,7 +208,12 @@ class EventController extends Controller
 
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
-        Yii::app()->clientScript->registerScriptFile($path . '/uploadEvents.js');
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/event/uploadEvents.js');
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/event/uploadEvents.min.js');
+        }
         
         $this->render(
                 'uploadEvents',
@@ -216,6 +221,7 @@ class EventController extends Controller
                     'model' => $model,
                     'fields' => Event::getImportAttributes(),
                     'arenaId' => $this->arena->id,
+                    'arenaName' => $this->arena->name,
                     'eventTypes' => CHtml::listData(Event::getEventTypes(), 'id', 'display_name'),
                 )
         );

@@ -155,6 +155,10 @@
     };
 
     uploadArenas.onUploadSubmit = function (event, id, name) {
+        if($("#uploadButton").length == 0) {
+            this.addUploadAndDeleteButtons();
+        }
+        
         $("#uploadButton").prop("disabled", false);
         $("#uploadButton").removeClass("disabled");
         

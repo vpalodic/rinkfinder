@@ -4,10 +4,13 @@
     /* @var $form TbActiveForm */
     /* @var $fields array[][] */
     /* @var $arenaId integer */
+    /* @var $arenaName string */
     /* @var $eventTypes array[] */
 
     $this->pageTitle = Yii::app()->name . ' - Upload Events';
     $this->breadcrumbs = array(
+        'Management' => array('/site/management'),
+        CHtml::encode($arenaName) => array('/arena/managementview', 'id' => $arenaId),
         'Upload Events'
     );
 ?>

@@ -16,14 +16,15 @@ class RinkfinderWebUser extends CWebUser
     /**
      * @var User User model to not repeat query.
      */
-    private $_model;
+    protected $_model;
 
     /**
      * Return first name of the user.
      * access it by Yii::app()->user->firstName
      * @return string The user's first name or ''
      */
-    public function getFirstName(){
+    public function getFirstName()
+    {
         Yii::trace('getFirstName()', 'application.components.RinkfinderWebUser');
 	return $this->getState('__firstName');
     }
@@ -32,7 +33,8 @@ class RinkfinderWebUser extends CWebUser
      * Sets first name of the user.
      * @param string $value The user's first name
      */
-    public function setFirstName($value){
+    public function setFirstName($value)
+    {
         Yii::trace('setFirstName()', 'application.components.RinkfinderWebUser');
 	$this->setState('__firstName', $value);
     }
@@ -42,7 +44,8 @@ class RinkfinderWebUser extends CWebUser
      * access it by Yii::app()->user->lastName
      * @return string The user's last name
      */
-    public function getLastName(){
+    public function getLastName()
+    {
         Yii::trace('getLastName()', 'application.components.RinkfinderWebUser');
 	return $this->getState('__lastName');
     }
@@ -51,7 +54,8 @@ class RinkfinderWebUser extends CWebUser
      * Sets last name of the user.
      * @param string $value The user's last name
      */
-    public function setLastName($value){
+    public function setLastName($value)
+    {
         Yii::trace('setLastName()', 'application.components.RinkfinderWebUser');
 	$this->setState('__lastName', $value);
     }
@@ -61,7 +65,8 @@ class RinkfinderWebUser extends CWebUser
      * access it by Yii::app()->user->fullName
      * @return string The user's full name
      */
-    public function getFullName(){
+    public function getFullName()
+    {
         Yii::trace('getFullName()', 'application.components.RinkfinderWebUser');
 	return $this->getState('__fullName');
     }
@@ -70,7 +75,8 @@ class RinkfinderWebUser extends CWebUser
      * Sets full name of the user.
      * @param string $value The user's full name
      */
-    public function setFullName($value){
+    public function setFullName($value)
+    {
         Yii::trace('setFullName()', 'application.components.RinkfinderWebUser');
 	$this->setState('__fullName', $value);
     }
@@ -80,7 +86,8 @@ class RinkfinderWebUser extends CWebUser
      * access it by Yii::app()->user->email
      * @return string The user's email address
      */
-    public function getEmail(){
+    public function getEmail()
+    {
         Yii::trace('getEmail()', 'application.components.RinkfinderWebUser');
 	return $this->getState('__email');
     }
@@ -89,11 +96,41 @@ class RinkfinderWebUser extends CWebUser
      * Sets email address of the user.
      * @param string $value The user's email address
      */
-    public function setEmail($value){
+    public function setEmail($value)
+    {
         Yii::trace('setEmail()', 'application.components.RinkfinderWebUser');
 	$this->setState('__email', $value);
     }
     
+    /**
+     * Return roles of the user.
+     * access it by Yii::app()->user->roles
+     * @return string[] The user's roles
+     */
+    public function getRoles()
+    {
+        Yii::trace('getRoles()', 'application.components.RinkfinderWebUser');
+	return $this->getState('__roles');
+    }
+    
+    /**
+     * Sets email address of the user.
+     * @param string[] $value The user's roles
+     */
+    public function setRoles($value)
+    {
+        Yii::trace('setRoles()', 'application.components.RinkfinderWebUser');
+	$this->setState('__roles', $value);
+    }
+    
+    public function getModel($uid = null)
+    {
+        if($uid == null) {
+            $uid = $this->id;
+        }
+        
+        return $this->loadUser($uid);
+    }
     /**
      * Performs access check for this user.
      * @param string $operation the name of the operation that need access check.
@@ -119,7 +156,19 @@ class RinkfinderWebUser extends CWebUser
         Yii::trace('isSiteAdministrator()', 'application.components.RinkfinderWebUser');
 
         if($id === null) {
-            $id = $this->id;
+            if(Yii::app()->user->isGuest) {
+                return false;
+            }
+            
+            // Check our cached roles!
+            $roles = $this->roles;
+            foreach($roles as $role) {
+                if($role == 'Administrator') {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return Yii::app()->authManager->isAssigned(
@@ -130,7 +179,19 @@ class RinkfinderWebUser extends CWebUser
         Yii::trace('isApplicationAdministrator()', 'application.components.RinkfinderWebUser');
 
         if($id === null) {
-            $id = $this->id;
+            if(Yii::app()->user->isGuest) {
+                return false;
+            }
+            
+            // Check our cached roles!
+            $roles = $this->roles;
+            foreach($roles as $role) {
+                if($role == 'Administrator' || $role == 'ApplicationAdministrator') {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return Yii::app()->db->createCommand()
@@ -147,7 +208,21 @@ class RinkfinderWebUser extends CWebUser
         Yii::trace('isArenaManager()', 'application.components.RinkfinderWebUser');
 
         if($id === null) {
-            $id = $this->id;
+            if(Yii::app()->user->isGuest) {
+                return false;
+            }
+            
+            // Check our cached roles!
+            $roles = $this->roles;
+            foreach($roles as $role) {
+                if($role == 'Administrator' ||
+                        $role == 'ApplicationAdministrator' ||
+                        $role == 'Manager') {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return Yii::app()->db->createCommand()
@@ -165,7 +240,22 @@ class RinkfinderWebUser extends CWebUser
         Yii::trace('isRestrictedArenaManager()', 'application.components.RinkfinderWebUser');
 
         if($id === null) {
-            $id = $this->id;
+            if(Yii::app()->user->isGuest) {
+                return false;
+            }
+            
+            // Check our cached roles!
+            $roles = $this->roles;
+            foreach($roles as $role) {
+                if($role == 'Administrator' ||
+                        $role == 'ApplicationAdministrator' ||
+                        $role == 'Manager' ||
+                        $role == 'RestrictedManager') {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return Yii::app()->db->createCommand()
@@ -184,7 +274,23 @@ class RinkfinderWebUser extends CWebUser
         Yii::trace('isSiteUser()', 'application.components.RinkfinderWebUser');
 
         if($id === null) {
-            $id = $this->id;
+            if(Yii::app()->user->isGuest) {
+                return false;
+            }
+            
+            // Check our cached roles!
+            $roles = $this->roles;
+            foreach($roles as $role) {
+                if($role == 'Administrator' ||
+                        $role == 'ApplicationAdministrator' ||
+                        $role == 'Manager' ||
+                        $role == 'RestrictedManager' ||
+                        $role == 'User') {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return Yii::app()->db->createCommand()
@@ -237,6 +343,7 @@ class RinkfinderWebUser extends CWebUser
             $this->setLastName($identity->getLastName());
             $this->setFullName($identity->getFullName());
             $this->setEmail($identity->getEmail());
+            $this->setRoles($identity->getRoles());
         }
         
         return !$this->getIsGuest();

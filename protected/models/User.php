@@ -21,6 +21,7 @@
  *
  * The followings are the available model relations:
  * @property Arena[] $arenas
+ * @property integer $arenaCount
  * @property EventRequest[] $eventRequestsCreated
  * @property EventRequest[] $eventRequestsAcknowledged
  * @property EventRequest[] $eventRequestsAccepted
@@ -220,6 +221,11 @@ class User extends RinkfinderActiveRecord
         return array(
             'arenas' => array(
                 self::MANY_MANY,
+                'Arena',
+                'arena_user_assignment(user_id, arena_id)',
+            ),
+            'arenaCount' => array(
+                self::STAT,
                 'Arena',
                 'arena_user_assignment(user_id, arena_id)',
             ),
@@ -509,6 +515,30 @@ class User extends RinkfinderActiveRecord
         $fullName = $this->firstName;
         $fullName .= (!empty($fullName)) ? " " . $this->lastName : $this->lastName;
         return $fullName;
+    }
+
+    /**
+     * Retrieves the user's roles
+     * @return string[]
+     */
+    public function getRoles()
+    {
+        $sql = 'SELECT itemName FROM auth_assignment WHERE userid = :uid AND '
+                . 'itemName IN (SELECT name FROM auth_item WHERE type = :type)';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':uid', $this->id, PDO::PARAM_INT);
+        $command->bindValue(':type', CAuthItem::TYPE_ROLE, PDO::PARAM_INT);
+        
+        $rows = $command->queryAll(false);
+        $roles = array();
+        
+        foreach($rows as $row) {
+            $roles[] = $row[0];
+        }
+        
+        return $roles;
     }
 
     /**
@@ -958,5 +988,115 @@ class User extends RinkfinderActiveRecord
         );
         
         return $command->execute();
+    }
+    
+    /**
+     * Retrieves all the management information for a user. Uses DAO instead
+     * of ActiveRecords as speed is of great concern.
+     * @param string[] $for The counts to retrieve.
+     * @param integer $uid The user to retrieve information for. If null then
+     * information is pulled for the current user.
+     * @return mixed[] An indexd array of information for the user.
+     * @throws CDbException
+     */
+    public function getManagementDashboardCounts($for, $uid = null)
+    {
+        // We need to retrieve a lot of information and will need to 
+        // perform a number of querys in order to pull all of the information
+        // Now since this is a dashboard view, we don't need the details yet.
+        $dashData = array();
+        
+        // Go through each of the items to retrieve counts for
+        foreach($for as $request) {
+            switch(strtolower($request)) {
+                case 'arenas':
+                    $dashData['arenas'] = $this->getArenaCounts();
+                    break;
+                case 'events':
+                    break;
+                case 'requests':
+                    break;
+                case 'reservations':
+                    break;
+            }
+        }
+        
+        return $dashData;
+    }
+    
+    /**
+     * Retrieves all the administration information for a user. Uses DAO instead
+     * of ActiveRecords as speed is of great concern.
+     * @param integer $uid The user to retrieve information for. If null then
+     * information is pulled for the current user.
+     * @return mixed[] An indexd array of information for the user.
+     */
+    public function getAdministrationDashboardCounts($uid = null)
+    {
+        // We need to retrieve a lot of information and will need to 
+        // perform a number of querys in order to pull all of the information.
+        // Now since this is a dashboard view, we don't need the details yet.
+        
+        
+    }
+    
+    /**
+     * Returns the arena count for each status plus the total count
+     * @param integer $uid The user to get the counts for. If null, the
+     * current user is used.
+     * @return mixed[] The arena counts for each status and total count
+     */
+    public function getArenaCounts($uid = null)
+    {
+        // Let's start with getting the number of arenas for each status
+        $ret = array();
+        
+        $sql = 'SELECT COUNT(a.id) '
+                . 'FROM arena a '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id '
+                . 'INNER JOIN user u '
+                . 'ON u.id = aua.user_id '
+                . 'WHERE u.id = :uid AND '
+                . 'a.status_id = (SELECT id FROM arena_status WHERE name = :status)';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        if($uid == null) {
+            $uid = $this->id;
+        }
+        
+        $statusName = '';
+        $arenaCountTotal = 0;
+        
+        $statuses = ArenaStatus::model()->active()->findAll();
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':status', $statusName, PDO::PARAM_STR);
+        
+        foreach($statuses as $status) {
+            $statusName = $status->name;
+            
+            $arenaCount = $command->queryScalar();
+            
+            if($arenaCount == false) {
+                $arenaCount = 0;
+            }
+            
+            $ret['status'][] = array(
+                'id' => $status->id,
+                'name' => $status->name,
+                'description' => $status->description,
+                'displayName' => $status->display_name,
+                'displayOrder' => $status->display_order,
+                'count' => (integer)$arenaCount,
+            );
+            
+            $arenaCountTotal += (integer)$arenaCount;
+        }
+        
+        $ret['total'] = $arenaCountTotal;
+        
+        return $ret;
     }
 }

@@ -127,4 +127,19 @@ class ArenaStatus extends RinkfinderActiveRecord
 	{
 		return parent::model($className);
 	}
+        
+    public function scopes()
+    {
+        return array(
+            'active' => array(
+                'condition' => 'active = 1',
+                'order' => 'display_order',
+            ),
+            'inactive' => array(
+                'condition' => 'active = 0',
+                'order' => 'display_order',
+            ),
+        );
+    }
+
 }

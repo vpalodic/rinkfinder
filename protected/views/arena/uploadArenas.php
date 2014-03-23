@@ -6,7 +6,8 @@
 
     $this->pageTitle = Yii::app()->name . ' - Upload Arenas';
     $this->breadcrumbs = array(
-        'Upload Arenas'
+        'Administration' => array('/site/administration'),
+        'Upload Arenas',
     );
 ?>
 <?php
