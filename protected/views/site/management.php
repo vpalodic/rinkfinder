@@ -24,21 +24,29 @@
 <h2 class="sectionHeader">Management</h2>
 
 <div id="managementContainer" style="display: none;">
-    <h3 id="requestsHeader" class="sectionSubHeader">Requests</h3>
-    <div id="requestsWell" class="span12 well well-large">
-        <p>I'm in a well!</p>
+    <div id="requestsContainer" class="span3">
+        <h3 id="requestsHeader" class="sectionSubHeader">Requests</h3>
+        <div id="requestsWell" class="well well-large">
+            <p>I'm in a well!</p>
+        </div>
     </div>
-    <h3 id="reservationsHeader" class="sectionSubHeader">Reservations</h3>
-    <div id="reservationsWell" class="span12 well well-large">
-        <p>I'm in a well!</p>
+    <div id="reservationsContainer" class="span3">
+        <h3 id="reservationsHeader" class="sectionSubHeader">Reservations</h3>
+        <div id="reservationsWell" class="well well-large">
+            <p>I'm in a well!</p>
+        </div>
     </div>
-    <h3 id="eventsHeader" class="sectionSubHeader">Events</h3>
-    <div id="eventsWell" class="span12 well well-large">
-        <p>I'm in a well!</p>
+    <div id="eventsContainer" class="span3">
+        <h3 id="eventsHeader" class="sectionSubHeader">Events</h3>
+        <div id="eventsWell" class="well well-large">
+            <p>I'm in a well!</p>
+        </div>
     </div>
-    <h3 id="arenasHeader" class="sectionSubHeader">Arenas</h3>
-    <div id="arenasWell" class="span12 well well-large">
-        <p>I'm in a well!</p>
+    <div id="arenasContainer" class="span3">
+        <h3 id="arenasHeader" class="sectionSubHeader">Arenas</h3>
+        <div id="arenasWell" class="well well-large">
+            <p>I'm in a well!</p>
+        </div>
     </div>
 </div>
 

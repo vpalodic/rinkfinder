@@ -1013,10 +1013,13 @@ class User extends RinkfinderActiveRecord
                     $dashData['arenas'] = $this->getArenaCounts();
                     break;
                 case 'events':
+                    $dashData['events'] = $this->getEventCounts();
                     break;
                 case 'requests':
+                    $dashData['requests'] = $this->getRequestCounts();
                     break;
                 case 'reservations':
+                    $dashData['reservations'] = $this->getReservationCounts();
                     break;
             }
         }
@@ -1030,6 +1033,7 @@ class User extends RinkfinderActiveRecord
      * @param integer $uid The user to retrieve information for. If null then
      * information is pulled for the current user.
      * @return mixed[] An indexd array of information for the user.
+     * @throws CDbException
      */
     public function getAdministrationDashboardCounts($uid = null)
     {
@@ -1045,20 +1049,30 @@ class User extends RinkfinderActiveRecord
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The arena counts for each status and total count
+     * @throws CDbException
      */
     public function getArenaCounts($uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
-        
-        $sql = 'SELECT COUNT(a.id) '
-                . 'FROM arena a '
-                . 'INNER JOIN arena_user_assignment aua '
-                . 'ON a.id = aua.arena_id '
-                . 'INNER JOIN user u '
-                . 'ON u.id = aua.user_id '
-                . 'WHERE u.id = :uid AND '
-                . 'a.status_id = (SELECT id FROM arena_status WHERE name = :status)';
+
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM arena_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(a.id) AS count '
+                . ' FROM arena a '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN arena_status s1 '
+                . ' ON a.status_id = s1.id '
+                . ' WHERE u.id = :uid '
+                . ' GROUP BY s1.id) AS sc '
+                . 'ON s.id = sc.id '
+                . 'WHERE s.active = 1 '
+                . 'ORDER BY s.display_order ASC';
         
         $command = Yii::app()->db->createCommand($sql);
         
@@ -1066,36 +1080,313 @@ class User extends RinkfinderActiveRecord
             $uid = $this->id;
         }
         
-        $statusName = '';
         $arenaCountTotal = 0;
         
-        $statuses = ArenaStatus::model()->active()->findAll();
-        
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':status', $statusName, PDO::PARAM_STR);
-        
-        foreach($statuses as $status) {
-            $statusName = $status->name;
-            
-            $arenaCount = $command->queryScalar();
-            
-            if($arenaCount == false) {
-                $arenaCount = 0;
-            }
-            
-            $ret['status'][] = array(
-                'id' => $status->id,
-                'name' => $status->name,
-                'description' => $status->description,
-                'displayName' => $status->display_name,
-                'displayOrder' => $status->display_order,
-                'count' => (integer)$arenaCount,
-            );
-            
-            $arenaCountTotal += (integer)$arenaCount;
+
+        $ret['status'] = $command->queryAll(true);
+
+        foreach($ret['status'] as $record) {
+            $arenaCountTotal += (integer)$record['count'];
         }
         
         $ret['total'] = $arenaCountTotal;
+        
+        return $ret;
+    }
+
+    /**
+     * Returns the event count for each event type and status 
+     * plus the total count for each type and the total count for all.
+     * @param integer $uid The user to get the counts for. If null, the
+     * current user is used.
+     * @return mixed[] The event counts for each event type and
+     * status plus the total count for each type and the total count for all.
+     * @throws CDbException
+     */
+    public function getEventCounts($uid = null)
+    {
+        // Let's start with getting the number of arenas for each status
+        $ret = array();
+        
+        $sql = 'SELECT COUNT(e.id) '
+                . 'FROM event e '
+                . 'INNER JOIN arena a '
+                . 'ON a.id = e.arena_id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id '
+                . 'INNER JOIN user u '
+                . 'ON u.id = aua.user_id '
+                . 'WHERE u.id = :uid '
+                . 'AND '
+                . 'e.type_id = :etype '
+                . 'AND '
+                . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
+                . 'INTERVAL 1 MONTH) '
+                . 'AND '
+                . 'e.status_id = :estatus';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        if($uid == null) {
+            $uid = $this->id;
+        }
+        
+        $etypeId = 0;
+        $estatusId = 0;
+        $eventCountTotal = 0;
+        
+        $statuses = EventStatus::model()->active()->findAll();
+        $types = EventType::model()->active()->findAll();
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
+        $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
+
+        // Start with each type and then go for each status within each type
+        foreach($types as $type) {
+            $etypeId = $type->id;
+
+            $sret = array();
+            $typeCountTotal = 0;
+
+            foreach($statuses as $status) {
+                $estatusId = $status->id;
+
+                $eventCount = $command->queryScalar();
+            
+                if($eventCount == false) {
+                    $eventCount = 0;
+                }
+
+                $sret[] = array(
+                    'id' => $status->id,
+                    'name' => $status->name,
+                    'description' => $status->description,
+                    'displayName' => $status->display_name,
+                    'displayOrder' => $status->display_order,
+                    'count' => (integer)$eventCount,
+                );
+            
+                $typeCountTotal += (integer)$eventCount;
+                $eventCountTotal += (integer)$eventCount;
+            }
+            
+            $ret['type'][] = array(
+                'id' => $type->id,
+                'name' => $type->name,
+                'description' => $type->description,
+                'displayName' => $type->display_name,
+                'displayOrder' => $type->display_order,
+                'count' => (integer)$typeCountTotal,
+                'status' => $sret,
+            );
+        }
+        
+        $ret['total'] = $eventCountTotal;
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns the event request count for each type and status 
+     * plus the total count for each type and the total count for all.
+     * Only returns counts for Arenas that are currently OPEN
+     * @param integer $uid The user to get the counts for. If null, the
+     * current user is used.
+     * @return mixed[] The event request counts for each type and
+     * status plus the total count for each type and the total count for all.
+     * @throws CDbException
+     */
+    public function getRequestCounts($uid = null)
+    {
+        // Let's start with getting the number of arenas for each status
+        $ret = array();
+        
+        $sql = 'SELECT COUNT(er.id) '
+                . 'FROM event_request er '
+                . 'INNER JOIN event e '
+                . 'ON e.id = er.event_id '
+                . 'INNER JOIN arena a '
+                . 'ON a.id = e.arena_id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id '
+                . 'INNER JOIN user u '
+                . 'ON u.id = aua.user_id '
+                . 'WHERE u.id = :uid '
+                . 'AND '
+                . 'e.type_id = :etype '
+                . 'AND '
+                . 'e.status_id = :estatus '
+                . 'AND '
+                . 'er.type_id = :ertype '
+                . 'AND '
+                . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
+                . 'INTERVAL 1 MONTH) '
+                . 'AND '
+                . 'er.status_id = :erstatus';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        if($uid == null) {
+            $uid = $this->id;
+        }
+        
+        $ertypeId = 0;
+        $erstatusId = 0;
+        $etypeId = 0;
+        $estatusId = 0;
+        $eventRequestCountTotal = 0;
+        
+        $erstatuses = EventRequestStatus::model()->active()->findAll();
+        $ertypes = EventRequestType::model()->active()->findAll();
+        $statuses = EventStatus::model()->active()->findAll();
+        $types = EventType::model()->active()->findAll();
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
+        $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
+        $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
+        $command->bindParam(':erstatus', $erstatusId, PDO::PARAM_INT);
+
+        // Start with each type and then go for each status within each type
+        foreach($ertypes as $ertype) {
+            $ertypeId = $ertype->id;
+            
+            $ersret = array();
+            $erTypeCountTotal = 0;
+            
+            foreach($erstatuses as $erstatus) {
+                $erstatusId = $erstatus->id;
+                
+                $tret = array();
+                $erStatusCountTotal = 0;
+                
+                foreach($types as $type) {
+                    $etypeId = $type->id;
+            
+                    $sret = array();
+                    $typeCountTotal = 0;
+            
+                    foreach($statuses as $status) {
+                        $estatusId = $status->id;
+            
+                        $eventCount = $command->queryScalar();
+            
+                        if($eventCount == false) {
+                            $eventCount = 0;
+                        }
+            
+                        $sret[] = array(
+                            'id' => $status->id,
+                            'name' => $status->name,
+                            'description' => $status->description,
+                            'displayName' => $status->display_name,
+                            'displayOrder' => $status->display_order,
+                            'count' => (integer)$eventCount,
+                        );
+            
+                        $typeCountTotal += (integer)$eventCount;
+                        $erStatusCountTotal += (integer)$eventCount;
+                        $erTypeCountTotal += (integer)$eventCount;
+                        $eventRequestCountTotal += (integer)$eventCount;
+                    }
+            
+                    $tret['type'][] = array(
+                        'id' => $type->id,
+                        'name' => $type->name,
+                        'description' => $type->description,
+                        'displayName' => $type->display_name,
+                        'displayOrder' => $type->display_order,
+                        'count' => (integer)$typeCountTotal,
+                        'status' => $sret,
+                    );
+                }
+                
+                $ersret[] = array(
+                    'id' => $erstatus->id,
+                    'name' => $erstatus->name,
+                    'description' => $erstatus->description,
+                    'displayName' => $erstatus->display_name,
+                    'displayOrder' => $erstatus->display_order,
+                    'count' => (integer)$erStatusCountTotal,
+                    'event' => $tret,
+                );
+            }
+            
+            $ret['type'][] = array(
+                'id' => $ertype->id,
+                'name' => $ertype->name,
+                'description' => $ertype->description,
+                'displayName' => $ertype->display_name,
+                'displayOrder' => $ertype->display_order,
+                'count' => (integer)$erTypeCountTotal,
+                'status' => $ersret,
+            );
+        }
+        
+        $ret['total'] = $eventRequestCountTotal;
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns the event request count for each type and status 
+     * plus the total count for each type and the total count for all.
+     * Only returns counts for Arenas that are currently OPEN
+     * @param integer $uid The user to get the counts for. If null, the
+     * current user is used.
+     * @return mixed[] The event request counts for each type and
+     * status plus the total count for each type and the total count for all.
+     * @throws CDbException
+     */
+    public function getReservationCounts($uid = null)
+    {
+        // Let's start with getting the number of arenas for each status
+        $ret = array();
+        
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM reservation_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(r.id) AS count '
+                . ' FROM reservation r '
+                . ' INNER JOIN arena a '
+                . ' ON r.arena_id = a.id '
+                . ' INNER JOIN event e '
+                . ' ON r.event_id = e.id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN reservation_status s1 '
+                . ' ON r.status_id = s1.id '
+                . ' WHERE u.id = :uid '
+                . ' AND '
+                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
+                . ' INTERVAL 1 MONTH) '
+                . ' GROUP BY s1.id) AS sc '
+                . 'ON s.id = sc.id '
+                . 'WHERE s.active = 1 '
+                . 'ORDER BY s.display_order ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        if($uid == null) {
+            $uid = $this->id;
+        }
+        
+        $reservationCountTotal = 0;
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        $ret['status'] = $command->queryAll(true);
+
+        foreach($ret['status'] as $record) {
+            $reservationCountTotal += (integer)$record['count'];
+        }
+        
+        $ret['total'] = $reservationCountTotal;
         
         return $ret;
     }

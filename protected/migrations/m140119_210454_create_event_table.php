@@ -271,8 +271,8 @@ class m140119_210454_create_event_table extends CDbMigration
                 'name' => 'EXPIRED',
                 'display_name' => 'Expired',
                 'display_order' => 3,
-                'description' => 'The event end time, if set, has past or else.'
-                    . 'it is one hour past the event start time',
+                'description' => 'The event end time, if set, has past or else '
+                    . 'it is past the event start time plus the event duration.',
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
             )

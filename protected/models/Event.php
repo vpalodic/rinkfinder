@@ -461,20 +461,6 @@ class Event extends RinkfinderActiveRecord
         $dtCurrentTime = new DateTime();
         $dtEventStartDateTime = new DateTime($this->start_date . ' ' . $this->start_time);
         
-        if($dtCurrentTime == $dtEventStartDateTime || $dtCurrentTime > $dtEventStartDateTime) {
-            // Expire the event!!!
-            if($this->status->name == 'OPEN') {
-                $sql = 'SELECT id FROM event_status WHERE name = :name';
-                $command = Yii::app()->db->createCommand($sql);
-                $tempid = $command->queryScalar(array(':name' => 'EXPIRED'));
-            
-                if($tempid > 0) {
-                    $this->status_id = $tempid;
-                }
-            }
-            return;
-        }
-        
         $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
         $this->duration = !empty($this->duration) ? abs($this->duration) : 60;
         $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
@@ -495,15 +481,29 @@ class Event extends RinkfinderActiveRecord
             }
         } else {
             // End date and time are valid so calculate the duration
-            $intvalDiff = $dtEventStartDateTime->diff($dtEventEndDateTime);
+            $intvalDuration = $dtEventStartDateTime->diff($dtEventEndDateTime);
             
             $this->duration = (integer)(
-                    ($intvalDiff->y * 525949) + 
-                    ($intvalDiff->m * 43829.1) + 
-                    ($intvalDiff->d * 1440) + 
-                    ($intvalDiff->h * 60) +
-                    $intvalDiff->i
+                    ($intvalDuration->y * 525949) + 
+                    ($intvalDuration->m * 43829.1) + 
+                    ($intvalDuration->d * 1440) + 
+                    ($intvalDuration->h * 60) +
+                    $intvalDuration->i
             );
+        }
+        
+        if($dtCurrentTime > $dtEventEndDateTime || $dtCurrentTime > ($dtEventStartDateTime->add($intvalDuration))) {
+            // Expire the event!!!
+            if($this->status->name == 'OPEN') {
+                $sql = 'SELECT id FROM event_status WHERE name = :name';
+                $command = Yii::app()->db->createCommand($sql);
+                $tempid = $command->queryScalar(array(':name' => 'EXPIRED'));
+            
+                if($tempid > 0) {
+                    $this->status_id = $tempid;
+                }
+            }
+            return;
         }
     }
 }
