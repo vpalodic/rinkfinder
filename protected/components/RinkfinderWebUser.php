@@ -160,8 +160,13 @@ class RinkfinderWebUser extends CWebUser
                 return false;
             }
             
-            // Check our cached roles!
-            $roles = $this->roles;
+            $id = $this->id;
+        }
+            
+        // Check our cached roles!
+        $roles = $this->roles;
+            
+        if(is_array($roles)) {
             foreach($roles as $role) {
                 if($role == 'Administrator') {
                     return true;
@@ -183,8 +188,13 @@ class RinkfinderWebUser extends CWebUser
                 return false;
             }
             
-            // Check our cached roles!
-            $roles = $this->roles;
+            $id = $this->id;
+        }
+            
+        // Check our cached roles!
+        $roles = $this->roles;
+        
+        if(is_array($roles)) {
             foreach($roles as $role) {
                 if($role == 'Administrator' || $role == 'ApplicationAdministrator') {
                     return true;
@@ -212,8 +222,13 @@ class RinkfinderWebUser extends CWebUser
                 return false;
             }
             
-            // Check our cached roles!
-            $roles = $this->roles;
+            $id = $this->id;
+        }
+            
+        // Check our cached roles!
+        $roles = $this->roles;
+        
+        if(is_array($roles)) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||
@@ -244,8 +259,13 @@ class RinkfinderWebUser extends CWebUser
                 return false;
             }
             
-            // Check our cached roles!
-            $roles = $this->roles;
+            $id = $this->id;
+        }
+            
+        // Check our cached roles!
+        $roles = $this->roles;
+        
+        if(is_array($roles)) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||
@@ -278,8 +298,13 @@ class RinkfinderWebUser extends CWebUser
                 return false;
             }
             
-            // Check our cached roles!
-            $roles = $this->roles;
+            $id = $this->id;
+        }
+            
+        // Check our cached roles!
+        $roles = $this->roles;
+        
+        if(is_array($roles)) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||
