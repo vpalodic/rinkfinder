@@ -33,12 +33,12 @@
             <div id="requestsWell" class="well well-large">
             </div>
         </div>
-        <div id="reservationsContainer" class="span3">
+        <div id="reservationsContainer" class="span2">
             <h5 id="reservationsHeader">Reservations</h5>
             <div id="reservationsWell" class="well well-large">
             </div>
         </div>
-        <div id="eventsContainer" class="span3">
+        <div id="eventsContainer" class="span4">
             <h5 id="eventsHeader">Events</h5>
             <div id="eventsWell" class="well well-large">
             </div>
