@@ -1220,10 +1220,6 @@ class User extends RinkfinderActiveRecord
                 . 'ON u.id = aua.user_id '
                 . 'WHERE u.id = :uid '
                 . 'AND '
-                . 'e.type_id = :etype '
-                . 'AND '
-                . 'e.status_id = :estatus '
-                . 'AND '
                 . 'er.type_id = :ertype '
                 . 'AND '
                 . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
@@ -1239,18 +1235,12 @@ class User extends RinkfinderActiveRecord
         
         $ertypeId = 0;
         $erstatusId = 0;
-        $etypeId = 0;
-        $estatusId = 0;
         $eventRequestCountTotal = 0;
         
         $erstatuses = EventRequestStatus::model()->active()->findAll();
         $ertypes = EventRequestType::model()->active()->findAll();
-        $statuses = EventStatus::model()->active()->findAll();
-        $types = EventType::model()->active()->findAll();
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
-        $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
         $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
         $command->bindParam(':days', $days, PDO::PARAM_INT);
         $command->bindParam(':erstatus', $erstatusId, PDO::PARAM_INT);
@@ -1265,48 +1255,12 @@ class User extends RinkfinderActiveRecord
             foreach($erstatuses as $erstatus) {
                 $erstatusId = $erstatus->id;
                 
-                $tret = array();
                 $erStatusCountTotal = 0;
-                
-                foreach($types as $type) {
-                    $etypeId = $type->id;
-            
-                    $sret = array();
-                    $typeCountTotal = 0;
-            
-                    foreach($statuses as $status) {
-                        $estatusId = $status->id;
-            
-                        $eventCount = $command->queryScalar();
-            
-                        if($eventCount == false) {
-                            $eventCount = 0;
-                        }
-            
-                        $sret[] = array(
-                            'id' => $status->id,
-                            'name' => $status->name,
-                            'description' => $status->description,
-                            'display_name' => $status->display_name,
-                            'display_order' => $status->display_order,
-                            'count' => (integer)$eventCount,
-                        );
-            
-                        $typeCountTotal += (integer)$eventCount;
-                        $erStatusCountTotal += (integer)$eventCount;
-                        $erTypeCountTotal += (integer)$eventCount;
-                        $eventRequestCountTotal += (integer)$eventCount;
-                    }
-            
-                    $tret['type'][] = array(
-                        'id' => $type->id,
-                        'name' => $type->name,
-                        'description' => $type->description,
-                        'display_name' => $type->display_name,
-                        'display_order' => $type->display_order,
-                        'count' => (integer)$typeCountTotal,
-                        'status' => $sret,
-                    );
+
+                $erStatusCountTotal = $command->queryScalar();
+
+                if($erStatusCountTotal == false) {
+                    $erStatusCountTotal = 0;
                 }
                 
                 $ersret[] = array(
@@ -1316,8 +1270,10 @@ class User extends RinkfinderActiveRecord
                     'display_name' => $erstatus->display_name,
                     'display_order' => $erstatus->display_order,
                     'count' => (integer)$erStatusCountTotal,
-                    'event' => $tret,
                 );
+                
+                $erTypeCountTotal += $erStatusCountTotal;
+                
             }
             
             $ret['type'][] = array(
@@ -1329,6 +1285,8 @@ class User extends RinkfinderActiveRecord
                 'count' => (integer)$erTypeCountTotal,
                 'status' => $ersret,
             );
+            
+            $eventRequestCountTotal += $erStatusCountTotal;
         }
         
         $ret['total'] = $eventRequestCountTotal;

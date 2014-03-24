@@ -25,9 +25,14 @@
 
 <div id="managementContainer" style="display: none;">
     <div id="countsContainer" class="row-fluid">
-        <h3 id="countsHeader" class="sectionSubHeader">
+        <h4 id="countsHeader" class="sectionSubHeader">
             Counts
-        </h3>
+            <br />
+            <small>
+                Includes information 30 days prior to today and everything
+                from today onward.
+            </small>
+        </h4>
         <div id="requestsContainer" class="span3">
             <h5 id="requestsHeader">Requests</h5>
             <div id="requestsWell" class="well well-large">

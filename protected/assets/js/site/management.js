@@ -64,7 +64,7 @@
                     ' data-display_name="' + objStatus.display_name + '" ' +
                     'data-display_order=' + objStatus.display_order +
                     'rel="tooltip" title="' + objStatus.description + '" ' +
-                    '>' +
+                    'style="word-break:break-all;word-wrap:break-word;">' +
                     ' <span class="badge badge-info">' + 
                     objStatus.count + '</span> <strong>' + objStatus.display_name + '</strong></li>';
         }
@@ -105,7 +105,7 @@
                     ' data-display_name="' + objType.display_name + '" ' +
                     'data-display_order=' + objType.display_order +
                     'rel="tooltip" title="' + objType.description + '" ' +
-                    '>' +
+                    'style="word-break:break-all;word-wrap:break-word;">' +
                     ' <span class="badge badge-info">' + objType.count + 
                     '</span> <strong>' + objType.display_name + '</strong>' +
                     '<ul>';
@@ -118,7 +118,7 @@
                         ' data-display_name="' + objStatus.display_name + '" ' +
                         'data-display_order=' + objStatus.display_order +
                         'rel="tooltip" title="' + objStatus.description + '" ' +
-                        '>' +
+                        'style="word-break:break-all;word-wrap:break-word;">' +
                         ' <span class="badge">' + 
                         objStatus.count + '</span> <strong>' + objStatus.display_name + '</strong></li>';
             }
@@ -161,7 +161,7 @@
                     ' data-display_name="' + objType.display_name + '" ' +
                     'data-display_order=' + objType.display_order +
                     'rel="tooltip" title="' + objType.description + '" ' +
-                    '>' +
+                    'style="word-break:break-all;word-wrap:break-word;">' +
                     ' <span class="badge badge-info">' + objType.count + 
                     '</span> <strong>' + objType.display_name + '</strong>' +
                     '<ul>';
@@ -174,7 +174,7 @@
                         ' data-display_name="' + objStatus.display_name + '" ' +
                         'data-display_order=' + objStatus.display_order +
                         'rel="tooltip" title="' + objStatus.description + '" ' +
-                        '>' +
+                        'style="word-break:break-all;word-wrap:break-word;">' +
                         ' <span class="badge">' + 
                         objStatus.count + '</span> <strong>' + objStatus.display_name + '</strong></li>';
             }
@@ -215,7 +215,7 @@
                     ' data-display_name="' + objStatus.display_name + '" ' +
                     'data-display_order=' + objStatus.display_order +
                     'rel="tooltip" title="' + objStatus.description + '" ' +
-                    '>' +
+                    'style="word-break:break-all;word-wrap:break-word;">' +
                     ' <span class="badge badge-info">' + 
                     objStatus.count + '</span> <strong>' + objStatus.display_name + '</strong></li>';
         }
