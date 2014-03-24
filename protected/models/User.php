@@ -1098,13 +1098,15 @@ class User extends RinkfinderActiveRecord
     /**
      * Returns the event count for each event type and status 
      * plus the total count for each type and the total count for all.
+     * @param integer $days The number of days prior to today to go back to
+     * when counting events
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event counts for each event type and
      * status plus the total count for each type and the total count for all.
      * @throws CDbException
      */
-    public function getEventCounts($uid = null)
+    public function getEventCounts($days = 30, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1122,7 +1124,7 @@ class User extends RinkfinderActiveRecord
                 . 'e.type_id = :etype '
                 . 'AND '
                 . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
-                . 'INTERVAL 1 MONTH) '
+                . 'INTERVAL :days DAY) '
                 . 'AND '
                 . 'e.status_id = :estatus';
         
@@ -1141,6 +1143,7 @@ class User extends RinkfinderActiveRecord
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
         $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
+        $command->bindParam(':days', $days, PDO::PARAM_INT);
         $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
 
         // Start with each type and then go for each status within each type
@@ -1163,8 +1166,8 @@ class User extends RinkfinderActiveRecord
                     'id' => $status->id,
                     'name' => $status->name,
                     'description' => $status->description,
-                    'displayName' => $status->display_name,
-                    'displayOrder' => $status->display_order,
+                    'display_name' => $status->display_name,
+                    'display_order' => $status->display_order,
                     'count' => (integer)$eventCount,
                 );
             
@@ -1176,8 +1179,8 @@ class User extends RinkfinderActiveRecord
                 'id' => $type->id,
                 'name' => $type->name,
                 'description' => $type->description,
-                'displayName' => $type->display_name,
-                'displayOrder' => $type->display_order,
+                'display_name' => $type->display_name,
+                'display_order' => $type->display_order,
                 'count' => (integer)$typeCountTotal,
                 'status' => $sret,
             );
@@ -1192,13 +1195,15 @@ class User extends RinkfinderActiveRecord
      * Returns the event request count for each type and status 
      * plus the total count for each type and the total count for all.
      * Only returns counts for Arenas that are currently OPEN
+     * @param integer $days The number of days prior to today to go back to
+     * when counting events
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event request counts for each type and
      * status plus the total count for each type and the total count for all.
      * @throws CDbException
      */
-    public function getRequestCounts($uid = null)
+    public function getRequestCounts($days = 30, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1222,7 +1227,7 @@ class User extends RinkfinderActiveRecord
                 . 'er.type_id = :ertype '
                 . 'AND '
                 . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
-                . 'INTERVAL 1 MONTH) '
+                . 'INTERVAL :days DAY) '
                 . 'AND '
                 . 'er.status_id = :erstatus';
         
@@ -1247,6 +1252,7 @@ class User extends RinkfinderActiveRecord
         $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
         $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
         $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
+        $command->bindParam(':days', $days, PDO::PARAM_INT);
         $command->bindParam(':erstatus', $erstatusId, PDO::PARAM_INT);
 
         // Start with each type and then go for each status within each type
@@ -1281,8 +1287,8 @@ class User extends RinkfinderActiveRecord
                             'id' => $status->id,
                             'name' => $status->name,
                             'description' => $status->description,
-                            'displayName' => $status->display_name,
-                            'displayOrder' => $status->display_order,
+                            'display_name' => $status->display_name,
+                            'display_order' => $status->display_order,
                             'count' => (integer)$eventCount,
                         );
             
@@ -1296,8 +1302,8 @@ class User extends RinkfinderActiveRecord
                         'id' => $type->id,
                         'name' => $type->name,
                         'description' => $type->description,
-                        'displayName' => $type->display_name,
-                        'displayOrder' => $type->display_order,
+                        'display_name' => $type->display_name,
+                        'display_order' => $type->display_order,
                         'count' => (integer)$typeCountTotal,
                         'status' => $sret,
                     );
@@ -1307,8 +1313,8 @@ class User extends RinkfinderActiveRecord
                     'id' => $erstatus->id,
                     'name' => $erstatus->name,
                     'description' => $erstatus->description,
-                    'displayName' => $erstatus->display_name,
-                    'displayOrder' => $erstatus->display_order,
+                    'display_name' => $erstatus->display_name,
+                    'display_order' => $erstatus->display_order,
                     'count' => (integer)$erStatusCountTotal,
                     'event' => $tret,
                 );
@@ -1318,8 +1324,8 @@ class User extends RinkfinderActiveRecord
                 'id' => $ertype->id,
                 'name' => $ertype->name,
                 'description' => $ertype->description,
-                'displayName' => $ertype->display_name,
-                'displayOrder' => $ertype->display_order,
+                'display_name' => $ertype->display_name,
+                'display_order' => $ertype->display_order,
                 'count' => (integer)$erTypeCountTotal,
                 'status' => $ersret,
             );
@@ -1334,13 +1340,15 @@ class User extends RinkfinderActiveRecord
      * Returns the event request count for each type and status 
      * plus the total count for each type and the total count for all.
      * Only returns counts for Arenas that are currently OPEN
+     * @param integer $days The number of days prior to today to go back to
+     * when counting events
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event request counts for each type and
      * status plus the total count for each type and the total count for all.
      * @throws CDbException
      */
-    public function getReservationCounts($uid = null)
+    public function getReservationCounts($days = 30, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1364,7 +1372,7 @@ class User extends RinkfinderActiveRecord
                 . ' WHERE u.id = :uid '
                 . ' AND '
                 . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
-                . ' INTERVAL 1 MONTH) '
+                . ' INTERVAL :days DAY) '
                 . ' GROUP BY s1.id) AS sc '
                 . 'ON s.id = sc.id '
                 . 'WHERE s.active = 1 '
@@ -1379,6 +1387,7 @@ class User extends RinkfinderActiveRecord
         $reservationCountTotal = 0;
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':days', $days, PDO::PARAM_INT);
 
         $ret['status'] = $command->queryAll(true);
 

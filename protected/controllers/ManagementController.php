@@ -111,7 +111,7 @@ class ManagementController extends Controller
 
         echo json_encode(
                 array(
-                    'succes' => true,
+                    'success' => true,
                     'error' => false,
                     'for' => $dashData,
                 )

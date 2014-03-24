@@ -1,5 +1,5 @@
 /**
- * console javascript object.
+ * console javascript object and other utility functions.
  * If the console is undefined, we define empty functions.
  * Used for browsers that don't support the console like IE.
  *
@@ -16,4 +16,8 @@ if (typeof console === "undefined") {
 		warn: function() {},
 		error: function() {}
 	};
+}
+
+function arrayHasOwnIndex(array, prop) {
+    return array.hasOwnProperty(prop) && /^0$|^[1-9]\d*$/.test(prop) && prop <= 4294967294; // 2^32 - 2
 }
