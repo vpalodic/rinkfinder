@@ -261,7 +261,7 @@
             <button id="step2Continue" class="btn btn-success btn-large disabled" type="button" name="yt2" disabled>
                 <i class="icon-arrow-right icon-white"></i> Continue
             </button>
-            <button id="resetButton1" class="btn btn-large btn-primary pull-right" type="button" aria-hidden="true">
+            <button id="resetButton1" class="btn btn-large btn-danger" type="button" aria-hidden="true">
                 <i class="icon-repeat icon-white"></i> Restart Import
             </button>
         </div>
@@ -288,7 +288,7 @@
             <button id="step3Continue" class="btn btn-success btn-large disabled" type="button" name="yt3" disabled>
                 <i class="icon-upload icon-white"></i> Import
             </button>
-            <button id="resetButton2" class="btn btn-large btn-primary pull-right" type="button" aria-hidden="true">
+            <button id="resetButton2" class="btn btn-large btn-danger" type="button" aria-hidden="true">
                 <i class="icon-repeat icon-white"></i> Restart Import
             </button>
         </div>
@@ -342,7 +342,7 @@
     <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
         <i class="icon-remove-sign"></i> Close
     </button>
-    <button id="resetButton3" class="btn btn-large btn-primary" type="button" aria-hidden="true">
+    <button id="resetButton3" class="btn btn-large btn-danger" type="button" aria-hidden="true">
         <i class="icon-repeat icon-white"></i> Restart Import
     </button>
   </div>
