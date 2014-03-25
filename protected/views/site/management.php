@@ -10,12 +10,19 @@
 <?php
     Yii::app()->clientScript->registerScript(
             'setupManagementDash',
-            'management.urls.login = "' . $this->createUrl('site/login') . '";'
-            . 'management.urls.base = "' . Yii::app()->request->baseUrl . '";'
+            'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
+            . 'utilities.urls.login = "' . $this->createUrl('site/loout') . '";'
+            . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'management.endpoints.counts = "' . $endpoints['counts'] . '";'
             . 'management.endpoints.details = "' . $endpoints['details'] . '";'
-            . 'management.dialogBox = "managementModal";'
+            . 'utilities.ajaxError.dialogBox = "managementModal";'
             . 'management.mainContainer = "managementContainer";'
+            . 'utilities.loadingScreen.containerId = "loadingScreen";'
+            . 'utilities.loadingScreen.image.enabled = true;'
+            . 'utilities.loadingScreen.image.src = "/images/ajax-loader-roller-bg_red-fg_blue.gif";'
+            . 'utilities.loadingScreen.progress.enabled = true;'
+            . 'utilities.loadingScreen.progress.type = "progress progress-striped active";'
+            . 'utilities.loadingScreen.progress.percent = 40;'
             . 'management.getInitialCounts();',
             CClientScript::POS_READY
     );
@@ -56,9 +63,8 @@
     </div>
 </div>
 
-<div id="loadingScreen" class="row-fluid">
+<div id="loadingScreen" class="row-fluid" style="display: none;">
 </div><!-- Loading Screen -->
-
 <!-- Error Modal Dialog -->
 <div id="managementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="managementModalLabel" aria-hidden="true">
   <div id="managementModalHeader" class="modal-header">

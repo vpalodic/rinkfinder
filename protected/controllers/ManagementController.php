@@ -61,7 +61,7 @@ class ManagementController extends Controller
             );
             Yii::app()->end();
         }
-
+        
         if(!isset($_GET['for']) && !is_array($_GET['for'])) {
             $this->sendResponseHeaders(400);
             echo json_encode(

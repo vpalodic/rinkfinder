@@ -547,8 +547,10 @@ class SiteController extends Controller
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
         
         if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.js', CClientScript::POS_END);
         } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.min.js', CClientScript::POS_END);
         }
         
@@ -581,8 +583,10 @@ class SiteController extends Controller
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
         
         if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/management.js', CClientScript::POS_END);
         } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/management.min.js', CClientScript::POS_END);
         }
         

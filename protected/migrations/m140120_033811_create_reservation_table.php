@@ -50,7 +50,6 @@ class m140120_033811_create_reservation_table extends CDbMigration
     private function createReservationTable()
     {
         // the source_id field references event_request.id and
-        // the arena_id field references arena.id and
         // the event_id field references event.id and
         // the for_id field references user.id and
         // the created_by_id field references user.id and
@@ -60,7 +59,6 @@ class m140120_033811_create_reservation_table extends CDbMigration
         $this->createTable('reservation', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
                 'source_id' => 'INT(11) NULL',
-                'arena_id' => 'INT(11) NOT NULL',
                 'event_id' => 'INT(11) NOT NULL',
                 'for_id' => 'INT(11) NOT NULL',
                 'notes' => 'TEXT NULL',
@@ -72,14 +70,12 @@ class m140120_033811_create_reservation_table extends CDbMigration
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
                 'KEY reservation_source_id_fk (source_id)',
-                'KEY reservation_arena_id_fk (arena_id)',
                 'KEY reservation_event_id_fk (event_id)',
                 'KEY reservation_for_id_fk (for_id)',
                 'KEY reservation_status_id_fk (status_id)',
                 'KEY reservation_created_by_id_fk (created_by_id)',
                 'KEY reservation_updated_by_id_fk (updated_by_id)',
                 'CONSTRAINT reservation_source_id_fk FOREIGN KEY (source_id) REFERENCES event_request (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT reservation_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
                 'CONSTRAINT reservation_event_id_fk FOREIGN KEY (event_id) REFERENCES event (id) ON UPDATE CASCADE ON DELETE RESTRICT',
                 'CONSTRAINT reservation_for_id_fk FOREIGN KEY (for_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
                 'CONSTRAINT reservation_status_id_fk FOREIGN KEY (status_id) REFERENCES reservation_status (id) ON UPDATE CASCADE ON DELETE RESTRICT',
@@ -142,7 +138,6 @@ class m140120_033811_create_reservation_table extends CDbMigration
     {
         // First drop the Foreign Keys!
         $this->dropForeignKey('reservation_source_id_fk', 'reservation');
-        $this->dropForeignKey('reservation_arena_id_fk', 'reservation');
         $this->dropForeignKey('reservation_event_id_fk', 'reservation');
         $this->dropForeignKey('reservation_for_id_fk', 'reservation');
         $this->dropForeignKey('reservation_status_id_fk', 'reservation');
