@@ -13,11 +13,6 @@
         details: "/server/endpoint",
     };
     
-    management.urls = {
-        base: "/server/url",
-        login: "/server/url",
-    };
-    
     management.dialogBox = "";
     management.mainContainer = "";
     

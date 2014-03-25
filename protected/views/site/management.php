@@ -11,18 +11,18 @@
     Yii::app()->clientScript->registerScript(
             'setupManagementDash',
             'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
-            . 'utilities.urls.login = "' . $this->createUrl('site/loout') . '";'
+            . 'utilities.urls.logout = "' . $this->createUrl('site/loout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
-            . 'management.endpoints.counts = "' . $endpoints['counts'] . '";'
-            . 'management.endpoints.details = "' . $endpoints['details'] . '";'
             . 'utilities.ajaxError.dialogBox = "managementModal";'
-            . 'management.mainContainer = "managementContainer";'
             . 'utilities.loadingScreen.containerId = "loadingScreen";'
             . 'utilities.loadingScreen.image.enabled = true;'
             . 'utilities.loadingScreen.image.src = "/images/ajax-loader-roller-bg_red-fg_blue.gif";'
-            . 'utilities.loadingScreen.progress.enabled = true;'
+            . 'utilities.loadingScreen.progress.enabled = false;'
             . 'utilities.loadingScreen.progress.type = "progress progress-striped active";'
             . 'utilities.loadingScreen.progress.percent = 40;'
+            . 'management.endpoints.counts = "' . $endpoints['counts'] . '";'
+            . 'management.endpoints.details = "' . $endpoints['details'] . '";'
+            . 'management.mainContainer = "managementContainer";'
             . 'management.getInitialCounts();',
             CClientScript::POS_READY
     );

@@ -109,13 +109,13 @@
                 htmlOutput += '<p class="loading-stuff">' + this.text + "</p>";
             }
             
-            if (this.image.enabled == true) {
+            if (this.image.enabled === true) {
                 htmlOutput += '<div class="loading-stuff">' +
                         '<img src="' + utilities.urls.base +
                         this.image.src + '" alt="Loading..." /></div>';
             }
             
-            if (this.progress.enabled == true) {
+            if (this.progress.enabled === true) {
                 htmlOutput += '<div class="' + this.progress.type + ' loading-stuff">';
                 
                 htmlOutput += '<div id="myProgress" class="bar" style="width: ' +
@@ -148,7 +148,7 @@
         },
         
         stepUpBy: function(upBy) {
-            if (this.progress.enabled == false)
+            if (this.progress.enabled === false)
             {
                 return;
             }
@@ -166,7 +166,7 @@
         },
         
         stepDownBy: function(downBy) {
-            if (this.progress.enabled == false)
+            if (this.progress.enabled === false)
             {
                 return;
             }
