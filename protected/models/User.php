@@ -1111,22 +1111,31 @@ class User extends RinkfinderActiveRecord
         // Let's start with getting the number of arenas for each status
         $ret = array();
         
-        $sql = 'SELECT COUNT(e.id) '
-                . 'FROM event e '
-                . 'INNER JOIN arena a '
-                . 'ON a.id = e.arena_id '
-                . 'INNER JOIN arena_user_assignment aua '
-                . 'ON a.id = aua.arena_id '
-                . 'INNER JOIN user u '
-                . 'ON u.id = aua.user_id '
-                . 'WHERE u.id = :uid '
-                . 'AND '
-                . 'e.type_id = :etype '
-                . 'AND '
-                . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
-                . 'INTERVAL :days DAY) '
-                . 'AND '
-                . 'e.status_id = :estatus';
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, '
+                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM event_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(e.id) AS count '
+                . ' FROM event e '
+                . ' INNER JOIN arena a '
+                . ' ON e.arena_id = a.id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN event_status s1 '
+                . ' ON e.status_id = s1.id '
+                . ' WHERE u.id = :uid  '
+                . ' AND '
+                . ' e.type_id = :etype '
+                . ' AND '
+                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
+                . ' INTERVAL :days DAY) '
+                . ' GROUP BY s1.id) AS sc '
+                . ' ON s.id = sc.id '
+                . ' WHERE s.active = 1 '
+                . ' ORDER BY s.display_order ASC ';
         
         $command = Yii::app()->db->createCommand($sql);
         
@@ -1135,45 +1144,27 @@ class User extends RinkfinderActiveRecord
         }
         
         $etypeId = 0;
-        $estatusId = 0;
         $eventCountTotal = 0;
         
-        $statuses = EventStatus::model()->active()->findAll();
         $types = EventType::model()->active()->findAll();
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
         $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
         $command->bindParam(':days', $days, PDO::PARAM_INT);
-        $command->bindParam(':estatus', $estatusId, PDO::PARAM_INT);
 
         // Start with each type and then go for each status within each type
         foreach($types as $type) {
             $etypeId = $type->id;
 
-            $sret = array();
             $typeCountTotal = 0;
 
+            $statuses = $command->queryAll(true);
+            
             foreach($statuses as $status) {
-                $estatusId = $status->id;
-
-                $eventCount = $command->queryScalar();
-            
-                if($eventCount == false) {
-                    $eventCount = 0;
-                }
-
-                $sret[] = array(
-                    'id' => $status->id,
-                    'name' => $status->name,
-                    'description' => $status->description,
-                    'display_name' => $status->display_name,
-                    'display_order' => $status->display_order,
-                    'count' => (integer)$eventCount,
-                );
-            
-                $typeCountTotal += (integer)$eventCount;
-                $eventCountTotal += (integer)$eventCount;
+                $typeCountTotal += (integer)$status['count'];
             }
+            
+            $eventCountTotal += $typeCountTotal;
             
             $ret['type'][] = array(
                 'id' => $type->id,
@@ -1182,7 +1173,7 @@ class User extends RinkfinderActiveRecord
                 'display_name' => $type->display_name,
                 'display_order' => $type->display_order,
                 'count' => (integer)$typeCountTotal,
-                'status' => $sret,
+                'status' => $statuses,
             );
         }
         
@@ -1208,24 +1199,33 @@ class User extends RinkfinderActiveRecord
         // Let's start with getting the number of arenas for each status
         $ret = array();
         
-        $sql = 'SELECT COUNT(er.id) '
-                . 'FROM event_request er '
-                . 'INNER JOIN event e '
-                . 'ON e.id = er.event_id '
-                . 'INNER JOIN arena a '
-                . 'ON a.id = e.arena_id '
-                . 'INNER JOIN arena_user_assignment aua '
-                . 'ON a.id = aua.arena_id '
-                . 'INNER JOIN user u '
-                . 'ON u.id = aua.user_id '
-                . 'WHERE u.id = :uid '
-                . 'AND '
-                . 'er.type_id = :ertype '
-                . 'AND '
-                . 'e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"), '
-                . 'INTERVAL :days DAY) '
-                . 'AND '
-                . 'er.status_id = :erstatus';
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, '
+                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM event_request_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(e.id) AS count '
+                . ' FROM event_request er '
+                . ' INNER JOIN event e '
+                . ' ON e.id = er.event_id '
+                . ' INNER JOIN arena a '
+                . ' ON a.id = e.arena_id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN event_request_status s1 '
+                . ' ON s1.id = er.status_id '
+                . ' WHERE u.id = :uid  '
+                . ' AND '
+                . ' er.type_id = :ertype '
+                . ' AND '
+                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
+                . ' INTERVAL :days DAY) '
+                . ' GROUP BY s1.id) AS sc '
+                . ' ON s.id = sc.id '
+                . ' WHERE s.active = 1 '
+                . ' ORDER BY s.display_order ASC ';
         
         $command = Yii::app()->db->createCommand($sql);
         
@@ -1234,48 +1234,28 @@ class User extends RinkfinderActiveRecord
         }
         
         $ertypeId = 0;
-        $erstatusId = 0;
         $eventRequestCountTotal = 0;
         
-        $erstatuses = EventRequestStatus::model()->active()->findAll();
         $ertypes = EventRequestType::model()->active()->findAll();
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
         $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
         $command->bindParam(':days', $days, PDO::PARAM_INT);
-        $command->bindParam(':erstatus', $erstatusId, PDO::PARAM_INT);
 
         // Start with each type and then go for each status within each type
         foreach($ertypes as $ertype) {
             $ertypeId = $ertype->id;
             
-            $ersret = array();
             $erTypeCountTotal = 0;
             
+            $erstatuses = $command->queryAll(true);
+            
             foreach($erstatuses as $erstatus) {
-                $erstatusId = $erstatus->id;
-                
-                $erStatusCountTotal = 0;
-
-                $erStatusCountTotal = $command->queryScalar();
-
-                if($erStatusCountTotal == false) {
-                    $erStatusCountTotal = 0;
-                }
-                
-                $ersret[] = array(
-                    'id' => $erstatus->id,
-                    'name' => $erstatus->name,
-                    'description' => $erstatus->description,
-                    'display_name' => $erstatus->display_name,
-                    'display_order' => $erstatus->display_order,
-                    'count' => (integer)$erStatusCountTotal,
-                );
-                
-                $erTypeCountTotal += $erStatusCountTotal;
-                
+                $erTypeCountTotal += (integer)$erstatus['count'];
             }
             
+            $eventRequestCountTotal += $erTypeCountTotal;
+
             $ret['type'][] = array(
                 'id' => $ertype->id,
                 'name' => $ertype->name,
@@ -1283,10 +1263,8 @@ class User extends RinkfinderActiveRecord
                 'display_name' => $ertype->display_name,
                 'display_order' => $ertype->display_order,
                 'count' => (integer)$erTypeCountTotal,
-                'status' => $ersret,
+                'status' => $erstatuses,
             );
-            
-            $eventRequestCountTotal += $erStatusCountTotal;
         }
         
         $ret['total'] = $eventRequestCountTotal;
@@ -1317,10 +1295,10 @@ class User extends RinkfinderActiveRecord
                 . 'LEFT JOIN '
                 . '(SELECT s1.id, COUNT(r.id) AS count '
                 . ' FROM reservation r '
-                . ' INNER JOIN arena a '
-                . ' ON r.arena_id = a.id '
                 . ' INNER JOIN event e '
                 . ' ON r.event_id = e.id '
+                . ' INNER JOIN arena a '
+                . ' ON e.arena_id = a.id '
                 . ' INNER JOIN arena_user_assignment aua '
                 . ' ON a.id = aua.arena_id '
                 . ' INNER JOIN user u '
