@@ -22,9 +22,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Arenas <button id="refreshArenaCounts" ' +
-                'class="btn btn-success btn-small pull-right">' +
-                '<i class="icon-refresh icon-white"></i></button>';
+                data.total + '</span> Arenas ';
         
         header.html(htmlOutput);
         
@@ -32,9 +30,11 @@
                 model: "Arena",
             },
             function (e) {
-                $(e.target).slideUp();
+               $("#" + name + "Well").slideToggle();
                 
                 console.log(e);
+                
+                e.preventDefault();
             }
         );
         
@@ -71,9 +71,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Events <button id="refreshEventCounts" ' +
-                'class="btn btn-success btn-small pull-right">' +
-                '<i class="icon-refresh icon-white"></i></button>';
+                data.total + '</span> Events ';
         
         header.html(htmlOutput);
         
@@ -127,9 +125,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Requests <button id="refreshRequestCounts" ' +
-                'class="btn btn-success btn-small pull-right">' +
-                '<i class="icon-refresh icon-white"></i></button>';
+                data.total + '</span> Requests ';
         
         header.html(htmlOutput);
         
@@ -183,9 +179,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Reservations <button id="refreshReservationCounts" ' +
-                'class="btn btn-success btn-small pull-right">' +
-                '<i class="icon-refresh icon-white"></i></button>';
+                data.total + '</span> Reservations ';
         
         header.html(htmlOutput);
         
