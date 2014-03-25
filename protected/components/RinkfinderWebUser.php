@@ -183,11 +183,11 @@ class RinkfinderWebUser extends CWebUser
     public function isApplicationAdministrator($id = null) {
         Yii::trace('isApplicationAdministrator()', 'application.components.RinkfinderWebUser');
 
+        if(Yii::app()->user->isGuest) {
+            return false;
+        }
+
         if($id === null) {
-            if(Yii::app()->user->isGuest) {
-                return false;
-            }
-            
             $id = $this->id;
         }
             
@@ -217,11 +217,11 @@ class RinkfinderWebUser extends CWebUser
     public function isArenaManager($id = null) {
         Yii::trace('isArenaManager()', 'application.components.RinkfinderWebUser');
 
+        if(Yii::app()->user->isGuest) {
+            return false;
+        }
+
         if($id === null) {
-            if(Yii::app()->user->isGuest) {
-                return false;
-            }
-            
             $id = $this->id;
         }
             
@@ -254,11 +254,11 @@ class RinkfinderWebUser extends CWebUser
     public function isRestrictedArenaManager($id = null) {
         Yii::trace('isRestrictedArenaManager()', 'application.components.RinkfinderWebUser');
 
+        if(Yii::app()->user->isGuest) {
+            return false;
+        }
+
         if($id === null) {
-            if(Yii::app()->user->isGuest) {
-                return false;
-            }
-            
             $id = $this->id;
         }
             
@@ -293,11 +293,11 @@ class RinkfinderWebUser extends CWebUser
     public function isSiteUser($id = null) {
         Yii::trace('isSiteUser()', 'application.components.RinkfinderWebUser');
 
+        if(Yii::app()->user->isGuest) {
+            return false;
+        }
+
         if($id === null) {
-            if(Yii::app()->user->isGuest) {
-                return false;
-            }
-            
             $id = $this->id;
         }
             

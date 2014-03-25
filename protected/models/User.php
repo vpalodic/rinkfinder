@@ -946,6 +946,7 @@ class User extends RinkfinderActiveRecord
     /**
      * Removes the user from all arenas.
      * @return integer The number of arenas the user has been removed from.
+     * @throws CDbException
      */
     public function removeUserFromAllArenas()
     {
@@ -969,9 +970,15 @@ class User extends RinkfinderActiveRecord
      * Assigns the user to multiple arenas.
      * @param integer[] An array of Arena ids
      * @return boolean The number of arenas the user has been assigned to.
+     * @throws CDbException
      */
     public function assignUserToMultipleArenas($arenaIds)
     {
+        Yii::trace(
+                'assignUserToMultipleArenas()',
+                'application.models.User'
+        );
+        
         $insertArray = array();
         
         foreach($array as $value) {
@@ -988,6 +995,230 @@ class User extends RinkfinderActiveRecord
         );
         
         return $command->execute();
+    }
+    
+    public static function assignAllAdminsToAllArenas($userId = 1)
+    {
+        Yii::trace(
+                'assignAllAdminsToAllArenas()',
+                'application.models.User'
+        );
+        
+        $ret = 0;
+        
+        // Setup the SQL
+        $sql = 'INSERT INTO arena_user_assignment '
+                . '(arena_id, user_id, created_by_id, created_on, '
+                . 'updated_by_id, updated_on) '
+                . 'SELECT a.id, :user_id, :cuser_id, NOW(), '
+                . ':cuser_id, NOW() '
+                . 'FROM arena a '
+                . 'WHERE (a.id, :user_id) NOT IN '
+                . '(SELECT au.arena_id, au.user_id '
+                . ' FROM arena_user_assignment au'
+                . ' WHERE au.user_id = :user_id)';
+        
+        // Get the admin IDs
+        $ids = User::getAllAdminIds();
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $uid = 0;
+        
+        $command->bindParam(':user_id', $uid, PDO::PARAM_INT);
+        $command->bindParam(':cuser_id', $userId, PDO::PARAM_INT);
+        
+        foreach($ids as $id) {
+            $uid = $id;
+            
+            $ret += $command->execute();
+        }
+        
+        return $ret;
+    }
+    
+    public static function getAllAdminIds()
+    {
+        Yii::trace(
+                'getAllAdminIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2)',
+                array(
+                    ':itemname1' => 'Administrator',
+                    ':itemname2' => 'ApplicationAdministrator',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getSiteAdministratorIds()
+    {
+        Yii::trace(
+                'getSiteAdministratorIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1)',
+                array(
+                    ':itemname1' => 'Administrator',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getApplicationAdministratorIds()
+    {
+        Yii::trace(
+                'getApplicationAdministratorIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname2)',
+                array(
+                    ':itemname2' => 'ApplicationAdministrator',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getAllMangerIds()
+    {
+        Yii::trace(
+                'getAllMangerIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1, :itemname2)',
+                array(
+                    ':itemname1' => 'Manager',
+                    ':itemname2' => 'RestrictedManager',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getArenaManagerIds()
+    {
+        Yii::trace(
+                'getArenaManagerIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname1)',
+                array(
+                    ':itemname1' => 'Manager',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getRestrictedArenaManagerIds()
+    {
+        Yii::trace(
+                'getRestrictedArenaManagerIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname2)',
+                array(
+                    ':itemname2' => 'RestrictedManager',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
+    }
+    
+    public function getSiteUserIds()
+    {
+        Yii::trace(
+                'getSiteUserIds()',
+                'application.models.User'
+        );
+        
+        $users =  Yii::app()->db->createCommand()
+        ->selectDistinct('userid')
+        ->from(Yii::app()->authManager->assignmentTable)
+        ->where('itemname IN (:itemname2)',
+                array(
+                    ':itemname2' => 'User',
+                )
+        )
+        ->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($users as $user) {
+            $ret[] = $user['userid'];
+        }
+        
+        return $ret;
     }
     
     /**

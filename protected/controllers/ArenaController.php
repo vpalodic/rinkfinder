@@ -681,9 +681,10 @@ class ArenaController extends Controller
             Yii::app()->end();
         }
         
+        $transaction = Yii::app()->db->beginTransaction();
+        
         try {
             // Auto tag the updated records!!!
-            $transaction = Yii::app()->db->beginTransaction();
             $arenas = Arena::model()->findAll(
                     array(
                         'condition' => 'updated_by_id = :uid',
@@ -713,6 +714,14 @@ class ArenaController extends Controller
             
             $errorInfo = null;
             
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
             Yii::log(
                     'Exception during auto tags for Arena: ' . 
                     json_encode(
@@ -725,7 +734,45 @@ class ArenaController extends Controller
                                 'errorLine' => $ex->getLine(),
                                 'errorInfo' => $errorInfo,
                             )),
-                    CLogger::LEVEL_ERROR, 'application.controllers');
+                    CLogger::LEVEL_ERROR, 'application.controllers.ArenaController');
+        }
+        
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        // Ensure that the admins are assigned to the new arenas!
+        try {
+            User::assignAllAdminsToAllArenas(Yii::app()->user->id);
+            $transaction->commit();
+        } catch (Exception $ex) {
+
+            if($transaction->getActive()) {
+                $transaction->rollback();
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            // Just log the error for now!
+            Yii::log(
+                    'Exception during assignAllAdminsToAllArenas: ' . 
+                    json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )),
+                    CLogger::LEVEL_ERROR, 'application.controllers.ArenaController');
         }
         
         // Save the file import information to the database
@@ -746,6 +793,14 @@ class ArenaController extends Controller
         } catch (Exception $ex) {
             $errorInfo = null;
             
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
             Yii::log(
                     'Exception saving fileImport for Arena: ' . 
                     json_encode(
@@ -758,7 +813,7 @@ class ArenaController extends Controller
                                 'errorLine' => $ex->getLine(),
                                 'errorInfo' => $errorInfo,
                             )),
-                    CLogger::LEVEL_ERROR, 'application.controllers');
+                    CLogger::LEVEL_ERROR, 'application.controllers.ArenaController');
         }
         
         // Data has been imported so let the user know!

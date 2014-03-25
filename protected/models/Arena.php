@@ -520,6 +520,7 @@ class Arena extends RinkfinderActiveRecord
      * Assigns the user to the arena.
      * @param integer $uid The id of the user to be assigned.
      * @return boolean True if the user has been assigned to the arena.
+     * @throws CDbException
      */
     public function assignUser($uid)
     {
