@@ -22,7 +22,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Arenas ';
+                data.total + '</span> <i class="icon-list"></i> Arenas ';
         
         header.html(htmlOutput);
         
@@ -59,7 +59,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Events ';
+                data.total + '</span> <i class="icon-list"></i> Events ';
         
         header.html(htmlOutput);
         
@@ -113,7 +113,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Requests ';
+                data.total + '</span> <i class="icon-list"></i> Requests ';
         
         header.html(htmlOutput);
         
@@ -167,7 +167,7 @@
         var well = $("#" + name + "Well");
         
         var htmlOutput = '<span class="badge badge-important">' + 
-                data.total + '</span> Reservations ';
+                data.total + '</span> <i class="icon-list"></i> Reservations ';
         
         header.html(htmlOutput);
         

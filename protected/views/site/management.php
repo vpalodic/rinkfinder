@@ -24,7 +24,7 @@
             . 'management.endpoints.details = "' . $endpoints['details'] . '";'
             . 'management.mainContainer = "managementContainer";'
             . 'management.getInitialCounts();'
-            . '$(window).bind("resize load",function(){ '
+            . '$(window).bind("load",function(){ '
             . 'if( $(this).width() < 767 ) '
             . '{'
             . '    $(".accordion-body.collapse").removeClass("in");'
@@ -48,7 +48,7 @@
             <a class="accordion-toggle" data-toggle="collapse"
                data-parent="countsContainer" href="#countsCollapse">
                 <h3 id="countsHeader">
-                    Counts
+                    <i class="icon-list"></i> Counts
                     <br />
                     <small>
                         Includes information 30 days prior to today and everything
