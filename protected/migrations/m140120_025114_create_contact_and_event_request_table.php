@@ -250,7 +250,7 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
         $this->insert('event_request_status', array(
                 'id' => 4,
                 'name' => 'CANCELED',
-                'display_name' => 'Canceled Request',
+                'display_name' => 'Canceled',
                 'display_order' => 4,
                 'description' => 'The request has been canceled by the requester.',
                 'created_on' => new CDbExpression('NOW()'),

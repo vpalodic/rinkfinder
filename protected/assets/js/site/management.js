@@ -11,6 +11,7 @@
     management.endpoints = {
         counts: "/server/endpoint",
         details: "/server/endpoint",
+        operations: "/server/endpoint"
     };
     
     management.dialogBox = "";

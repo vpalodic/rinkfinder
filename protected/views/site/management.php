@@ -22,6 +22,7 @@
             . 'utilities.loadingScreen.progress.percent = 40;'
             . 'management.endpoints.counts = "' . $endpoints['counts'] . '";'
             . 'management.endpoints.details = "' . $endpoints['details'] . '";'
+            . 'management.endpoints.operations = "' . $endpoints['operations'] . '";'
             . 'management.mainContainer = "managementContainer";'
             . 'management.getInitialCounts();'
             . '$(window).bind("load",function(){ '
@@ -48,7 +49,7 @@
             <a class="accordion-toggle" data-toggle="collapse"
                data-parent="countsContainer" href="#countsCollapse">
                 <h3 id="countsHeader">
-                    <i class="icon-list"></i> Counts
+                    <i class="icon-list"></i> Summary
                     <br />
                     <small>
                         Includes information 30 days prior to today and everything
@@ -122,6 +123,80 @@
                                 btn-small">
                             <i class="icon-refresh icon-white"></i>
                         </button>
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="arenasContainer" href="#arenasCollapse"
+                           style="display: inline-block;">
+                            <h5 id="arenasHeader">Arenas</h5>
+                        </a>
+                    </div>
+                    <div id="arenasCollapse" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <div id="arenasWell" class="well well-large">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="operationsContainer" class="row-fluid accordion">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse"
+               data-parent="operationsContainer" href="#operationsCollapse">
+                <h3 id="operationsHeader">
+                    <i class="icon-list"></i> Operations
+                </h3>
+            </a>
+        </div>
+        <div id="operationsCollapse" class="accordion-body collapse in">
+            <div class="accordion-inner">
+                <div id="requestsContainer" class="span3 accordion">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="requestsContainer" href="#requestsCollapse"
+                           style="display: inline-block;">
+                            <h5 id="requestsHeader">Requests</h5>
+                        </a>
+                    </div>
+                    <div id="requestsCollapse" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <div id="requestsWell" class="well well-large">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="reservationsContainer" class="span3 accordion">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="reservationsContainer" href="#reservationsCollapse"
+                           style="display: inline-block;">
+                            <h5 id="reservationsHeader">Reservations</h5>
+                        </a>
+                    </div>
+                    <div id="reservationsCollapse" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <div id="reservationsWell" class="well well-large">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="eventsContainer" class="span3 accordion">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="eventsContainer" href="#eventsCollapse"
+                           style="display: inline-block;">
+                            <h5 id="eventsHeader">Events</h5>
+                        </a>
+                    </div>
+                    <div id="eventsCollapse" class="accordion-body collapse in">
+                        <div class="accordion-inner">
+                            <div id="eventsWell" class="well well-large">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="arenasContainer" class="span3 accordion">
+                    <div class="accordion-heading">
                         <a class="accordion-toggle" data-toggle="collapse"
                            data-parent="arenasContainer" href="#arenasCollapse"
                            style="display: inline-block;">

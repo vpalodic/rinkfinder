@@ -31,6 +31,8 @@ class ManagementController extends Controller
                 'allow', // allow authenticated users only!!!
                 'actions' => array(
                     'getCounts',
+                    'getOperations',
+                    'getDetails',
                 ),
                 'users' => array(
                     '@'

@@ -593,7 +593,8 @@ class SiteController extends Controller
         // Setup the endpoints for the webpage to be able to grab data!
         $endpoints = array(
             'counts' => $this->createUrl('/management/getCounts'),
-            'details' => $this->createUrl('/management/getDetails')
+            'details' => $this->createUrl('/management/getDetails'),
+            'operations' => $this->createUrl('/management/getOperations'),
         );
         
         // display the management page
