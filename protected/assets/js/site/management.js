@@ -26,18 +26,6 @@
         
         header.html(htmlOutput);
         
-        $("#" + this.mainContainer).on("click", "#" + name + "Header", {
-                model: "Arena",
-            },
-            function (e) {
-               $("#" + name + "Well").slideToggle();
-                
-                console.log(e);
-                
-                e.preventDefault();
-            }
-        );
-        
         // Now the well data!
         // We will use lists!
         var i = 0;
