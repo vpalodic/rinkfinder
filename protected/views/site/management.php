@@ -42,21 +42,27 @@
 ?>
 
 <h2 class="sectionHeader">Management Dashboard</h2>
-
 <div id="managementContainer" style="display: none;">
     <div id="countsContainer" class="row-fluid accordion">
         <div class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse"
-               data-parent="countsContainer" href="#countsCollapse">
+               data-parent="countsContainer" href="#countsCollapse"
+               style="display: inline-block">
                 <h3 id="countsHeader">
                     <i class="icon-list"></i> Summary
-                    <br />
-                    <small>
-                        Includes information 30 days prior to today and everything
-                        from today onward.
-                    </small>
                 </h3>
             </a>
+            <br />
+        <div class="well well-small" style="display: inline-block">
+            <div id="reportrange">
+                <i class="fa fa-calendar"></i>
+                <span>
+                    <?php echo date("F j, Y", strtotime('-29 day')); ?> - 
+                    <?php echo date("F j, Y", strtotime('+29 day')); ?>
+                </span>
+                <b class="caret"></b>
+            </div> 
+        </div>
         </div>
         <div id="countsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
@@ -232,3 +238,26 @@
   </div>
 </div><!-- Error Modal Dialog -->
 
+<script type="text/javascript">
+$('#reportrange').daterangepicker(
+    {
+      ranges: {
+         'Today': [moment(), moment()],
+         'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+         'Tomorrow': [moment().add('days', 1), moment().add('days', 1)],
+         'Last 7 Days': [moment().subtract('days', 6), moment()],
+         'Last 30 Days': [moment().subtract('days', 29), moment()],
+         'Next 7 Days': [moment(), moment().add('days', 6)],
+         'Next 30 Days': [moment(), moment().add('days', 29)],
+         'This Month': [moment().startOf('month'), moment().endOf('month')],
+         'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')],
+         'Next Month': [moment().add('month', 1).startOf('month'), moment().add('month', 1).endOf('month')]
+      },
+      startDate: moment().subtract('days', 29),
+      endDate: moment().add('days', 29)
+    },
+    function(start, end) {
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+);
+</script>        

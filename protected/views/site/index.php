@@ -15,16 +15,16 @@
 
 <h3 class="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
 
-<div class="calendar pull-right">
+<div class="mycalendar pull-right">
     <span class="month"><?php echo date('M'); ?></span>
     <span class="day"><?php echo date('j'); ?></span>
 </div>
 <br />
-<time class="calendar-large" datetime="<?php echo date('Y-m-d'); ?>">
+<time class="mycalendar-large" datetime="<?php echo date('Y-m-d'); ?>">
     <?php echo date('j'); ?> <em><?php echo date('F'); ?></em>
 </time>
 <br />
-<time class="calendar-small pull-right" datetime="<?php echo date('Y-m-d'); ?>">
+<time class="mycalendar-small pull-right" datetime="<?php echo date('Y-m-d'); ?>">
     <?php echo date('j'); ?> <em><?php echo date('M'); ?></em>
 </time>
 <br />

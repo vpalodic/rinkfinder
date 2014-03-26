@@ -1,5 +1,5 @@
 body {
-    padding-top: 60px;
+    padding-top: 40px;
 }
 
 #page {
@@ -240,7 +240,7 @@ div.search-form
 
 /* Pure CSS Calendar Icon */
 
-.calendar {
+.mycalendar {
     font-family: Helvetica, Arial;
     width: 56px; font-size: 1.0em;
     -webkit-border-radius: 5px;
@@ -251,11 +251,11 @@ div.search-form
     box-shadow: 0 0 5px #05587e;
 }
 
-.calendar > span {
+.mycalendar > span {
     display: block;
 }
 
-.calendar > .month {
+.mycalendar > .month {
     text-align: center;
     padding: 2px 5px 2px 0;
     font-size: 1.25em;
@@ -276,7 +276,7 @@ div.search-form
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0d1b72', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
 }
 
-.calendar > .day {
+.mycalendar > .day {
     text-align: center;
     font-weight: bold;
     font-size: 2.25em;
@@ -292,7 +292,7 @@ div.search-form
 
 /* Pure CSS Calendar Icon */
 
-.calendar-large {
+.mycalendar-large {
     margin:.25em 10px 10px 0;
     padding-top:5px;
     float:left;
@@ -313,7 +313,7 @@ div.search-form
     box-shadow:0 2px 2px #888;
 }
 
-.calendar-large em {
+.mycalendar-large em {
     display:block;
     font:normal bold 11px/30px Arial, Helvetica, sans-serif;
     color:#fff;
@@ -330,7 +330,7 @@ div.search-form
     border-top:1px solid #00365a;
 }
 
-.calendar-large:before, .calendar-large:after {
+.mycalendar-large:before, .mycalendar-large:after {
     content:'';
     float:left;
     position:absolute;
@@ -347,15 +347,15 @@ div.search-form
     box-shadow:0 1px 1px #fff;
 }
 
-.calendar-large:before {
+.mycalendar-large:before {
     left:11px;
 }
 
-.calendar-large:after {
+.mycalendar-large:after {
     right:11px;
 }
 
-.calendar-large em:before, .calendar-large em:after {
+.mycalendar-large em:before, .mycalendar-large em:after {
     content:'';
     float:left;
     position:absolute;
@@ -371,17 +371,17 @@ div.search-form
     border-radius:2px;
 }
 
-.calendar-large em:before {
+.mycalendar-large em:before {
     left:13px;
 }
 
-.calendar-large em:after {
+.mycalendar-large em:after {
     right:13px;
 }
 
 /* Pure CSS Calendar Icon */
 
-.calendar-small {
+.mycalendar-small {
     margin:.25em 10px 10px 0;
     padding-top:5px;
     float:left;
@@ -402,7 +402,7 @@ div.search-form
     box-shadow:0 2px 2px #888;
 }
 
-.calendar-small em {
+.mycalendar-small em {
     display:block;
     font:normal bold 11px/20px Arial, Helvetica, sans-serif;
     text-transform:uppercase;
@@ -420,7 +420,7 @@ div.search-form
     border-top:1px solid #00365a;
 }
 
-.calendar-small:before, .calendar-small:after {
+.mycalendar-small:before, .mycalendar-small:after {
     content:'';
     float:left;
     position:absolute;
@@ -437,15 +437,15 @@ div.search-form
     box-shadow:0 1px 1px #fff;
 }
         
-.calendar-small:before {
+.mycalendar-small:before {
     left:7px;
 }
 
-.calendar-small:after {
+.mycalendar-small:after {
     right:7px;
 }
 
-.calendar-small em:before, .calendar-small em:after {
+.mycalendar-small em:before, .mycalendar-small em:after {
     content:'';
     float:left;
     position:absolute;
@@ -461,11 +461,11 @@ div.search-form
     border-radius:2px;
 }
 
-.calendar-small em:before {
+.mycalendar-small em:before {
     left:9px;
 }
 
-.calendar-small em:after {
+.mycalendar-small em:after {
     right:9px;
 }
 

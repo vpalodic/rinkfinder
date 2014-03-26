@@ -580,14 +580,22 @@ class SiteController extends Controller
         
         
         // Publish and register our jQuery plugin
-        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
         if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/utilities.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/site/management.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
         } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/utilities.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/site/management.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
         }
         
         // Setup the endpoints for the webpage to be able to grab data!
