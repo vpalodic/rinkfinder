@@ -53,7 +53,7 @@
                 </h3>
             </a>
             <br />
-        <div class="well well-small" style="display: inline-block">
+        <div class="well well-small" style="display: inline-block; overflow: auto">
             <div id="reportrange">
                 <i class="fa fa-calendar"></i>
                 <span>
