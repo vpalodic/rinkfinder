@@ -290,7 +290,7 @@
             error: function(xhr, status, errorThrown) {
                 window.setTimeout(function () {
                     $thatModal.modal('loading');
-                    $thatModal.find('.modal-body').empty().append('<h1 class="text-error">No Data</h1>');
+                    $thatModal.find('.modal-body').empty().append('<h1 class="text-error">Error</h1>');
 
                     utilities.ajaxError.show(
                         "Management Dashboard",

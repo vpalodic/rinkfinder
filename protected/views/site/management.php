@@ -238,9 +238,9 @@
 </div><!-- Error Modal Dialog -->
 
 <!-- Data Modal Dialog -->
-<div id="managementDataModal" class="modal hide fade" 
+<div id="managementDataModal" class="modal hide fade container" 
      tabindex="-1" role="dialog" aria-labelledby="managementDataModalLabel"
-     aria-hidden="true" data-width="960" data-backdrop="static" data-max-height="500" data-keyboard="false">
+     aria-hidden="true" data-backdrop="static" data-max-height="500" data-keyboard="false">
   <div id="managementDataModalHeader" class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h4 id="managementDataModalLabel"></h4>
