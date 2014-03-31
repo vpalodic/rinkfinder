@@ -65,7 +65,7 @@ class ManagementController extends Controller
             Yii::app()->end();
         }
         
-        if((!isset($_GET['$model']) || !is_array($_GET['$model'])) ||
+        if((!isset($_GET['model']) || !is_array($_GET['model'])) ||
                 (!isset($_GET['from']) || !strtotime($_GET['from'])) || 
                 (!isset($_GET['to']) || !strtotime($_GET['to'])) ||
                 (strtotime($_GET['from']) > strtotime($_GET['to']))) {
