@@ -65,7 +65,7 @@ class ManagementController extends Controller
             Yii::app()->end();
         }
         
-        if((!isset($_GET['for']) || !is_array($_GET['for'])) ||
+        if((!isset($_GET['$model']) || !is_array($_GET['$model'])) ||
                 (!isset($_GET['from']) || !strtotime($_GET['from'])) || 
                 (!isset($_GET['to']) || !strtotime($_GET['to'])) ||
                 (strtotime($_GET['from']) > strtotime($_GET['to']))) {
@@ -80,7 +80,7 @@ class ManagementController extends Controller
         }        
 
         // Parameters are valid so save them off!
-        $for = $_GET['for'];
+        $model = $_GET['model'];
         $from = $_GET['from'];
         $to = $_GET['to'];
         
@@ -88,7 +88,7 @@ class ManagementController extends Controller
         $dashData = null;
         
         try {
-            $dashData = $user->getManagementDashboardCounts($for, $from, $to);
+            $dashData = $user->getManagementDashboardCounts($model, $from, $to);
         } catch(Exception $ex) {
             $errorInfo = null;
             
@@ -124,7 +124,7 @@ class ManagementController extends Controller
                 array(
                     'success' => true,
                     'error' => false,
-                    'for' => $dashData,
+                    'model' => $dashData,
                     'from' => $from,
                     'to' => $to,
                 )

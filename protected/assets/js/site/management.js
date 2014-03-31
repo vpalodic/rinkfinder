@@ -26,7 +26,7 @@
         }
         
         var countSection;
-        var countSections = result.for;
+        var countSections = result.model;
         
         for (countSection in countSections)
         {
@@ -220,7 +220,7 @@
             type: "GET",
             dataType: "json",
             data: {
-                for: ["arenas", "events", "requests", "reservations"],
+                model: ["arenas", "events", "requests", "reservations"],
                 from: management.fromDate.format('YYYY-MM-DD'),
                 to: management.toDate.format('YYYY-MM-DD')
             },
