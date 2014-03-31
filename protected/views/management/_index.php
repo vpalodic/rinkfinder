@@ -46,9 +46,9 @@
         // name - The field name from the database query. This is used as
         // a key for the item being processed.
         // display - The header name to show the user
-        // type - The data type, if numeric and item has a dateConvert
+        // type - The data type, if numeric and item has a dataConvert
         // property set then the data-value property of the <td> will be
-        // set to the value of the dateConvert property.
+        // set to the value of the dataConvert property.
         // hide - If set, then the data-hide property of the <th> tag will
         // be set to the value of this field
         // link - If set and the item has an endpoint property, then the
@@ -84,17 +84,24 @@
         foreach($headers as $field => $header) {
             $td = '<td';
             
-            if(isset($header['type']) && $header['type'] == 'numeric' && isset($item['dataConvert'])) {
-                $td .= ' data-value="' . $item['dataConvert'] . '"';
+            if(isset($header['type']) && $header['type'] == 'numeric' && 
+                    isset($item['dataConvert']) && isset($item['dataConvert'][$field])) {
+                $str = filter_var($item['dataConvert'][$field], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                $td .= ' data-value="' . $str . '"';
+            } elseif(isset($header['type']) && $header['type'] == 'numeric' && isset($item[$field])) {
+                $str = filter_var($item[$field], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                $td .= ' data-value="' . $str . '"';
             }
             
             $td .= '>';
             
-            if(isset($header['link']) && isset($item['endpoint'])) {
+            if(isset($header['link']) && isset($item['endpoint']) && isset($item[$field])) {
                 $td .= '<a target="_blank" href="' . $item['endpoint'] . '">'
                         . $item[$field] . '</a></td>';
-            } else {
+            } elseif(isset($item[$field])) {
                 $td .= $item[$field] . '</td>';
+            } else {
+                $td .= '</td>';
             }
             
             $tr .= $td;

@@ -272,7 +272,7 @@ class ManagementController extends Controller
         
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
-            $this->sendResponseHeaders(200);
+            //$this->sendResponseHeaders(200);
             
             $xml = Controller::generate_valid_xml_from_array($data, "summary", "arena");
             echo $xml;
@@ -292,7 +292,27 @@ class ManagementController extends Controller
     protected function handleEventIndex($outputFormat) {
         // First check to see if we are restricting by a 
         // status code
+        $aid = null;
+        $from = null;
+        $to = null;
+        $tid = null;
         $sid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid'])) {
+            $aid = $_GET['aid'];
+        }
+        
+        if(isset($_GET['from']) && is_string($_GET['from'])) {
+            $from = $_GET['from'];
+        }
+        
+        if(isset($_GET['to']) && is_string($_GET['to'])) {
+            $to = $_GET['to'];
+        }
+        
+        if(isset($_GET['tid']) && is_numeric($_GET['tid'])) {
+            $tid = $_GET['tid'];
+        }
         
         if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
             $sid = $_GET['sid'];
@@ -304,7 +324,7 @@ class ManagementController extends Controller
         
         // Try and get the data!
         try {
-            $data = Arena::getAssignedArenasSummary($uid, $sid);
+            $data = Event::getAssignedEventsSummary($uid, $aid, $from, $to, $tid, $sid);
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);
@@ -353,7 +373,7 @@ class ManagementController extends Controller
         } elseif($outputFormat == 'xml') {
             $this->sendResponseHeaders(200);
             
-            $xml = Controller::generate_valid_xml_from_array($data, "summary", "arena");
+            $xml = Controller::generate_valid_xml_from_array($data, "summary", "event");
             echo $xml;
             
             Yii::app()->end();
@@ -363,7 +383,7 @@ class ManagementController extends Controller
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Arena::getSummaryAttributes()
+                        'headers' => Event::getSummaryAttributes()
                     ));
         }
     }

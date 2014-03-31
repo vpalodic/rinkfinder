@@ -500,25 +500,13 @@ class Arena extends RinkfinderActiveRecord
             'external_id' => array(
                 'name' => 'external_id',
                 'display' => 'External ID',
-                'type' => 'string',
+                'type' => 'alpha',
                 'hide' => 'all'
             ),
             'name' => array(
                 'name' => 'name',
                 'display' => 'Name',
                 'type' => 'alpha',
-            ),
-            'description' => array(
-                'name' => 'description',
-                'display' => 'Description',
-                'type' => 'alpha',
-                'hide' => 'all'
-            ),
-            'tags' => array(
-                'name' => 'tags',
-                'display' => 'Tags',
-                'type' => 'alpha',
-                'hide' => 'all'
             ),
             'address_line1' => array(
                 'name' => 'address_line1',
@@ -589,6 +577,18 @@ class Arena extends RinkfinderActiveRecord
             'url' => array(
                 'name' => 'url',
                 'display' => 'Homepage URL',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'description' => array(
+                'name' => 'description',
+                'display' => 'Description',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'tags' => array(
+                'name' => 'tags',
+                'display' => 'Tags',
                 'type' => 'alpha',
                 'hide' => 'all'
             ),
@@ -795,7 +795,8 @@ class Arena extends RinkfinderActiveRecord
      * @return mixed[] The arena summeries or an empty array.
      * @throws CDbException
      */
-    public static function getAssignedArenasSummary($uid, $sid = null) {
+    public static function getAssignedArenasSummary($uid, $sid = null)
+    {
         // Let's start by building up our query
         $ret = array();
 
@@ -822,10 +823,10 @@ class Arena extends RinkfinderActiveRecord
                 . "(SELECT COUNT(DISTINCT l.id) FROM location l WHERE l.arena_id = a.id) AS locations, "
                 . "(SELECT COUNT(DISTINCT aca.contact_id) FROM arena_contact_assignment aca WHERE aca.arena_id = a.id) AS contacts, "
                 . "(SELECT COUNT(DISTINCT arp.id) FROM arena_reservation_policy arp WHERE arp.arena_id = a.id) AS reservation_policies, "
-                . "(SELECT COUNT(DISTINCT e.id) FROM event e WHERE e.id = a.id AND e.id IN "
+                . "(SELECT COUNT(DISTINCT e.id) FROM event e WHERE e.arena_id = a.id AND e.id IN "
                 . "    (SELECT er.event_id FROM event_request er WHERE e.id = er.event_id AND er.status_id IN "
                 . "        (SELECT ers.id FROM event_request_status ers WHERE ers.name IN ('PENDING', 'ACKNOWLEDGED')))) AS outstanding_event_requests, "
-                . "(SELECT COUNT(DISTINCT e.id) FROM event e WHERE e.id = a.id AND e.id IN "
+                . "(SELECT COUNT(DISTINCT e.id) FROM event e WHERE e.arena_id = a.id AND e.id IN "
                 . "    (SELECT r.event_id FROM reservation r WHERE e.id = r.event_id AND r.status_id IN "
                 . "        (SELECT rs.id FROM reservation_status rs WHERE rs.name IN ('BOOKED')))) AS outstanding_reservations "
                 . "FROM arena a "
