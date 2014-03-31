@@ -26,7 +26,7 @@
         }
         
         var countSection;
-        var countSections = result.for;
+        var countSections = result."for";
         
         for (countSection in countSections)
         {
