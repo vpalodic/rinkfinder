@@ -207,12 +207,18 @@ class EventController extends Controller
         }
 
         // Publish and register our jQuery plugin
-        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
         if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/event/uploadEvents.js');
+            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js');
         } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/event/uploadEvents.min.js');
+            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js');
         }
         
         $this->render(

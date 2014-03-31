@@ -1225,32 +1225,38 @@ class User extends RinkfinderActiveRecord
      * Retrieves all the management information for a user. Uses DAO instead
      * of ActiveRecords as speed is of great concern.
      * @param string[] $for The counts to retrieve.
+     * @param string $from The start of the date range.
+     * @param string $to The end of the date range.
      * @param integer $uid The user to retrieve information for. If null then
      * information is pulled for the current user.
      * @return mixed[] An indexd array of information for the user.
      * @throws CDbException
      */
-    public function getManagementDashboardCounts($for, $uid = null)
+    public function getManagementDashboardCounts($for, $from, $to, $uid = null)
     {
         // We need to retrieve a lot of information and will need to 
         // perform a number of querys in order to pull all of the information
         // Now since this is a dashboard view, we don't need the details yet.
         $dashData = array();
         
+        if($uid === null) {
+            $uid = $this->id;
+        }
+        
         // Go through each of the items to retrieve counts for
         foreach($for as $request) {
             switch(strtolower($request)) {
                 case 'arenas':
-                    $dashData['arenas'] = $this->getArenaCounts();
+                    $dashData['arenas'] = $this->getArenaCounts($uid);
                     break;
                 case 'events':
-                    $dashData['events'] = $this->getEventCounts();
+                    $dashData['events'] = $this->getEventCounts($from, $to, $uid);
                     break;
                 case 'requests':
-                    $dashData['requests'] = $this->getRequestCounts();
+                    $dashData['requests'] = $this->getRequestCounts($from, $to, $uid);
                     break;
                 case 'reservations':
-                    $dashData['reservations'] = $this->getReservationCounts();
+                    $dashData['reservations'] = $this->getReservationCounts($from, $to, $uid);
                     break;
             }
         }
@@ -1280,6 +1286,7 @@ class User extends RinkfinderActiveRecord
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The arena counts for each status and total count
+     * Also, urls to get a listing of of the events are included.
      * @throws CDbException
      */
     public function getArenaCounts($uid = null)
@@ -1317,11 +1324,24 @@ class User extends RinkfinderActiveRecord
 
         $ret['status'] = $command->queryAll(true);
 
-        foreach($ret['status'] as $record) {
-            $arenaCountTotal += (integer)$record['count'];
+        $arenaCount = count($ret['status']);
+        
+        for($i = 0; $i < $arenaCount; $i++) {
+            $arenaCountTotal += (integer)$ret['status'][$i]['count'];
+            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl(array(
+                    'management/index',
+                    'model' => 'Arena',
+                    'sid' => $ret['status'][$i]['id']
+                )
+            );
         }
         
         $ret['total'] = $arenaCountTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl(array(
+                'management/index',
+                'model' => 'Arena'
+            )
+        );
         
         return $ret;
     }
@@ -1329,15 +1349,16 @@ class User extends RinkfinderActiveRecord
     /**
      * Returns the event count for each event type and status 
      * plus the total count for each type and the total count for all.
-     * @param integer $days The number of days prior to today to go back to
-     * when counting events
+     * @param string $from The start of the date range.
+     * @param string $to The end of the date range.
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event counts for each event type and
      * status plus the total count for each type and the total count for all.
+     * Also, urls to get a listing of of the events are included.
      * @throws CDbException
      */
-    public function getEventCounts($days = 30, $uid = null)
+    public function getEventCounts($from, $to, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1361,11 +1382,11 @@ class User extends RinkfinderActiveRecord
                 . ' AND '
                 . ' e.type_id = :etype '
                 . ' AND '
-                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
-                . ' INTERVAL :days DAY) '
+                . ' e.start_date >= :from '
+                . ' AND '
+                . ' e.start_date <= :to '
                 . ' GROUP BY s1.id) AS sc '
                 . ' ON s.id = sc.id '
-                . ' WHERE s.active = 1 '
                 . ' ORDER BY s.display_order ASC ';
         
         $command = Yii::app()->db->createCommand($sql);
@@ -1377,11 +1398,12 @@ class User extends RinkfinderActiveRecord
         $etypeId = 0;
         $eventCountTotal = 0;
         
-        $types = EventType::model()->active()->findAll();
+        $types = EventType::model()->findAll();
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
         $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
-        $command->bindParam(':days', $days, PDO::PARAM_INT);
+        $command->bindParam(':from', $from, PDO::PARAM_STR);
+        $command->bindParam(':to', $to, PDO::PARAM_STR);
 
         // Start with each type and then go for each status within each type
         foreach($types as $type) {
@@ -1391,8 +1413,19 @@ class User extends RinkfinderActiveRecord
 
             $statuses = $command->queryAll(true);
             
-            foreach($statuses as $status) {
-                $typeCountTotal += (integer)$status['count'];
+            $statusCount = count($statuses);
+            
+            for($i = 0; $i < $statusCount; $i++) {
+                $typeCountTotal += (integer)$statuses[$i]['count'];
+                $statuses[$i]['endpoint'] = CHtml::normalizeUrl(array(
+                        'management/index',
+                        'model' => 'Event',
+                        'sid' => $statuses[$i]['id'],
+                        'tid' => $etypeId,
+                        'from' => $from,
+                        'to' => $to,
+                    )
+                );
             }
             
             $eventCountTotal += $typeCountTotal;
@@ -1405,27 +1438,40 @@ class User extends RinkfinderActiveRecord
                 'display_order' => $type->display_order,
                 'count' => (integer)$typeCountTotal,
                 'status' => $statuses,
+                'endpoint' => CHtml::normalizeUrl(array(
+                        'management/index',
+                        'model' => 'Event',
+                        'tid' => $etypeId,
+                        'from' => $from,
+                        'to' => $to,
+                    )
+                )
             );
         }
         
         $ret['total'] = $eventCountTotal;
-        
+        $ret['endpoint'] = CHtml::normalizeUrl(array(
+                'management/index',
+                'model' => 'Event',
+                'from' => $from,
+                'to' => $to,
+            )
+        );
         return $ret;
     }
     
     /**
      * Returns the event request count for each type and status 
      * plus the total count for each type and the total count for all.
-     * Only returns counts for Arenas that are currently OPEN
-     * @param integer $days The number of days prior to today to go back to
-     * when counting events
+     * @param string $from The start of the date range.
+     * @param string $to The end of the date range.
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event request counts for each type and
      * status plus the total count for each type and the total count for all.
      * @throws CDbException
      */
-    public function getRequestCounts($days = 30, $uid = null)
+    public function getRequestCounts($from, $to, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1451,11 +1497,11 @@ class User extends RinkfinderActiveRecord
                 . ' AND '
                 . ' er.type_id = :ertype '
                 . ' AND '
-                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
-                . ' INTERVAL :days DAY) '
+                . ' e.start_date >= :from '
+                . ' AND '
+                . ' e.start_date <= :to '
                 . ' GROUP BY s1.id) AS sc '
                 . ' ON s.id = sc.id '
-                . ' WHERE s.active = 1 '
                 . ' ORDER BY s.display_order ASC ';
         
         $command = Yii::app()->db->createCommand($sql);
@@ -1467,11 +1513,12 @@ class User extends RinkfinderActiveRecord
         $ertypeId = 0;
         $eventRequestCountTotal = 0;
         
-        $ertypes = EventRequestType::model()->active()->findAll();
+        $ertypes = EventRequestType::model()->findAll();
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
         $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
-        $command->bindParam(':days', $days, PDO::PARAM_INT);
+        $command->bindParam(':from', $from, PDO::PARAM_STR);
+        $command->bindParam(':to', $to, PDO::PARAM_STR);
 
         // Start with each type and then go for each status within each type
         foreach($ertypes as $ertype) {
@@ -1481,8 +1528,19 @@ class User extends RinkfinderActiveRecord
             
             $erstatuses = $command->queryAll(true);
             
-            foreach($erstatuses as $erstatus) {
-                $erTypeCountTotal += (integer)$erstatus['count'];
+            $statusCount = count($erstatuses);
+            
+            for($i = 0; $i < $statusCount; $i++) {
+                $erTypeCountTotal += (integer)$erstatuses[$i]['count'];
+                $erstatuses[$i]['endpoint'] = CHtml::normalizeUrl(array(
+                        'management/index',
+                        'model' => 'EventRequest',
+                        'sid' => $erstatuses[$i]['id'],
+                        'tid' => $ertypeId,
+                        'from' => $from,
+                        'to' => $to,
+                    )
+                );
             }
             
             $eventRequestCountTotal += $erTypeCountTotal;
@@ -1495,27 +1553,40 @@ class User extends RinkfinderActiveRecord
                 'display_order' => $ertype->display_order,
                 'count' => (integer)$erTypeCountTotal,
                 'status' => $erstatuses,
+                'endpoint' => CHtml::normalizeUrl(array(
+                        'management/index',
+                        'model' => 'EventRequest',
+                        'tid' => $ertypeId,
+                        'from' => $from,
+                        'to' => $to,
+                    )
+                )
             );
         }
         
         $ret['total'] = $eventRequestCountTotal;
-        
+        $ret['endpoint'] = CHtml::normalizeUrl(array(
+                'management/index',
+                'model' => 'EventRequest',
+                'from' => $from,
+                'to' => $to,
+            )
+        );
         return $ret;
     }
     
     /**
      * Returns the event request count for each type and status 
      * plus the total count for each type and the total count for all.
-     * Only returns counts for Arenas that are currently OPEN
-     * @param integer $days The number of days prior to today to go back to
-     * when counting events
+     * @param string $from The start of the date range.
+     * @param string $to The end of the date range.
      * @param integer $uid The user to get the counts for. If null, the
      * current user is used.
      * @return mixed[] The event request counts for each type and
      * status plus the total count for each type and the total count for all.
      * @throws CDbException
      */
-    public function getReservationCounts($days = 30, $uid = null)
+    public function getReservationCounts($from, $to, $uid = null)
     {
         // Let's start with getting the number of arenas for each status
         $ret = array();
@@ -1538,11 +1609,11 @@ class User extends RinkfinderActiveRecord
                 . ' ON r.status_id = s1.id '
                 . ' WHERE u.id = :uid '
                 . ' AND '
-                . ' e.start_date >= DATE_SUB(DATE_FORMAT(NOW(), "%Y-%m-%d"),'
-                . ' INTERVAL :days DAY) '
+                . ' e.start_date >= :from '
+                . ' AND '
+                . ' e.start_date <= :to '
                 . ' GROUP BY s1.id) AS sc '
                 . 'ON s.id = sc.id '
-                . 'WHERE s.active = 1 '
                 . 'ORDER BY s.display_order ASC';
         
         $command = Yii::app()->db->createCommand($sql);
@@ -1554,16 +1625,33 @@ class User extends RinkfinderActiveRecord
         $reservationCountTotal = 0;
         
         $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':days', $days, PDO::PARAM_INT);
+        $command->bindParam(':from', $from, PDO::PARAM_STR);
+        $command->bindParam(':to', $to, PDO::PARAM_STR);
 
         $ret['status'] = $command->queryAll(true);
 
-        foreach($ret['status'] as $record) {
-            $reservationCountTotal += (integer)$record['count'];
+        $statusCount = count($ret['status']);
+        
+        for($i = 0; $i < $statusCount; $i++) {
+            $reservationCountTotal += (integer)$ret['status'][$i]['count'];
+            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl(array(
+                    'management/index',
+                    'model' => 'Reservation',
+                    'sid' => $ret['status'][$i]['id'],
+                    'from' => $from,
+                    'to' => $to,
+                )
+            );
         }
         
         $ret['total'] = $reservationCountTotal;
-        
+        $ret['endpoint'] = CHtml::normalizeUrl(array(
+                    'management/index',
+                    'model' => 'Reservation',
+                    'from' => $from,
+                    'to' => $to,
+                )
+        );
         return $ret;
     }
 }

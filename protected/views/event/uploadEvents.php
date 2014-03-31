@@ -297,7 +297,8 @@
     <p class="note">
         <div class="help-block">Fields with <span class="required">*</span> are required.</div>
     </p>
-    <table id="mappingTable" class="items table table-striped table-bordered table-condensed table-hover" style="padding: 0px;">
+    <table id="mappingTable" class="items table table-striped table-bordered 
+           table-condensed table-hover footable toggle-large toggle-circle" style="padding: 0px;">
     </table>
     <div class="control-group">
         <div class="controls">

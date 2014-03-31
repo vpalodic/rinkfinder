@@ -12,7 +12,7 @@
     utilities.urls = {
         base: "",
         login: "",
-        logout: "",
+        logout: ""
     };
     
     utilities.ajaxError = {
@@ -35,7 +35,8 @@
             {
                 response = false;
             }
-                
+            
+            $("#" + this.dialogBox + "Label").empty();
             $("#" + this.dialogBox + "Label").html(label);
 
             var htmlOutput = "<p class=\"text-error\"><strong>" + message + "</strong></p>";
@@ -48,7 +49,7 @@
             {
                 htmlOutput += "<h4>Error Details</h4>";
 
-                if(response.error == 'LOGIN_REQUIRED') {
+                if(response.error === 'LOGIN_REQUIRED') {
                     htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
                         "onClick='document.location.reload(true);return false;'>" +
                         "<i class='icon-user'></i> login</a> again.</strong>\n";
@@ -56,13 +57,13 @@
                     htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
                 }
 
-                if (response.exception == true)
+                if (response.exception === true)
                 {
                     htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
                     htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
                     htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
 
-                    if (response.errorInfo != null)
+                    if (response.errorInfo !== null)
                     {
                         htmlOutput += "</pre><h4>Database Server Response</h4>";
                         htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
@@ -79,32 +80,59 @@
                 htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</pre></strong>";
             }
 
+            $("#" + this.dialogBox + "Body").empty();
             $("#" + this.dialogBox + "Body").html(htmlOutput);
             $("#" + this.dialogBox).modal('show');
-        },
+        }
     };
 
     utilities.loadingScreen = {
+        $element: null,
+        
         containerId: "",
-        text: "Please wait...",
+        
+        parentId: "",
+        
+        text: {
+            enabled: false,
+            content: "Please wait..."
+        },
         
         image: {
             enabled: false,
-            src: "",
+            src: utilities.urls.base + '/images/spinners/ajax-loader.gif"',
+            alt: 'Loading...',
+            content: '<div id="loading" class="loading-spinner" ' +
+                    'style="width: 200px;margin-left: -100px;"><div class="' +
+                    'active"><div style="width: 100%;"><img src="' + 
+                    utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div></div></div>'
         },
         
         progress: {
             enabled: false,
-            type: "progress",
+            type: 'progress',
+            content: '<div id="loading-progress" class="loading-spinner" ' +
+                    'style="width: 200px;margin-left: -100px;"><div ' +
+                    'class="progress progress-striped active"><div ' +
+                    'id="myProgress" class="bar" style="width: 0%;"></div>' +
+                    '</div></div>',
             percent: 0,
-            step: 40,
+            step: 40
         },
         
         show: function () {
+            if (this.$element)
+            {
+                return;
+            }
+            
+            $("#" + this.parentId).children().hide();
+            
             var htmlOutput = "";
             
             // Start with the text container
-            if (this.text != "")
+            if (this.enabled === true)
             {
                 htmlOutput += '<p class="loading-stuff">' + this.text + "</p>";
             }
@@ -122,21 +150,29 @@
                         this.progress.percent + '%;"></div></div>';
             }
             
-            $("#" + this.containerId).html(htmlOutput);
-
-            if (!$("#" + this.containerId).is(":visible"))
+            this.$element = $(htmlOutput);
+            
+            if (this.containerId !== "")
             {
+                this.$element.appendTo("#" + this.containerId);
                 $("#" + this.containerId).show();
+            }
+            else
+            {
+                this.$element.appendTo("#" + this.parentId);
             }
         },
         
         hide: function () {
-            if ($("#" + this.containerId).is(":visible"))
+            if (!this.$element)
             {
-                $("#" + this.containerId).hide();
+                return;
             }
             
-            $("#" + this.containerId).html("");
+            this.$element.remove();
+            this.$element = null;
+            
+            $("#" + this.parentId).children().show();
         },
         
         stepUp: function() {
@@ -181,12 +217,16 @@
             }
             
             $("#myProgress").width(this.progress.percent + "%");
-        },
+        }
         
     };
     
     utilities.arrayHasOwnIndex = function (array, prop) {
         return array.hasOwnProperty(prop) && /^0$|^[1-9]\d*$/.test(prop) && prop <= 4294967294; // 2^32 - 2
+    };
+    
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
     };
     
 }( window.utilities = window.utilities || {}, jQuery ));

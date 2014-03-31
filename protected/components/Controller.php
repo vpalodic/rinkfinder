@@ -210,4 +210,34 @@ class Controller extends CController
         return $paramstr;
     }
     
+    public static function generate_xml_from_array($array, $node_name, $tab = "    ")
+    {
+        $xml = '';
+        
+        if (is_array($array) || is_object($array)) {
+            foreach ($array as $key=>$value) {
+                if (is_numeric($key)) {
+                    $key = $node_name;
+                }
+                $xml .= $tab . '' . "\n";
+                $xml .= '<' . $key . '>' . "\n" . Controller::generate_xml_from_array($value, $node_name, $tab . "    ") . '</' . $key . '>' . "\n";
+                $xml .= $tab . '' . "\n";
+            }
+	} else {
+            $xml = $tab . htmlspecialchars($array, ENT_QUOTES) . "\n";
+        }
+        
+        return $xml;
+    }
+
+    public static function generate_valid_xml_from_array($array, $node_block='nodes', $node_name='node')
+    {
+	$xml = '<?xml version="1.0" encoding="UTF-8" ?>' . "\n";
+
+	$xml .= '<' . $node_block . '>' . "\n";
+	$xml .= Controller::generate_xml_from_array($array, $node_name);
+	$xml .= '</' . $node_block . '>' . "\n";
+
+	return $xml;
+    } 
 }

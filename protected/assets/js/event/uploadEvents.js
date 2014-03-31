@@ -539,7 +539,7 @@
     
     uploadEvents.setLoadingScreen = function (elementID) {
         var strOutput = "<div id=\"loading\"><img src=\"" + this.baseUrl +
-                "/images/ajax-loader-roller-bg_red-fg_blue.gif\"" + 
+                "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif\"" + 
                 "alt=\"Loading...\" /><br />Please wait...</div>";
 	$(elementID).html(strOutput);
 	return strOutput;
@@ -550,8 +550,11 @@
         // that we need about the CSV file and the database table.
         var that = this;
         // First add the table headers
-        var strOutput = "<thead><tr><th>Table Column</th><th>Data File Column</th>" +
-                "<th>Data File Example</th></tr></thead><tbody></tbody>";
+        var strOutput = "<thead><tr><th>Table Column</th><th>Data File Column" +
+                "</th><th data-hide='phone'>Data File Example</th></tr>" +
+                "</thead><tbody></tbody><tfoot class='hide-if-no-paging'><tr>" +
+                "<td colspan='3'><div class='pagination pagination-centered'>" +
+                "</div></td></tr></tfoot>";
         
         $(elementID).append(strOutput);
         
@@ -624,6 +627,8 @@
                 that.checkStep3Button();
             });
         }
+        
+        $("#mappingTable").footable();
         
         this.checkStep3Button();
     };

@@ -163,4 +163,19 @@ abstract class RinkfinderActiveRecord extends CActiveRecord
             $params[$paramName] = $lockingAttributeValue;
         }
     }
+    
+    public static function format_telephone($phone_number)
+    {
+        $cleaned = preg_replace('/[^[:digit:]]/', '', $phone_number);
+        
+        $match = preg_match('/(\d{3})(\d{3})(\d{4})/', $cleaned, $matches);
+        
+        if($match === false || $match === 0) {
+            return "";
+        } elseif(is_array($matches) && count($matches) == 4) {
+            return "({$matches[1]}) {$matches[2]}-{$matches[3]}";
+        } else {
+            return "";
+        }
+    }
 }

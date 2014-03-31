@@ -574,26 +574,31 @@ class SiteController extends Controller
             );
         }
         
-        // OK, we have to build up our variables to send to the view
-        // Start by finding all of the arenas, their locations, events,
-        // requests, and reservations!
-        
-        
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
         if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.css');
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
         } else {
-            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
-            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
         }

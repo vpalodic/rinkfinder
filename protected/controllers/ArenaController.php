@@ -202,12 +202,18 @@ class ArenaController extends Controller
         }
 
         // Publish and register our jQuery plugin
-        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
         if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/arena/uploadArenas.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);            
         } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/arena/uploadArenas.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
         }
         
         $this->render(

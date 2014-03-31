@@ -115,7 +115,7 @@ class TbApi extends CApplicationComponent
      * @param string $url the URL to the JavaScript file to register.
      * @param int $position the position of the JavaScript code.
      */
-    public function registerCoreScripts($url = null, $position = CClientScript::POS_END)
+    public function registerCoreScripts($url = null, $position = CClientScript::POS_HEAD)
     {
         if ($url === null) {
             $fileName = YII_DEBUG ? 'bootstrap.js' : 'bootstrap.min.js';

@@ -33,6 +33,7 @@ class ManagementController extends Controller
                     'getCounts',
                     'getOperations',
                     'getDetails',
+                    'index',
                 ),
                 'users' => array(
                     '@'
@@ -48,7 +49,7 @@ class ManagementController extends Controller
     }
 
     /**
-     * Action method to upload a file.
+     * Action method to get the counts.
      */
     public function actionGetCounts()
     {
@@ -64,22 +65,30 @@ class ManagementController extends Controller
             Yii::app()->end();
         }
         
-        if(!isset($_GET['for']) && !is_array($_GET['for'])) {
+        if((!isset($_GET['for']) || !is_array($_GET['for'])) ||
+                (!isset($_GET['from']) || !strtotime($_GET['from'])) || 
+                (!isset($_GET['to']) || !strtotime($_GET['to'])) ||
+                (strtotime($_GET['from']) > strtotime($_GET['to']))) {
             $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
                         'success' => false,
-                        'error' => 'Missing expected parameters',
+                        'error' => 'Invalid parameters',
                     )
             );
             Yii::app()->end();
         }        
 
+        // Parameters are valid so save them off!
+        $for = $_GET['for'];
+        $from = $_GET['from'];
+        $to = $_GET['to'];
+        
         $user = Yii::app()->user->model;
         $dashData = null;
         
         try {
-            $dashData = $user->getManagementDashboardCounts($_GET['for']);
+            $dashData = $user->getManagementDashboardCounts($for, $from, $to);
         } catch(Exception $ex) {
             $errorInfo = null;
             
@@ -116,9 +125,246 @@ class ManagementController extends Controller
                     'success' => true,
                     'error' => false,
                     'for' => $dashData,
+                    'from' => $from,
+                    'to' => $to,
                 )
         );
         
         Yii::app()->end();
+    }
+    
+    /**
+     * Action method to upload a file.
+     */
+    public function actionIndex()
+    {
+        Yii::trace("In actionIndex.", "application.controllers.ManagementController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403);
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // There is at least one GET required parameter: model
+        // Depending on the model, there may be more required GET parameters
+        // Those will be verified by each model's handler
+        if(!isset($_GET['model']) || !is_string($_GET['model'])) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400);
+            }
+            
+            $this->sendResponseHeaders(400);
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        $modelName = $_GET['model'];
+        
+        switch(strtolower(trim($modelName))) {
+            case 'arena':
+                $this->handleArenaIndex($outputFormat);
+                break;
+            case 'event':
+                $this->handleEventIndex($outputFormat);
+                break;
+            case 'eventrequest':
+                $this->handleEventRequestIndex($outputFormat);
+                break;
+            case 'reservation':
+                $this->handleReservationIndex($outputFormat);
+                break;
+            default:
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400);
+                }
+            
+                $this->sendResponseHeaders(400);
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Unknown model',
+                        )
+                );
+                Yii::app()->end();
+        }
+    }
+    
+    protected function handleArenaIndex($outputFormat) {
+        // First check to see if we are restricting by a 
+        // status code
+        $sid = null;
+        
+        if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
+            $sid = $_GET['sid'];
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Arena::getAssignedArenasSummary($uid, $sid);
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500);
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200);
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200);
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "summary", "arena");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            $this->renderPartial(
+                    "_index",
+                    array(
+                        'data' => $data,
+                        'headers' => Arena::getSummaryAttributes()
+                    ));
+        }
+    }
+    
+    protected function handleEventIndex($outputFormat) {
+        // First check to see if we are restricting by a 
+        // status code
+        $sid = null;
+        
+        if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
+            $sid = $_GET['sid'];
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Arena::getAssignedArenasSummary($uid, $sid);
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500);
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200);
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200);
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "summary", "arena");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            $this->renderPartial(
+                    "_index",
+                    array(
+                        'data' => $data,
+                        'headers' => Arena::getSummaryAttributes()
+                    ));
+        }
     }
 }
