@@ -48,8 +48,7 @@
     <div id="countsContainer" class="row-fluid accordion">
         <div id="countsAccordionHeader" class="accordion-heading">
             <a class="accordion-toggle" data-toggle="collapse"
-               data-parent="countsContainer" href="#countsCollapse"
-               style="display: inline-block">
+               data-parent="countsContainer" href="#countsCollapse">
                 <h3 id="countsHeader">
                     <i class="fa fa-list fa-lg"></i> Summary
                 </h3>
