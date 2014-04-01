@@ -1,21 +1,21 @@
 SELECT a.id,
-    CASE WHEN a.external_id IS NULL THEN 'Not set' ELSE a.external_id END AS external_id,
+    a.external_id,
     a.name,
-    CASE WHEN a.description IS NULL THEN 'Not set' ELSE 'Yes' END as description,
-    CASE WHEN a.tags IS NULL THEN 'Not set' ELSE 'Yes' END as tags,
+    a.description,
+    a.tags,
     a.address_line1,
-    CASE WHEN a.address_line2 IS NULL THEN 'Not set' ELSE a.address_line2 END AS address_line2,
+    a.address_line2,
     a.city,
     a.state,
     a.zip,
     IF(a.lat IS NULL OR a.lat = 0 OR a.lng IS NULL OR a.lng = 0, 'No', 'Yes') AS geocoded,
-    CASE WHEN a.phone IS NULL THEN 'Not set' ELSE a.phone END AS phone,
-    CASE WHEN a.ext IS NULL THEN 'Not set' ELSE a.ext END AS ext,
-    CASE WHEN a.fax IS NULL THEN 'Not set' ELSE a.fax END AS fax,
-    CASE WHEN a.fax_ext IS NULL THEN 'Not set' ELSE a.fax_ext END AS fax_ext,
-    CASE WHEN a.logo IS NULL THEN 'Not set' ELSE 'Yes' END AS logo,
-    CASE WHEN a.url IS NULL THEN 'Not set' ELSE 'Yes' END AS url,
-    CASE WHEN a.notes IS NULL THEN 'Not set' ELSE 'Yes' END AS notes,
+    a.phone,
+    a.ext,
+    a.fax,
+    a.fax_ext,
+    a.logo,
+    a.url,
+    a.notes,
     (SELECT s.display_name FROM arena_status s WHERE s.id = a.status_id) AS status,
     (SELECT COUNT(DISTINCT aua.user_id) FROM arena_user_assignment aua WHERE aua.arena_id = a.id) AS managers,
     (SELECT COUNT(DISTINCT l.id) FROM location l WHERE l.arena_id = a.id) AS locations,
@@ -36,24 +36,24 @@ WHERE u.id = 2
 ORDER BY a.name ASC
 
         $sql = "SELECT a.id, "
-                . "CASE WHEN a.external_id IS NULL THEN 'Not set' ELSE a.external_id END AS external_id, "
+                . "a.external_id, "
                 . "a.name, "
-                . "CASE WHEN a.description IS NULL THEN 'Not set' ELSE 'Yes' END as description, "
-                . "CASE WHEN a.tags IS NULL THEN 'Not set' ELSE 'Yes' END as tags, "
+                . "a.description, "
+                . "a.tags, "
                 . "a.address_line1, "
-                . "CASE WHEN a.address_line2 IS NULL THEN 'Not set' ELSE a.address_line2 END AS address_line2, "
+                . "a.address_line2, "
                 . "a.city, "
                 . "a.state, "
                 . "a.zip, "
                 . "IF(a.lat IS NULL OR a.lat = 0 OR a.lng IS NULL OR a.lng = 0, 'No', 'Yes') AS geocoded, "
-                . "CASE WHEN a.phone IS NULL THEN 'Not set' ELSE a.phone END AS phone, "
-                . "CASE WHEN a.ext IS NULL THEN 'Not set' ELSE a.ext END AS ext, "
-                . "CASE WHEN a.fax IS NULL THEN 'Not set' ELSE a.fax END AS fax, "
-                . "CASE WHEN a.fax_ext IS NULL THEN 'Not set' ELSE a.fax_ext END AS fax_ext, "
-                . "CASE WHEN a.logo IS NULL THEN 'Not set' ELSE 'Yes' END AS logo, "
-                . "CASE WHEN a.url IS NULL THEN 'Not set' ELSE 'Yes' END AS url, "
-                . "CASE WHEN a.notes IS NULL THEN 'Not set' ELSE 'Yes' END AS notes, "
-                . "(SELECT s.display_name FROM arena_status s WHERE s.id = a.status_id) AS status, "
+                . "a.phone, "
+                . "a.ext, "
+                . "a.fax, "
+                . "a.fax_ext, "
+                . "a.logo, "
+                . "a.url, "
+                . "a.notes, "
+                . "a.status, "
                 . "(SELECT COUNT(DISTINCT aua.user_id) FROM arena_user_assignment aua WHERE aua.arena_id = a.id) AS managers, "
                 . "(SELECT COUNT(DISTINCT l.id) FROM location l WHERE l.arena_id = a.id) AS locations, "
                 . "(SELECT COUNT(DISTINCT aca.contact_id) FROM arena_contact_assignment aca WHERE aca.arena_id = a.id) AS contacts, "

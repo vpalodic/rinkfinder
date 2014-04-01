@@ -799,25 +799,30 @@ class Arena extends RinkfinderActiveRecord
     {
         // Let's start by building up our query
         $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Arena',
+        );
+
 
         $sql = "SELECT a.id, "
-                . "CASE WHEN a.external_id IS NULL THEN 'Not set' ELSE a.external_id END AS external_id, "
+                . "a.external_id, "
                 . "a.name, "
-                . "CASE WHEN a.description IS NULL THEN 'Not set' ELSE 'Yes' END as description, "
-                . "CASE WHEN a.tags IS NULL THEN 'Not set' ELSE 'Yes' END as tags, "
+                . "a.description, "
+                . "a.tags, "
                 . "a.address_line1, "
-                . "CASE WHEN a.address_line2 IS NULL THEN 'Not set' ELSE a.address_line2 END AS address_line2, "
+                . "a.address_line2, "
                 . "a.city, "
                 . "a.state, "
                 . "a.zip, "
                 . "IF(a.lat IS NULL OR a.lat = 0 OR a.lng IS NULL OR a.lng = 0, 'No', 'Yes') AS geocoded, "
-                . "CASE WHEN a.phone IS NULL THEN 'Not set' ELSE a.phone END AS phone, "
-                . "CASE WHEN a.ext IS NULL THEN 'Not set' ELSE a.ext END AS ext, "
-                . "CASE WHEN a.fax IS NULL THEN 'Not set' ELSE a.fax END AS fax, "
-                . "CASE WHEN a.fax_ext IS NULL THEN 'Not set' ELSE a.fax_ext END AS fax_ext, "
-                . "CASE WHEN a.logo IS NULL THEN 'Not set' ELSE 'Yes' END AS logo, "
-                . "CASE WHEN a.url IS NULL THEN 'Not set' ELSE 'Yes' END AS url, "
-                . "CASE WHEN a.notes IS NULL THEN 'Not set' ELSE 'Yes' END AS notes, "
+                . "a.phone, "
+                . "a.ext, "
+                . "a.fax, "
+                . "a.fax_ext, "
+                . "a.logo, "
+                . "a.url, "
+                . "a.notes, "
                 . "(SELECT s.display_name FROM arena_status s WHERE s.id = a.status_id) AS status, "
                 . "(SELECT COUNT(DISTINCT aua.user_id) FROM arena_user_assignment aua WHERE aua.arena_id = a.id) AS managers, "
                 . "(SELECT COUNT(DISTINCT l.id) FROM location l WHERE l.arena_id = a.id) AS locations, "
@@ -838,6 +843,7 @@ class Arena extends RinkfinderActiveRecord
         
         if($sid !== null) {
             $sql .= "AND a.status_id = :sid ";
+            $parms['aid'] = $sid;
         }
         
         $sql .= "ORDER BY a.name ASC";
@@ -874,21 +880,8 @@ class Arena extends RinkfinderActiveRecord
         $ret['count'] = $arenaCount;
         $ret['model'] = 'arena';
         $ret['action'] = 'index';
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
         
-        if($sid === null) {
-            $ret['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/index',
-                    'model' => 'Arena'
-                )
-            );
-        } else {
-            $ret['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/index',
-                    'model' => 'Arena',
-                    'sid' => $sid
-                )
-            );
-        }
         // Ok, lets return this stuff!!
         return $ret;
     }

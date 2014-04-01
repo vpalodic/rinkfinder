@@ -219,9 +219,9 @@ class Controller extends CController
                 if (is_numeric($key)) {
                     $key = $node_name;
                 }
-                $xml .= $tab . '' . "\n";
-                $xml .= '<' . $key . '>' . "\n" . Controller::generate_xml_from_array($value, $node_name, $tab . "    ") . '</' . $key . '>' . "\n";
-                $xml .= $tab . '' . "\n";
+//                $xml .= $tab . '' . "\n";
+                $xml .= $tab . '<' . $key . '>' . "\n" . Controller::generate_xml_from_array($value, $node_name, $tab . "    ") . $tab . '</' . $key . '>' . "\n";
+//                $xml .= $tab . '' . "\n";
             }
 	} else {
             $xml = $tab . htmlspecialchars($array, ENT_QUOTES) . "\n";

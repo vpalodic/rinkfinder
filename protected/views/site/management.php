@@ -68,8 +68,7 @@
         </div>
         <div id="countsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
-                <div class="row-fluid">
-                    <div id="requestsContainer" class="span6 accordion">
+                    <div id="requestsContainer" class="span3 accordion">
                         <div class="accordion-heading">
                             <div id="requestsBadge" style="display: inline-block;">
                             </div>
@@ -86,7 +85,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="reservationsContainer" class="span6 accordion">
+                    <div id="reservationsContainer" class="span3 accordion">
                         <div class="accordion-heading">
                             <div id="reservationsBadge" style="display: inline-block;">
                             </div>
@@ -103,9 +102,7 @@
                             </div>
                         </div>
                     </div>
-                </div>            
-                <div class="row-fluid">
-                    <div id="eventsContainer" class="span6 accordion">
+                    <div id="eventsContainer" class="span3 accordion">
                         <div class="accordion-heading">
                             <div id="eventsBadge" style="display: inline-block;">
                             </div>
@@ -122,7 +119,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="arenasContainer" class="span6 accordion">
+                    <div id="arenasContainer" class="span3 accordion">
                         <div class="accordion-heading">
                             <div id="arenasBadge" style="display: inline-block;">
                             </div>
@@ -139,7 +136,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
         </div>
     </div>

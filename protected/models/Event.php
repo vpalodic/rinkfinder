@@ -405,19 +405,34 @@ class Event extends RinkfinderActiveRecord
                 'name' => 'arena',
                 'display' => 'Arena',
                 'type' => 'alpha',
-                'hide' => 'phone',
+                'hide' => 'phone,tablet',
+            ),
+            'arena_id' => array(
+                'name' => 'arena_id',
+                'display' => 'Arena ID',
+                'type' => 'numeric',
+                'hide' => 'all',
+                'link' => 'endpoint2',
             ),
             'location' => array(
                 'name' => 'location',
                 'display' => 'Location',
                 'type' => 'alpha',
-                'hide' => 'phone,tablet'
+                'hide' => 'phone,tablet',
             ),
-            'recurrence' => array(
-                'name' => 'recurrence',
-                'display' => 'Recurring',
-                'type' => 'alpha',
-                'hide' => 'phone,tablet'
+            'location_id' => array(
+                'name' => 'location_id',
+                'display' => 'Location ID',
+                'type' => 'numeric',
+                'hide' => 'all',
+                'link' => 'endpoint3',
+            ),
+            'recurrence_id' => array(
+                'name' => 'recurrence_id',
+                'display' => 'Recurring ID',
+                'type' => 'numeric',
+                'hide' => 'all',
+                'link' => 'endpoint4',
             ),
             'start_date' => array(
                 'name' => 'start_date',
@@ -457,7 +472,7 @@ class Event extends RinkfinderActiveRecord
                 'name' => 'price',
                 'display' => 'Price',
                 'type' => 'numeric',
-                'hide' => 'all'
+                'hide' => 'phone,tablet'
             ),
             'description' => array(
                 'name' => 'description',
@@ -493,11 +508,27 @@ class Event extends RinkfinderActiveRecord
                 'type' => 'numeric',
                 'hide' => 'all'
             ),
+            'outstanding_event_request_ids' => array(
+                'name' => 'outstanding_event_request_ids',
+                'display' => 'Outstanding Event Request IDs',
+                'type' => 'alpha',
+                'hide' => 'all',
+                'link' => 'endpoint5',
+                'linkArray' => true
+            ),
             'outstanding_reservations' => array(
                 'name' => 'outstanding_reservations',
                 'display' => 'Outstanding Reservations',
                 'type' => 'numeric',
                 'hide' => 'all'
+            ),
+            'outstanding_reservation_ids' => array(
+                'name' => 'outstanding_reservation_ids',
+                'display' => 'Outstanding Reservation IDs',
+                'type' => 'alpha',
+                'hide' => 'all',
+                'link' => 'endpoint6',
+                'linkArray' => true
             ),
         );
     }
@@ -656,27 +687,33 @@ class Event extends RinkfinderActiveRecord
         );
 
         $sql = "SELECT e.id, "
-                . "CASE WHEN e.external_id IS NULL THEN 'Not set' ELSE e.external_id END AS external_id, "
-                . "CASE WHEN e.name IS NULL OR e.name = '' THEN 'Not set' ELSE e.name END as name, "
-                . "CASE WHEN e.description IS NULL OR e.description = '' THEN 'Not set' ELSE 'Yes' END as description, "
-                . "CASE WHEN e.tags IS NULL THEN 'Not set' ELSE 'Yes' END as tags, "
-                . "(SELECT a.name FROM arena a WHERE a.id = e.arena_id) AS arena, "
+                . "e.external_id, "
+                . "e.name, "
+                . "e.description, "
+                . "e.tags, "
+                . "a.name AS arena, "
+                . "a.id AS arena_id, "
                 . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location, "
-                . "CASE WHEN e.recurrence_id IS NULL OR e.recurrence_id = 0 THEN 'No' ELSE 'Yes' END AS recurrence, "
+                . "(SELECT l.id FROM location l WHERE l.id = e.location_id) AS location_id, "
+                . "CASE WHEN e.recurrence_id IS NULL OR e.recurrence_id = 0 THEN NULL ELSE recurrence_id END AS recurrence_id, "
                 . "CASE WHEN e.all_day = 0 THEN 'No' ELSE 'Yes' END AS all_day, "
                 . "DATE_FORMAT(e.start_date, '%m/%d/%Y') AS start_date, "
                 . "DATE_FORMAT(e.start_time, '%h:%i %p') AS start_time, "
-                . "CASE WHEN e.duration = 0 THEN 'Not Set' ELSE CONCAT(e.duration, ' minutes') END AS duration, "
-                . "CASE WHEN e.end_date = '0000-00-00' THEN 'Not Set' ELSE DATE_FORMAT(e.end_date, '%m/%d/%Y') END AS end_date, "
-                . "CASE WHEN e.end_time = '00:00:00' THEN 'Not Set' ELSE DATE_FORMAT(e.end_time, '%h:%i %p') END AS end_time, "
+                . "CASE WHEN e.duration = 1 THEN CONCAT(e.duration, ' minute') ELSE CONCAT(e.duration, ' minutes') END AS duration, "
+                . "CASE WHEN e.end_date = '0000-00-00' THEN NULL ELSE DATE_FORMAT(e.end_date, '%m/%d/%Y') END AS end_date, "
+                . "CASE WHEN e.end_time = '00:00:00' THEN NULL ELSE DATE_FORMAT(e.end_time, '%h:%i %p') END AS end_time, "
                 . "CONCAT('$', FORMAT(e.price, 2)) AS price, "
-                . "CASE WHEN e.notes IS NULL THEN 'Not set' ELSE 'Yes' END AS notes, "
+                . "e.notes, "
                 . "(SELECT t.display_name FROM event_type t WHERE t.id = e.type_id) AS type, "
                 . "(SELECT s.display_name FROM event_status s WHERE s.id = e.status_id) AS status, "
                 . "(SELECT COUNT(DISTINCT er.id) FROM event_request er WHERE er.event_id = e.id AND er.status_id IN "
                 . "    (SELECT ers.id FROM event_request_status ers WHERE ers.name IN ('PENDING', 'ACKNOWLEDGED'))) AS outstanding_event_requests, "
+                . "(SELECT GROUP_CONCAT(DISTINCT er.id) FROM event_request er WHERE er.event_id = e.id AND er.status_id IN "
+                . "    (SELECT ers.id FROM event_request_status ers WHERE ers.name IN ('PENDING', 'ACKNOWLEDGED'))) AS outstanding_event_request_ids, "
                 . "(SELECT COUNT(DISTINCT r.id) FROM reservation r WHERE r.event_id = e.id AND r.status_id IN "
-                . "    (SELECT rs.id FROM reservation_status rs WHERE rs.name IN ('BOOKED'))) AS outstanding_reservations "
+                . "    (SELECT rs.id FROM reservation_status rs WHERE rs.name IN ('BOOKED'))) AS outstanding_reservations, "
+                . "(SELECT GROUP_CONCAT(DISTINCT r.id) FROM reservation r WHERE r.event_id = e.id AND r.status_id IN "
+                . "    (SELECT rs.id FROM reservation_status rs WHERE rs.name IN ('BOOKED'))) AS outstanding_reservation_ids "
                 . "FROM event e "
                 . "    INNER JOIN arena a "
                 . "    ON e.arena_id = a.id "
@@ -686,7 +723,6 @@ class Event extends RinkfinderActiveRecord
                 . "    ON u.id = aua.user_id "
                 . "WHERE u.id = :uid ";
 
-        
         if($aid !== null) {
             $sql .= "AND e.arena_id = :aid ";
             $parms['aid'] = $aid;
@@ -743,19 +779,31 @@ class Event extends RinkfinderActiveRecord
         $eventCount = count($ret['items']);
         
         for($i = 0; $i < $eventCount; $i++) {
-            $ret['items'][$i]['dataConvert']['start_date'] = 
-                    strtotime($ret['items'][$i]['start_date'] . ' ' . $ret['items'][$i]['start_time']);
-            
-            $ret['items'][$i]['dataConvert']['start_time'] = 
+            if(isset($ret['items'][$i]['start_date']) && 
+                    isset($ret['items'][$i]['start_time']) && 
+                     strtotime($ret['items'][$i]['start_date'] . 
+                             ' ' . 
+                             $ret['items'][$i]['start_time']) !== false) {
+                $ret['items'][$i]['dataConvert']['start_date'] = 
+                        strtotime($ret['items'][$i]['start_date'] . 
+                                ' ' . 
+                                $ret['items'][$i]['start_time']);
+                
+                $ret['items'][$i]['dataConvert']['start_time'] = 
                     strtotime($ret['items'][$i]['start_time']);
-            
-            if($ret['items'][$i]['end_date'] != 'Not set' &&
-                    $ret['items'][$i]['end_time'] != 'Not set') {
+            }
+            if(isset($ret['items'][$i]['end_date']) && 
+                    isset($ret['items'][$i]['end_time']) && 
+                     strtotime($ret['items'][$i]['end_date'] . 
+                             ' ' . 
+                             $ret['items'][$i]['end_time']) !== false) {
                 $ret['items'][$i]['dataConvert']['end_date'] = 
-                        strtotime($ret['items'][$i]['end_date'] . ' ' . $ret['items'][$i]['end_time']);
-            
+                        strtotime($ret['items'][$i]['end_date'] . 
+                                ' ' . 
+                                $ret['items'][$i]['end_time']);
+                
                 $ret['items'][$i]['dataConvert']['end_time'] = 
-                        strtotime($ret['items'][$i]['end_date'] . ' ' . $ret['items'][$i]['end_time']);
+                    strtotime($ret['items'][$i]['end_time']);
             }
             
             $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
@@ -764,6 +812,59 @@ class Event extends RinkfinderActiveRecord
                     'eid' => $ret['items'][$i]['id'],
                 )
             );
+            
+            if(is_numeric($ret['items'][$i]['arena_id'])) {
+                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl(array(
+                        'management/update',
+                        'model' => 'Arena',
+                        'eid' => $ret['items'][$i]['arena_id'],
+                    )
+                );
+            }            
+            if(is_numeric($ret['items'][$i]['location_id'])) {
+                $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl(array(
+                        'management/update',
+                        'model' => 'Location',
+                        'aid' => $ret['items'][$i]['location_id'],
+                    )
+                );
+            }            
+            if(is_numeric($ret['items'][$i]['recurrence_id'])) {
+                $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl(array(
+                        'management/update',
+                        'model' => 'Recurrence',
+                        'lid' => $ret['items'][$i]['recurrence_id'],
+                    )
+                );
+            }
+            if(is_string($ret['items'][$i]['outstanding_event_request_ids'])) {
+                $temp = explode(',', $ret['items'][$i]['outstanding_event_request_ids']);
+                $ret['items'][$i]['outstanding_event_request_ids'] = $temp;
+                $tempLength = count($temp);
+                
+                for($j = 0; $j < $tempLength; $j++) {
+                        $ret['items'][$i]['endpoint5'][] = CHtml::normalizeUrl(array(
+                            'management/update',
+                            'model' => 'EventRequest',
+                            'erid' => $temp[$j],
+                        )
+                    );
+                }
+            }
+            if(is_string($ret['items'][$i]['outstanding_reservation_ids'])) {
+                $temp = explode(',', $ret['items'][$i]['outstanding_reservation_ids']);
+                $ret['items'][$i]['outstanding_reservation_ids'] = $temp;
+                $tempLength = count($temp);
+                
+                for($j = 0; $j < $tempLength; $j++) {
+                        $ret['items'][$i]['endpoint6'][] = CHtml::normalizeUrl(array(
+                            'management/update',
+                            'model' => 'Reservation',
+                            'rid' => $temp[$j],
+                        )
+                    );
+                }
+            }
         }
         
         $ret['count'] = $eventCount;

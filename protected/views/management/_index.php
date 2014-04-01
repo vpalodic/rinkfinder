@@ -95,9 +95,25 @@
             
             $td .= '>';
             
-            if(isset($header['link']) && isset($item['endpoint']) && isset($item[$field])) {
-                $td .= '<a target="_blank" href="' . $item['endpoint'] . '">'
+            if(isset($header['link']) && isset($item[$header['link']]) && 
+                    isset($item[$field]) && (!isset($header['linkArray']) || $header['linkArray'] == false)) {
+                $td .= '<a target="_blank" href="' . $item[$header['link']] . '">'
                         . $item[$field] . '</a></td>';
+            } elseif(isset($header['link']) && isset($item[$header['link']]) && 
+                    isset($item[$field]) && (isset($header['linkArray']) && $header['linkArray'] == true && is_array($item[$field]))) {
+                $temp = $item[$field];
+                $tempCount = count($temp);
+                
+                for($i = 0; $i < $tempCount; $i++) {
+                    $td .= '<a target="_blank" href="' . $item[$header['link']][$i] . '">'
+                        . $temp[$i] . '</a>';
+                    
+                    if($i + 1 < $tempCount) {
+                        $td .= '<span>, </span>';
+                    }
+                }
+                
+                $td .= '</td>';
             } elseif(isset($item[$field])) {
                 $td .= $item[$field] . '</td>';
             } else {

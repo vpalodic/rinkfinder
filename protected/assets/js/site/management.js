@@ -76,6 +76,11 @@
         linkHtml += 'id="' + name + 'BadgeLink">';
         linkHtml += management.createBadge('badge-info', data.total) + '</a>';
         $(linkHtml).appendTo($badge);
+        
+        // Just in case there is an existing handler, we want to get rid
+        // of it!
+        $badge.off('click', '#' + name + 'BadgeLink');
+        
         $badge.on('click', '#' + name + 'BadgeLink', [data, name], function (e) {
             e.preventDefault();
             management.handleBadgeClick(e.data[0].endpoint, e.data[1].capitalize() + ":");
@@ -203,6 +208,8 @@
         
         for (i = 0; i < linkIds.length; i++)
         {
+            // Get rid of any existing handlers for the badges!!!
+            $well.off('click', linkIds[i][0]);
             $well.on('click', linkIds[i][0], [linkIds[i][1], linkIds[i][2]], function (e) {
                 e.preventDefault();
                 management.handleBadgeClick(e.data[0], e.data[1]);
@@ -251,8 +258,22 @@
     management.handleBadgeClick = function (url, name) {
         var $modal = $('#' + management.dialogBox);
         var $label = $modal.find('#' + management.dialogBox + "Label");
+        var $body = $modal.find('#' + management.dialogBox + "Body");
         
         $label.empty().html(name);
+        
+        $body.empty();
+        
+        $modal.off('shown');
+        $modal.on('shown', function (e) {
+            //console.log(e);
+        });
+        
+        $modal.off('hidden');
+        $modal.on('hidden', function (e) {
+            //('#' + management.dialogBox + "Body").empty();
+        });
+        
         $modal.modal({
             loading: true,
             replace: true,
@@ -276,9 +297,35 @@
                 output: "html"
             },
             success: function(result, status, xhr) {
-                console.log(result);
+//                console.log(result);
+//                console.log(xhr);
+//                that.processModalData(result, status, xhr);
+                // Its possible we will get a session timeout so check for it!
+                var myjsonObj = false;
+                try
+                {
+                    myjsonObj = JSON.parse(result);
+                }
+                catch (err)
+                {
+                    myjsonObj = false;
+                }
                 
-                that.processModalData(result, status, xhr);
+                if (myjsonObj !== false)
+                {
+                    $thatModal.modal('loading');
+                    $thatModal.find('.modal-body').empty().append('<h1 class="text-error">Error</h1>');
+                    
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve data",
+                        xhr,
+                        "error",
+                        "Login Required"
+                    );
+            
+                    return;
+                }
 
                 window.setTimeout(function () {
                     $thatModal.modal('loading');

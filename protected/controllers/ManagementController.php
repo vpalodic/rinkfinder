@@ -15,7 +15,7 @@ class ManagementController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'ajaxOnly', // we only allow ajax calls!
+//            'ajaxOnly', // we only allow ajax calls!
         );
     }
 
@@ -210,9 +210,9 @@ class ManagementController extends Controller
         }
     }
     
-    protected function handleArenaIndex($outputFormat) {
-        // First check to see if we are restricting by a 
-        // status code
+    protected function handleArenaIndex($outputFormat)
+    {
+        // First check to see if we are restricting by anything
         $sid = null;
         
         if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
@@ -289,9 +289,9 @@ class ManagementController extends Controller
         }
     }
     
-    protected function handleEventIndex($outputFormat) {
-        // First check to see if we are restricting by a 
-        // status code
+    protected function handleEventIndex($outputFormat)
+    {
+        // First check to see if we are restricting by anything
         $aid = null;
         $from = null;
         $to = null;
@@ -302,11 +302,11 @@ class ManagementController extends Controller
             $aid = $_GET['aid'];
         }
         
-        if(isset($_GET['from']) && is_string($_GET['from'])) {
+        if(isset($_GET['from']) && strtotime($_GET['from'])) {
             $from = $_GET['from'];
         }
         
-        if(isset($_GET['to']) && is_string($_GET['to'])) {
+        if(isset($_GET['to']) && strtotime($_GET['to'])) {
             $to = $_GET['to'];
         }
         
@@ -384,6 +384,199 @@ class ManagementController extends Controller
                     array(
                         'data' => $data,
                         'headers' => Event::getSummaryAttributes()
+                    ));
+        }
+    }
+    
+    protected function handleEventRequestIndex($outputFormat)
+    {
+        // First check to see if we are restricting by anything
+        $aid = null;
+        $from = null;
+        $to = null;
+        $tid = null;
+        $sid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid'])) {
+            $aid = $_GET['aid'];
+        }
+        
+        if(isset($_GET['from']) && strtotime($_GET['from'])) {
+            $from = $_GET['from'];
+        }
+        
+        if(isset($_GET['to']) && strtotime($_GET['to'])) {
+            $to = $_GET['to'];
+        }
+        
+        if(isset($_GET['tid']) && is_numeric($_GET['tid'])) {
+            $tid = $_GET['tid'];
+        }
+        
+        if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
+            $sid = $_GET['sid'];
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = EventRequest::getAssignedEventRequestsSummary($uid, $aid, $from, $to, $tid, $sid);
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500);
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200);
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200);
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "summary", "eventrequest");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            $this->renderPartial(
+                    "_index",
+                    array(
+                        'data' => $data,
+                        'headers' => EventRequest::getSummaryAttributes()
+                    ));
+        }
+    }
+    
+    protected function handleReservationIndex($outputFormat)
+    {
+        // First check to see if we are restricting by anything
+        $aid = null;
+        $from = null;
+        $to = null;
+        $sid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid'])) {
+            $aid = $_GET['aid'];
+        }
+        
+        if(isset($_GET['from']) && strtotime($_GET['from'])) {
+            $from = $_GET['from'];
+        }
+        
+        if(isset($_GET['to']) && strtotime($_GET['to'])) {
+            $to = $_GET['to'];
+        }
+        
+        if(isset($_GET['sid']) && is_numeric($_GET['sid'])) {
+            $sid = $_GET['sid'];
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Reservation::getAssignedReservationsSummary($uid, $aid, $from, $to, $sid);
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500);
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200);
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200);
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "summary", "reservation");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            $this->renderPartial(
+                    "_index",
+                    array(
+                        'data' => $data,
+                        'headers' => Reservation::getSummaryAttributes()
                     ));
         }
     }
