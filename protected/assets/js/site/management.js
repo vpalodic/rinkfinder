@@ -210,10 +210,13 @@
         }
     };
     
-    management.getCounts = function () {
+    management.getCounts = function (noLoading) {
         var that = this;
+        var thatNoLoading = noLoading;
         
-        utilities.loadingScreen.show();
+        if (!noLoading) {
+            utilities.loadingScreen.show();
+        }
 
         $.ajax({                        
             url: that.endpoints.counts,
@@ -228,9 +231,11 @@
                 that.processCounts(result, status, xhr);
                 
                 window.setTimeout(function () {
+                    if (!thatNoLoading) {
                         utilities.loadingScreen.hide();
-                    },
-                    1000
+                    }
+                },
+                100
                 );
             },
             error: function(xhr, status, errorThrown) {
@@ -241,7 +246,9 @@
                         status,
                         errorThrown
                         );
-                utilities.loadingScreen.hide();
+                if (!thatNoLoading) {
+                    utilities.loadingScreen.hide();
+                }
             }
         });
 
@@ -284,7 +291,7 @@
                     $thatModal.modal('loading');
                     $thatModal.find('.modal-body').empty().append(result);
                 },
-                1000
+                100
                 );
             },
             error: function(xhr, status, errorThrown) {
