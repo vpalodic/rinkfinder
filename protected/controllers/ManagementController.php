@@ -56,7 +56,7 @@ class ManagementController extends Controller
         Yii::trace("In actionGetCounts.", "application.controllers.ManagementController");
         
         if(!Yii::app()->user->isRestrictedArenaManager()) {
-            $this->sendResponseHeaders(403);
+            $this->sendResponseHeaders(403, 'json');
             echo json_encode(array(
                     'success' => false,
                     'error' => 'Permission denied. You are not authorized to perform this action.'
@@ -69,7 +69,7 @@ class ManagementController extends Controller
                 (!isset($_GET['from']) || !strtotime($_GET['from'])) || 
                 (!isset($_GET['to']) || !strtotime($_GET['to'])) ||
                 (strtotime($_GET['from']) > strtotime($_GET['to']))) {
-            $this->sendResponseHeaders(400);
+            $this->sendResponseHeaders(400, 'json');
             echo json_encode(
                     array(
                         'success' => false,
@@ -100,7 +100,7 @@ class ManagementController extends Controller
                 );
             }
             
-            $this->sendResponseHeaders(500);
+            $this->sendResponseHeaders(500, 'json');
 
             echo json_encode(
                     array(
@@ -118,7 +118,7 @@ class ManagementController extends Controller
         }
         
         // Data has been retrieved
-        $this->sendResponseHeaders(200);
+        $this->sendResponseHeaders(200, 'json');
 
         echo json_encode(
                 array(
@@ -152,7 +152,7 @@ class ManagementController extends Controller
                 throw new CHttpException(403);
             }
             
-            $this->sendResponseHeaders(403);
+            $this->sendResponseHeaders(403, 'json');
             echo json_encode(array(
                     'success' => false,
                     'error' => 'Permission denied. You are not authorized to perform this action.'
@@ -169,7 +169,7 @@ class ManagementController extends Controller
                 throw new CHttpException(400);
             }
             
-            $this->sendResponseHeaders(400);
+            $this->sendResponseHeaders(400, 'json');
             echo json_encode(
                     array(
                         'success' => false,
@@ -241,7 +241,7 @@ class ManagementController extends Controller
                 );
             }
             
-            $this->sendResponseHeaders(500);
+            $this->sendResponseHeaders(500, 'json');
 
             echo json_encode(
                     array(
@@ -260,7 +260,7 @@ class ManagementController extends Controller
         
         // Data has been retrieved!
         if($outputFormat == 'json') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'json');
 
             echo json_encode(
                     array(
@@ -272,7 +272,7 @@ class ManagementController extends Controller
         
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
-            //$this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'xml');
             
             $xml = Controller::generate_valid_xml_from_array($data, "summary", "arena");
             echo $xml;
@@ -340,7 +340,7 @@ class ManagementController extends Controller
                 );
             }
             
-            $this->sendResponseHeaders(500);
+            $this->sendResponseHeaders(500, 'json');
 
             echo json_encode(
                     array(
@@ -359,7 +359,7 @@ class ManagementController extends Controller
         
         // Data has been retrieved!
         if($outputFormat == 'json') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'json');
 
             echo json_encode(
                     array(
@@ -371,7 +371,7 @@ class ManagementController extends Controller
         
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'xml');
             
             $xml = Controller::generate_valid_xml_from_array($data, "summary", "event");
             echo $xml;
@@ -439,7 +439,7 @@ class ManagementController extends Controller
                 );
             }
             
-            $this->sendResponseHeaders(500);
+            $this->sendResponseHeaders(500, 'json');
 
             echo json_encode(
                     array(
@@ -458,7 +458,7 @@ class ManagementController extends Controller
         
         // Data has been retrieved!
         if($outputFormat == 'json') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'json');
 
             echo json_encode(
                     array(
@@ -470,7 +470,7 @@ class ManagementController extends Controller
         
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'xml');
             
             $xml = Controller::generate_valid_xml_from_array($data, "summary", "eventrequest");
             echo $xml;
@@ -533,7 +533,7 @@ class ManagementController extends Controller
                 );
             }
             
-            $this->sendResponseHeaders(500);
+            $this->sendResponseHeaders(500, 'json');
 
             echo json_encode(
                     array(
@@ -552,7 +552,7 @@ class ManagementController extends Controller
         
         // Data has been retrieved!
         if($outputFormat == 'json') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'json');
 
             echo json_encode(
                     array(
@@ -564,7 +564,7 @@ class ManagementController extends Controller
         
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
-            $this->sendResponseHeaders(200);
+            $this->sendResponseHeaders(200, 'xml');
             
             $xml = Controller::generate_valid_xml_from_array($data, "summary", "reservation");
             echo $xml;

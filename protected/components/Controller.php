@@ -75,11 +75,38 @@ class Controller extends CController
      * Sends Content-type header to be application/json if supported
      * @param integer $status The HTTP 1.1 Status Code to send
      */
-    protected function sendResponseHeaders($status)
+    protected function sendResponseHeaders($status, $contentType = null)
     {
         $status_header = 'HTTP/1.1 ' . $status . ' ' . $this->getStatusCodeMessage($status);
         
         header($status_header);
+        
+        if($contentType !== null) {
+            // This is for IE which doens't handle 'Content-type: application/json' correctly
+            header('Vary: Accept');
+            switch($contentType) {
+                case 'json':
+                    if(isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                        header('Content-type: application/json');
+                    } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'text/json') !== false)) {
+                        header('Content-type: text/json');
+                    } else {
+                        header('Content-type: text/plain');
+                    }        
+                    break;
+                case 'xml':
+                    if(isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/xml') !== false)) {
+                        header('Content-Type: application/xml; charset=utf-8');
+                    } elseif (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'text/xml') !== false)) {
+                        header('Content-type: text/xml');
+                    } else {
+                        header('Content-type: text/plain');
+                    }        
+                    break;
+                case 'html':
+                    break;
+            }
+        }
     }
     
     /**
