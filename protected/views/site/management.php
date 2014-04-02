@@ -272,7 +272,7 @@ $('#reportrange').daterangepicker(
             $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
             management.fromDate = start;
             management.toDate = end;
-            management.getCounts();
+            management.getCounts(1);
         }
     }
 );
