@@ -401,11 +401,11 @@ class ManagementController extends Controller
             $aid = $_GET['aid'];
         }
         
-        if(isset($_GET['from']) && strtotime($_GET['from'])) {
+        if(isset($_GET['from']) && strtotime($_GET['from']) !== false) {
             $from = $_GET['from'];
         }
         
-        if(isset($_GET['to']) && strtotime($_GET['to'])) {
+        if(isset($_GET['to']) && strtotime($_GET['to']) !== false) {
             $to = $_GET['to'];
         }
         

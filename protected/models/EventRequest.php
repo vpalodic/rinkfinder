@@ -349,12 +349,12 @@ class EventRequest extends RinkfinderActiveRecord
         }
         
         if($tid !== null) {
-            $sql .= "AND e.type_id = :tid ";
+            $sql .= "AND er.type_id = :tid ";
             $parms['tid'] = $tid;
         }
         
         if($sid !== null) {
-            $sql .= "AND e.status_id = :sid ";
+            $sql .= "AND er.status_id = :sid ";
             $parms['sid'] = $sid;
         }
         

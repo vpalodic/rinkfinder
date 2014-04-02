@@ -292,7 +292,7 @@
         return false;
     };
     
-    management.getModalData = function ($modal, url) {
+    management.getModalData = function ($modal, url, dataType) {
         var that = this;
         var $thatModal = $modal;
 
@@ -306,7 +306,6 @@
             success: function(result, status, xhr) {
 //                console.log(result);
 //                console.log(xhr);
-//                that.processModalData(result, status, xhr);
                 // Its possible we will get a session timeout so check for it!
                 var myjsonObj = false;
                 try
@@ -336,7 +335,7 @@
 
                 window.setTimeout(function () {
                     $thatModal.modal('loading');
-                    $thatModal.find('.modal-body').empty().append(result);
+                    $thatModal.find('.modal-body').empty().append(that.processModalData(result, status, xhr));
                 },
                 100
                 );
@@ -361,7 +360,7 @@
     };
     
     management.processModalData = function (result, status, xhr) {
-        
+        return result;
     };
     
 }( window.management = window.management || {}, jQuery ));
