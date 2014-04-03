@@ -141,5 +141,10 @@
 ?>
 
 <script type="text/javascript">
-    $(".footable").footable();
+    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('click', 'a', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        console.log(e);
+    });
 </script>

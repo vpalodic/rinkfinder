@@ -15,6 +15,7 @@
     };
     
     management.dialogBox = "";
+    management.editDialogBox = "";
     management.mainContainer = "";
     management.fromDate = moment().subtract('days', 29);
     management.toDate = moment().add('days', 29);

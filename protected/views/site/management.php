@@ -25,6 +25,7 @@
             . 'management.endpoints.details = "' . $endpoints['details'] . '";'
             . 'management.endpoints.operations = "' . $endpoints['operations'] . '";'
             . 'management.dialogBox = "managementDataModal";'
+            . 'management.editDialogBox = "managementEditDataModal";'
             . 'management.mainContainer = "managementContainer";'
             . 'management.getCounts();'
             . '$(window).bind("load",function(){ '
@@ -253,7 +254,7 @@
   </div>
 </div><!-- Error Modal Dialog -->
 
-<!-- Data Modal Dialog -->
+<!-- Index Modal Dialog -->
 <div id="managementDataModal" class="modal hide fade container" 
      tabindex="-1" role="dialog" aria-labelledby="managementDataModalLabel"
      aria-hidden="true" data-backdrop="static" data-max-height="500" data-keyboard="false">
@@ -268,7 +269,24 @@
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
-</div><!-- Data Modal Dialog -->
+</div><!-- Index Modal Dialog -->
+
+<!-- View / Edit Modal Dialog -->
+<div id="managementEditDataModal" class="modal hide fade container" 
+     tabindex="-1" role="dialog" aria-labelledby="managementEditDataModalLabel"
+     aria-hidden="true" data-backdrop="static" data-max-height="500" data-keyboard="false">
+  <div id="managementEditDataModalHeader" class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h4 id="managementEditDataModalLabel"></h4>
+  </div>
+  <div id="managementEditDataModalBody" class="modal-body">
+  </div>
+  <div id="managementEditDataModalFooter" class="modal-footer">
+    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
+        <i class="icon-remove-sign"></i> Close
+    </button>
+  </div>
+</div><!-- View / Edit Modal Dialog -->
 
 <script type="text/javascript">
 $('#reportrange').daterangepicker(
