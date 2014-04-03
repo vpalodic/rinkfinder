@@ -283,6 +283,153 @@ class EventRequest extends RinkfinderActiveRecord
     }
 
     /**
+     * Returns the event request count for each type and status 
+     * plus the total count for each type and the total count for all.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The optional arena id to limit results.
+     * @param integer $from The optional from date to limit results.
+     * @param integer $to The optional to date to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event request counts or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedCounts($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'EventRequest',
+        );
+
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, '
+                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM event_request_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(e.id) AS count '
+                . ' FROM event_request er '
+                . ' INNER JOIN event e '
+                . ' ON e.id = er.event_id '
+                . ' INNER JOIN arena a '
+                . ' ON a.id = e.arena_id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN event_request_status s1 '
+                . ' ON s1.id = er.status_id '
+                . ' WHERE u.id = :uid  ';
+        
+        if($aid !== null) {
+            $sql .= "AND e.arena_id = :aid ";
+            $parms['aid'] = $aid;
+        }
+        
+        if($from !== null) {
+            $sql .= "AND e.start_date >= :from ";
+            $parms['from'] = $from;
+        }
+        
+        if($to !== null) {
+            $sql .= "AND e.start_date <= :to ";
+            $parms['to'] = $to;
+        }
+        
+        if($tid !== null) {
+            $sql .= "AND er.type_id = :tid ";
+            $parms['tid'] = $tid;
+        } else {
+            $sql .= "AND er.type_id = :ertype ";
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND er.status_id = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
+                . ' ON s.id = sc.id '
+                . ' ORDER BY s.display_order ASC ';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $ertypeId = 0;
+        $eventRequestCountTotal = 0;
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($from !== null) {
+            $command->bindParam(':from', $from, PDO::PARAM_STR);
+        }
+        
+        if($to !== null) {
+            $command->bindParam(':to', $to, PDO::PARAM_STR);
+        }
+        
+        if($tid !== null) {
+            $ertypes = array();
+            $ertypes[] = EventRequestType::model()->findByPk($tid);
+            
+            $command->bindParam(':tid', $tid, PDO::PARAM_INT);
+        } else {
+            $ertypes = EventRequestType::model()->findAll();
+        
+            $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        // Start with each type and then go for each status within each type
+        foreach($ertypes as $ertype) {
+            $ertypeId = $ertype->id;
+            
+            $erTypeCountTotal = 0;
+            
+            $erstatuses = $command->queryAll(true);
+            
+            $statusCount = count($erstatuses);
+            
+            for($i = 0; $i < $statusCount; $i++) {
+                $erTypeCountTotal += (integer)$erstatuses[$i]['count'];
+                
+                $temp = $parms;
+                $temp['sid'] = $erstatuses[$i]['id'];
+                $temp['tid'] = $ertypeId;
+                
+                $erstatuses[$i]['endpoint'] = CHtml::normalizeUrl($temp);
+            }
+            
+            $eventRequestCountTotal += $erTypeCountTotal;
+
+            $temp = $parms;
+            $temp['tid'] = $ertypeId;
+            
+            $ret['type'][] = array(
+                'id' => $ertype->id,
+                'name' => $ertype->name,
+                'description' => $ertype->description,
+                'display_name' => $ertype->display_name,
+                'display_order' => $ertype->display_order,
+                'count' => (integer)$erTypeCountTotal,
+                'status' => $erstatuses,
+                'endpoint' => CHtml::normalizeUrl($temp)
+            );
+        }
+        
+        $ret['total'] = $eventRequestCountTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        return $ret;
+    }
+    
+    /**
      * Returns a summary record for each event request for an arena assigned to user.
      * The results can be further restricted by passing in a status code,
      * type code, from date, to date, and arena id, 
@@ -292,10 +439,10 @@ class EventRequest extends RinkfinderActiveRecord
      * @param integer $to The optional to date to limit results.
      * @param integer $tid The optional type code id to limit results.
      * @param integer $sid The optional status code id to limit results.
-     * @return mixed[] The event summeries or an empty array.
+     * @return mixed[] The event request summeries or an empty array.
      * @throws CDbException
      */
-    public static function getAssignedEventRequestsSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    public static function getAssignedSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
     {
         // Let's start by building up our query
         $ret = array();

@@ -665,7 +665,149 @@ class Event extends RinkfinderActiveRecord
     }
     
     /**
-     * Returns a summary record for each event for an arena assigned to user.
+     * Returns the event counts for arenas assigned to user.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The optional arena id to limit results.
+     * @param integer $from The optional from date to limit results.
+     * @param integer $to The optional to date to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event counts or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedCounts($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Event',
+        );
+
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, '
+                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM event_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(e.id) AS count '
+                . ' FROM event e '
+                . ' INNER JOIN arena a '
+                . ' ON e.arena_id = a.id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN event_status s1 '
+                . ' ON e.status_id = s1.id '
+                . ' WHERE u.id = :uid  ';
+        
+        if($aid !== null) {
+            $sql .= "AND e.arena_id = :aid ";
+            $parms['aid'] = $aid;
+        }
+        
+        if($from !== null) {
+            $sql .= "AND e.start_date >= :from ";
+            $parms['from'] = $from;
+        }
+        
+        if($to !== null) {
+            $sql .= "AND e.start_date <= :to ";
+            $parms['to'] = $to;
+        }
+        
+        if($tid !== null) {
+            $sql .= "AND e.type_id = :tid ";
+            $parms['tid'] = $tid;
+        } else {
+            $sql .= "AND e.type_id = :etype ";
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND e.status_id = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
+                . ' ON s.id = sc.id '
+                . ' ORDER BY s.display_order ASC ';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $etypeId = 0;
+        $eventCountTotal = 0;
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($from !== null) {
+            $command->bindParam(':from', $from, PDO::PARAM_STR);
+        }
+        
+        if($to !== null) {
+            $command->bindParam(':to', $to, PDO::PARAM_STR);
+        }
+        
+        if($tid !== null) {
+            $command->bindParam(':tid', $tid, PDO::PARAM_INT);
+            $types = array();
+            $types[] = EventType::model()->findByPk($tid);
+        } else {
+            $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
+            $types = EventType::model()->findAll();
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        // Start with each type and then go for each status within each type
+        foreach($types as $type) {
+            $etypeId = $type->id;
+
+            $typeCountTotal = 0;
+
+            $statuses = $command->queryAll(true);
+            
+            $statusCount = count($statuses);
+            
+            for($i = 0; $i < $statusCount; $i++) {
+                $typeCountTotal += (integer)$statuses[$i]['count'];
+                
+                $temp = $parms;
+                $temp['sid'] = $statuses[$i]['id'];
+                $temp['tid'] = $etypeId;
+                
+                $statuses[$i]['endpoint'] = CHtml::normalizeUrl($temp);
+            }
+            
+            $eventCountTotal += $typeCountTotal;
+            
+            $temp = $parms;
+            $temp['tid'] = $etypeId;
+            
+            $ret['type'][] = array(
+                'id' => $type->id,
+                'name' => $type->name,
+                'description' => $type->description,
+                'display_name' => $type->display_name,
+                'display_order' => $type->display_order,
+                'count' => (integer)$typeCountTotal,
+                'status' => $statuses,
+                'endpoint' => CHtml::normalizeUrl($temp)
+            );
+        }
+        
+        $ret['total'] = $eventCountTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        return $ret;
+    }
+    
+    /**
+     * Returns a summary record for each event for arenas assigned to user.
      * The results can be further restricted by passing in a status code,
      * type code, from date, to date, and arena id, 
      * @param integer $uid The user to get the arenas for.
@@ -677,7 +819,7 @@ class Event extends RinkfinderActiveRecord
      * @return mixed[] The event summeries or an empty array.
      * @throws CDbException
      */
-    public static function getAssignedEventsSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    public static function getAssignedSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
     {
         // Let's start by building up our query
         $ret = array();

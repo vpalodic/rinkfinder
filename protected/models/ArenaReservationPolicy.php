@@ -3,7 +3,7 @@
 /**
  * This is the model class for table "arena_reservation_policy".
  *
- * The followings are the available columns in table 'arena_reservation_policy':
+ * The following are the available columns in table 'arena_reservation_policy':
  * @property integer $id
  * @property integer $arena_id
  * @property string $days

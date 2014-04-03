@@ -217,6 +217,110 @@ class Reservation extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns the event reservation count for each status 
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The optional arena id to limit results.
+     * @param integer $from The optional from date to limit results.
+     * @param integer $to The optional to date to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event reservation counts or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedCounts($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Reservation',
+        );
+
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, s.active, IF(sc.count IS NULL, 0, sc.count) '
+                . 'AS count '
+                . 'FROM reservation_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(r.id) AS count '
+                . ' FROM reservation r '
+                . ' INNER JOIN event e '
+                . ' ON r.event_id = e.id '
+                . ' INNER JOIN arena a '
+                . ' ON e.arena_id = a.id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN reservation_status s1 '
+                . ' ON r.status_id = s1.id '
+                . ' WHERE u.id = :uid ';
+        
+        if($aid !== null) {
+            $sql .= "AND e.arena_id = :aid ";
+            $parms['aid'] = $aid;
+        }
+        
+        if($from !== null) {
+            $sql .= "AND e.start_date >= :from ";
+            $parms['from'] = $from;
+        }
+        
+        if($to !== null) {
+            $sql .= "AND e.start_date <= :to ";
+            $parms['to'] = $to;
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND r.status_id = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
+                . 'ON s.id = sc.id '
+                . 'ORDER BY s.display_order ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $reservationCountTotal = 0;
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($from !== null) {
+            $command->bindParam(':from', $from, PDO::PARAM_STR);
+        }
+        
+        if($to !== null) {
+            $command->bindParam(':to', $to, PDO::PARAM_STR);
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        $ret['status'] = $command->queryAll(true);
+
+        $statusCount = count($ret['status']);
+        
+        for($i = 0; $i < $statusCount; $i++) {
+            $reservationCountTotal += (integer)$ret['status'][$i]['count'];
+            
+            $temp = $parms;
+            
+            $temp['sid'] = $ret['status'][$i]['id'];
+                
+            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl($temp);
+        }
+        
+        $ret['total'] = $reservationCountTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        return $ret;
+    }
+    
+    /**
      * Returns a summary record for each reservation for an arena assigned to user.
      * The results can be further restricted by passing in a status code,
      * from date, to date, and arena id, 
@@ -226,10 +330,10 @@ class Reservation extends RinkfinderActiveRecord
      * @param integer $to The optional to date to limit results.
      * @param integer $tid The optional type code id to limit results.
      * @param integer $sid The optional status code id to limit results.
-     * @return mixed[] The event summeries or an empty array.
+     * @return mixed[] The reservation summeries or an empty array.
      * @throws CDbException
      */
-    public static function getAssignedReservationsSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
+    public static function getAssignedSummary($uid, $aid = null, $from = null, $to = null, $tid = null, $sid = null)
     {
         // Let's start by building up our query
         $ret = array();
@@ -259,22 +363,25 @@ class Reservation extends RinkfinderActiveRecord
                 . "    INNER JOIN user u "
                 . "    ON u.id = aua.user_id "
                 . "WHERE u.id = :uid ";
-
         
         if($aid !== null) {
             $sql .= "AND e.arena_id = :aid ";
+            $parms['aid'] = $aid;
         }
         
         if($from !== null) {
             $sql .= "AND e.start_date >= :from ";
+            $parms['from'] = $from;
         }
         
         if($to !== null) {
             $sql .= "AND e.start_date <= :to ";
+            $parms['to'] = $to;
         }
         
         if($sid !== null) {
             $sql .= "AND r.status_id = :sid ";
+            $parms['sid'] = $sid;
         }
         
         $sql .= "ORDER BY e.start_date ASC";

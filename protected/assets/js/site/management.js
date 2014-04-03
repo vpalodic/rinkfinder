@@ -35,6 +35,9 @@
                 case "arenas":
                     this.processCount(countSection, countSections.arenas);
                     break;
+                case "contacts":
+                    this.processCount(countSection, countSections.contacts);
+                    break;
                 case "events":
                     this.processCount(countSection, countSections.events);
                     break;
@@ -230,7 +233,7 @@
             type: "GET",
             dataType: "json",
             data: {
-                model: ["arenas", "events", "requests", "reservations"],
+                model: ["arenas", "contacts", "events", "requests", "reservations"],
                 from: management.fromDate.format('YYYY-MM-DD'),
                 to: management.toDate.format('YYYY-MM-DD')
             },
@@ -319,16 +322,18 @@
                 
                 if (myjsonObj !== false)
                 {
-                    $thatModal.modal('loading');
-                    $thatModal.find('.modal-body').empty().append('<h1 class="text-error">Error</h1>');
-                    
-                    utilities.ajaxError.show(
-                        "Management Dashboard",
-                        "Failed to retrieve data",
-                        xhr,
-                        "error",
-                        "Login Required"
-                    );
+                    window.setTimeout(function () {
+                        $thatModal.modal('loading');
+                        $thatModal.find('.modal-body').empty().append('<h1 class="text-error">Error</h1>');
+                        
+                        utilities.ajaxError.show(
+                            "Management Dashboard",
+                            "Failed to retrieve data",
+                            xhr,
+                            "error",
+                            "Login Required"
+                        );
+                    }, 1000);
             
                     return;
                 }
@@ -336,9 +341,7 @@
                 window.setTimeout(function () {
                     $thatModal.modal('loading');
                     $thatModal.find('.modal-body').empty().append(that.processModalData(result, status, xhr));
-                },
-                100
-                );
+                }, 1000);
             },
             error: function(xhr, status, errorThrown) {
                 window.setTimeout(function () {

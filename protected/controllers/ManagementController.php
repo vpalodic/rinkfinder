@@ -225,7 +225,7 @@ class ManagementController extends Controller
         
         // Try and get the data!
         try {
-            $data = Arena::getAssignedArenasSummary($uid, $sid);
+            $data = Arena::getAssignedSummary($uid, $sid);
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);
@@ -324,7 +324,7 @@ class ManagementController extends Controller
         
         // Try and get the data!
         try {
-            $data = Event::getAssignedEventsSummary($uid, $aid, $from, $to, $tid, $sid);
+            $data = Event::getAssignedSummary($uid, $aid, $from, $to, $tid, $sid);
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);
@@ -423,7 +423,7 @@ class ManagementController extends Controller
         
         // Try and get the data!
         try {
-            $data = EventRequest::getAssignedEventRequestsSummary($uid, $aid, $from, $to, $tid, $sid);
+            $data = EventRequest::getAssignedSummary($uid, $aid, $from, $to, $tid, $sid);
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);
@@ -517,7 +517,7 @@ class ManagementController extends Controller
         
         // Try and get the data!
         try {
-            $data = Reservation::getAssignedReservationsSummary($uid, $aid, $from, $to, $sid);
+            $data = Reservation::getAssignedSummary($uid, $aid, $from, $to, $sid);
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);

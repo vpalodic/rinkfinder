@@ -68,6 +68,7 @@
         </div>
         <div id="countsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
+                <div class="row-fluid">
                     <div id="requestsContainer" class="span3 accordion">
                         <div class="accordion-heading">
                             <div id="requestsBadge" style="display: inline-block;">
@@ -136,6 +137,26 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row-fluid">
+                    <div id="contactsContainer" class="span3 accordion">
+                        <div class="accordion-heading">
+                            <div id="contactsBadge" style="display: inline-block;">
+                            </div>
+                            <a class="accordion-toggle" data-toggle="collapse"
+                               data-parent="contactsContainer" href="#contactsCollapse"
+                               style="display: inline-block;">
+                                <h5 id="contactsHeader">Contacts</h5>
+                            </a>
+                        </div>
+                        <div id="contactsCollapse" class="accordion-body collapse in">
+                            <div class="accordion-inner">
+                                <div id="contactsWell" class="well well-large">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -1247,16 +1247,19 @@ class User extends RinkfinderActiveRecord
         foreach($for as $request) {
             switch(strtolower($request)) {
                 case 'arenas':
-                    $dashData['arenas'] = $this->getArenaCounts($uid);
+                    $dashData['arenas'] = Arena::getAssignedCounts($uid);
+                    break;
+                case 'contacts':
+                    $dashData['contacts'] = Contact::getAssignedCounts($uid);
                     break;
                 case 'events':
-                    $dashData['events'] = $this->getEventCounts($from, $to, $uid);
+                    $dashData['events'] = Event::getAssignedCounts($uid, null, $from, $to);
                     break;
                 case 'requests':
-                    $dashData['requests'] = $this->getRequestCounts($from, $to, $uid);
+                    $dashData['requests'] = EventRequest::getAssignedCounts($uid, null, $from, $to);
                     break;
                 case 'reservations':
-                    $dashData['reservations'] = $this->getReservationCounts($from, $to, $uid);
+                    $dashData['reservations'] = Reservation::getAssignedCounts($uid, null, $from, $to);
                     break;
             }
         }
@@ -1282,17 +1285,20 @@ class User extends RinkfinderActiveRecord
     }
     
     /**
-     * Returns the arena count for each status plus the total count
-     * @param integer $uid The user to get the counts for. If null, the
-     * current user is used.
-     * @return mixed[] The arena counts for each status and total count
-     * Also, urls to get a listing of of the events are included.
+     * Returns the manager count for each arena that is assigned to the user
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The arena counts or an empty array.
      * @throws CDbException
      */
-    public function getArenaCounts($uid = null)
+    public static function getAssignedManagerCounts($uid, $sid = null)
     {
-        // Let's start with getting the number of arenas for each status
+        // Let's start by building up our query
         $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Arena',
+        );
 
         $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
                 . 's.display_order, IF(sc.count IS NULL, 0, sc.count) AS count '
@@ -1306,352 +1312,44 @@ class User extends RinkfinderActiveRecord
                 . ' ON u.id = aua.user_id '
                 . ' INNER JOIN arena_status s1 '
                 . ' ON a.status_id = s1.id '
-                . ' WHERE u.id = :uid '
-                . ' GROUP BY s1.id) AS sc '
+                . ' WHERE u.id = :uid ';
+        
+        if($sid !== null) {
+            $sql .= "AND a.status_id = :sid ";
+            $parms['aid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
                 . 'ON s.id = sc.id '
-                . 'WHERE s.active = 1 '
                 . 'ORDER BY s.display_order ASC';
         
         $command = Yii::app()->db->createCommand($sql);
         
-        if($uid == null) {
-            $uid = $this->id;
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
         }
         
         $arenaCountTotal = 0;
         
-        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-
         $ret['status'] = $command->queryAll(true);
 
         $arenaCount = count($ret['status']);
         
         for($i = 0; $i < $arenaCount; $i++) {
             $arenaCountTotal += (integer)$ret['status'][$i]['count'];
-            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/index',
-                    'model' => 'Arena',
-                    'sid' => $ret['status'][$i]['id']
-                )
-            );
+            
+            $temp = $parms;
+            $temp['sid'] = $ret['status'][$i]['id'];
+            
+            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl($temp);
         }
         
         $ret['total'] = $arenaCountTotal;
-        $ret['endpoint'] = CHtml::normalizeUrl(array(
-                'management/index',
-                'model' => 'Arena'
-            )
-        );
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
         
         return $ret;
     }
 
-    /**
-     * Returns the event count for each event type and status 
-     * plus the total count for each type and the total count for all.
-     * @param string $from The start of the date range.
-     * @param string $to The end of the date range.
-     * @param integer $uid The user to get the counts for. If null, the
-     * current user is used.
-     * @return mixed[] The event counts for each event type and
-     * status plus the total count for each type and the total count for all.
-     * Also, urls to get a listing of of the events are included.
-     * @throws CDbException
-     */
-    public function getEventCounts($from, $to, $uid = null)
-    {
-        // Let's start with getting the number of arenas for each status
-        $ret = array();
-        
-        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
-                . 's.display_order, '
-                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
-                . 'FROM event_status s '
-                . 'LEFT JOIN '
-                . '(SELECT s1.id, COUNT(e.id) AS count '
-                . ' FROM event e '
-                . ' INNER JOIN arena a '
-                . ' ON e.arena_id = a.id '
-                . ' INNER JOIN arena_user_assignment aua '
-                . ' ON a.id = aua.arena_id '
-                . ' INNER JOIN user u '
-                . ' ON u.id = aua.user_id '
-                . ' INNER JOIN event_status s1 '
-                . ' ON e.status_id = s1.id '
-                . ' WHERE u.id = :uid  '
-                . ' AND '
-                . ' e.type_id = :etype '
-                . ' AND '
-                . ' e.start_date >= :from '
-                . ' AND '
-                . ' e.start_date <= :to '
-                . ' GROUP BY s1.id) AS sc '
-                . ' ON s.id = sc.id '
-                . ' ORDER BY s.display_order ASC ';
-        
-        $command = Yii::app()->db->createCommand($sql);
-        
-        if($uid == null) {
-            $uid = $this->id;
-        }
-        
-        $etypeId = 0;
-        $eventCountTotal = 0;
-        
-        $types = EventType::model()->findAll();
-        
-        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':etype', $etypeId, PDO::PARAM_INT);
-        $command->bindParam(':from', $from, PDO::PARAM_STR);
-        $command->bindParam(':to', $to, PDO::PARAM_STR);
-
-        // Start with each type and then go for each status within each type
-        foreach($types as $type) {
-            $etypeId = $type->id;
-
-            $typeCountTotal = 0;
-
-            $statuses = $command->queryAll(true);
-            
-            $statusCount = count($statuses);
-            
-            for($i = 0; $i < $statusCount; $i++) {
-                $typeCountTotal += (integer)$statuses[$i]['count'];
-                $statuses[$i]['endpoint'] = CHtml::normalizeUrl(array(
-                        'management/index',
-                        'model' => 'Event',
-                        'sid' => $statuses[$i]['id'],
-                        'tid' => $etypeId,
-                        'from' => $from,
-                        'to' => $to,
-                    )
-                );
-            }
-            
-            $eventCountTotal += $typeCountTotal;
-            
-            $ret['type'][] = array(
-                'id' => $type->id,
-                'name' => $type->name,
-                'description' => $type->description,
-                'display_name' => $type->display_name,
-                'display_order' => $type->display_order,
-                'count' => (integer)$typeCountTotal,
-                'status' => $statuses,
-                'endpoint' => CHtml::normalizeUrl(array(
-                        'management/index',
-                        'model' => 'Event',
-                        'tid' => $etypeId,
-                        'from' => $from,
-                        'to' => $to,
-                    )
-                )
-            );
-        }
-        
-        $ret['total'] = $eventCountTotal;
-        $ret['endpoint'] = CHtml::normalizeUrl(array(
-                'management/index',
-                'model' => 'Event',
-                'from' => $from,
-                'to' => $to,
-            )
-        );
-        return $ret;
-    }
-    
-    /**
-     * Returns the event request count for each type and status 
-     * plus the total count for each type and the total count for all.
-     * @param string $from The start of the date range.
-     * @param string $to The end of the date range.
-     * @param integer $uid The user to get the counts for. If null, the
-     * current user is used.
-     * @return mixed[] The event request counts for each type and
-     * status plus the total count for each type and the total count for all.
-     * @throws CDbException
-     */
-    public function getRequestCounts($from, $to, $uid = null)
-    {
-        // Let's start with getting the number of arenas for each status
-        $ret = array();
-        
-        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
-                . 's.display_order, '
-                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
-                . 'FROM event_request_status s '
-                . 'LEFT JOIN '
-                . '(SELECT s1.id, COUNT(e.id) AS count '
-                . ' FROM event_request er '
-                . ' INNER JOIN event e '
-                . ' ON e.id = er.event_id '
-                . ' INNER JOIN arena a '
-                . ' ON a.id = e.arena_id '
-                . ' INNER JOIN arena_user_assignment aua '
-                . ' ON a.id = aua.arena_id '
-                . ' INNER JOIN user u '
-                . ' ON u.id = aua.user_id '
-                . ' INNER JOIN event_request_status s1 '
-                . ' ON s1.id = er.status_id '
-                . ' WHERE u.id = :uid  '
-                . ' AND '
-                . ' er.type_id = :ertype '
-                . ' AND '
-                . ' e.start_date >= :from '
-                . ' AND '
-                . ' e.start_date <= :to '
-                . ' GROUP BY s1.id) AS sc '
-                . ' ON s.id = sc.id '
-                . ' ORDER BY s.display_order ASC ';
-        
-        $command = Yii::app()->db->createCommand($sql);
-        
-        if($uid == null) {
-            $uid = $this->id;
-        }
-        
-        $ertypeId = 0;
-        $eventRequestCountTotal = 0;
-        
-        $ertypes = EventRequestType::model()->findAll();
-        
-        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':ertype', $ertypeId, PDO::PARAM_INT);
-        $command->bindParam(':from', $from, PDO::PARAM_STR);
-        $command->bindParam(':to', $to, PDO::PARAM_STR);
-
-        // Start with each type and then go for each status within each type
-        foreach($ertypes as $ertype) {
-            $ertypeId = $ertype->id;
-            
-            $erTypeCountTotal = 0;
-            
-            $erstatuses = $command->queryAll(true);
-            
-            $statusCount = count($erstatuses);
-            
-            for($i = 0; $i < $statusCount; $i++) {
-                $erTypeCountTotal += (integer)$erstatuses[$i]['count'];
-                $erstatuses[$i]['endpoint'] = CHtml::normalizeUrl(array(
-                        'management/index',
-                        'model' => 'EventRequest',
-                        'sid' => $erstatuses[$i]['id'],
-                        'tid' => $ertypeId,
-                        'from' => $from,
-                        'to' => $to,
-                    )
-                );
-            }
-            
-            $eventRequestCountTotal += $erTypeCountTotal;
-
-            $ret['type'][] = array(
-                'id' => $ertype->id,
-                'name' => $ertype->name,
-                'description' => $ertype->description,
-                'display_name' => $ertype->display_name,
-                'display_order' => $ertype->display_order,
-                'count' => (integer)$erTypeCountTotal,
-                'status' => $erstatuses,
-                'endpoint' => CHtml::normalizeUrl(array(
-                        'management/index',
-                        'model' => 'EventRequest',
-                        'tid' => $ertypeId,
-                        'from' => $from,
-                        'to' => $to,
-                    )
-                )
-            );
-        }
-        
-        $ret['total'] = $eventRequestCountTotal;
-        $ret['endpoint'] = CHtml::normalizeUrl(array(
-                'management/index',
-                'model' => 'EventRequest',
-                'from' => $from,
-                'to' => $to,
-            )
-        );
-        return $ret;
-    }
-    
-    /**
-     * Returns the event request count for each type and status 
-     * plus the total count for each type and the total count for all.
-     * @param string $from The start of the date range.
-     * @param string $to The end of the date range.
-     * @param integer $uid The user to get the counts for. If null, the
-     * current user is used.
-     * @return mixed[] The event request counts for each type and
-     * status plus the total count for each type and the total count for all.
-     * @throws CDbException
-     */
-    public function getReservationCounts($from, $to, $uid = null)
-    {
-        // Let's start with getting the number of arenas for each status
-        $ret = array();
-        
-        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
-                . 's.display_order, IF(sc.count IS NULL, 0, sc.count) AS count '
-                . 'FROM reservation_status s '
-                . 'LEFT JOIN '
-                . '(SELECT s1.id, COUNT(r.id) AS count '
-                . ' FROM reservation r '
-                . ' INNER JOIN event e '
-                . ' ON r.event_id = e.id '
-                . ' INNER JOIN arena a '
-                . ' ON e.arena_id = a.id '
-                . ' INNER JOIN arena_user_assignment aua '
-                . ' ON a.id = aua.arena_id '
-                . ' INNER JOIN user u '
-                . ' ON u.id = aua.user_id '
-                . ' INNER JOIN reservation_status s1 '
-                . ' ON r.status_id = s1.id '
-                . ' WHERE u.id = :uid '
-                . ' AND '
-                . ' e.start_date >= :from '
-                . ' AND '
-                . ' e.start_date <= :to '
-                . ' GROUP BY s1.id) AS sc '
-                . 'ON s.id = sc.id '
-                . 'ORDER BY s.display_order ASC';
-        
-        $command = Yii::app()->db->createCommand($sql);
-        
-        if($uid == null) {
-            $uid = $this->id;
-        }
-        
-        $reservationCountTotal = 0;
-        
-        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
-        $command->bindParam(':from', $from, PDO::PARAM_STR);
-        $command->bindParam(':to', $to, PDO::PARAM_STR);
-
-        $ret['status'] = $command->queryAll(true);
-
-        $statusCount = count($ret['status']);
-        
-        for($i = 0; $i < $statusCount; $i++) {
-            $reservationCountTotal += (integer)$ret['status'][$i]['count'];
-            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/index',
-                    'model' => 'Reservation',
-                    'sid' => $ret['status'][$i]['id'],
-                    'from' => $from,
-                    'to' => $to,
-                )
-            );
-        }
-        
-        $ret['total'] = $reservationCountTotal;
-        $ret['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/index',
-                    'model' => 'Reservation',
-                    'from' => $from,
-                    'to' => $to,
-                )
-        );
-        return $ret;
-    }
 }

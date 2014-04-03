@@ -788,14 +788,13 @@ class Arena extends RinkfinderActiveRecord
     }
 
     /**
-     * Returns a summary record for each arena assigned to user.
-     * The results can be further restricted by passing in a status code.
+     * Returns the arena count for each arena that is assigned to the user
      * @param integer $uid The user to get the arenas for.
      * @param integer $sid The optional status code id to limit results.
-     * @return mixed[] The arena summeries or an empty array.
+     * @return mixed[] The arena counts or an empty array.
      * @throws CDbException
      */
-    public static function getAssignedArenasSummary($uid, $sid = null)
+    public static function getAssignedCounts($uid, $sid = null)
     {
         // Let's start by building up our query
         $ret = array();
@@ -804,6 +803,74 @@ class Arena extends RinkfinderActiveRecord
             'model' => 'Arena',
         );
 
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM arena_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(a.id) AS count '
+                . ' FROM arena a '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN arena_status s1 '
+                . ' ON a.status_id = s1.id '
+                . ' WHERE u.id = :uid ';
+        
+        if($sid !== null) {
+            $sql .= "AND a.status_id = :sid ";
+            $parms['aid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
+                . 'ON s.id = sc.id '
+                . 'ORDER BY s.display_order ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        $arenaCountTotal = 0;
+        
+        $ret['status'] = $command->queryAll(true);
+
+        $arenaCount = count($ret['status']);
+        
+        for($i = 0; $i < $arenaCount; $i++) {
+            $arenaCountTotal += (integer)$ret['status'][$i]['count'];
+            
+            $temp = $parms;
+            $temp['sid'] = $ret['status'][$i]['id'];
+            
+            $ret['status'][$i]['endpoint'] = CHtml::normalizeUrl($temp);
+        }
+        
+        $ret['total'] = $arenaCountTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        
+        return $ret;
+    }
+
+    /**
+     * Returns a summary record for each arena assigned to user.
+     * The results can be further restricted by passing in a status code.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The arena summeries or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedSummary($uid, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Arena',
+        );
 
         $sql = "SELECT a.id, "
                 . "a.external_id, "
@@ -843,7 +910,7 @@ class Arena extends RinkfinderActiveRecord
         
         if($sid !== null) {
             $sql .= "AND a.status_id = :sid ";
-            $parms['aid'] = $sid;
+            $parms['sid'] = $sid;
         }
         
         $sql .= "ORDER BY a.name ASC";
