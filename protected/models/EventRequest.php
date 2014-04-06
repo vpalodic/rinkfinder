@@ -165,6 +165,30 @@ class EventRequest extends RinkfinderActiveRecord
 	}
         
     /**
+     * Returns an array of event request types
+     * @return array[] the array of event request types
+     * @throws CDbException
+     */
+    public static function getTypes()
+    {
+        $sql = 'SELECT * FROM event_request_type';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of event request statuses
+     * @return array[] the array of event request statuses
+     * @throws CDbException
+     */
+    public static function getStatuses()
+    {
+        $sql = 'SELECT * FROM event_request_status';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */
@@ -536,6 +560,51 @@ class EventRequest extends RinkfinderActiveRecord
         $eventRequestCount = count($ret['items']);
         
         for($i = 0; $i < $eventRequestCount; $i++) {
+            $localErid = $ret['items'][$i]['id'];
+            $localEid = null;
+            $localAid = null;
+            $localLid = null;
+            
+            $localErParms = array(
+                'management/view',
+                'model' => 'EventRequest',
+                'id' => $localErid
+            );
+            
+            $localEParms = array(
+                'management/view',
+                'model' => 'Event'
+            );
+            
+            $localAParms = array(
+                'management/view',
+                'model' => 'Arena'
+            );
+            
+            $localLParms = array(
+                'management/view',
+                'model' => 'Location'
+            );
+            
+            if(is_numeric($ret['items'][$i]['event_id'])) {
+                $localEid = $ret['items'][$i]['event_id'];
+                $localErParms['eid'] = $localEid;
+                $localEParms['id'] = $localEid;
+            }
+            if(is_numeric($ret['items'][$i]['location_id'])) {
+                $localLid = $ret['items'][$i]['location_id'];
+                $localErParms['lid'] = $localLid;
+                $localEParms['lid'] = $localLid;
+                $localLParms['id'] = $localLid;
+            }
+            if(is_numeric($ret['items'][$i]['arena_id'])) {
+                $localAid = $ret['items'][$i]['arena_id'];
+                $localErParms['aid'] = $localAid;
+                $localEParms['aid'] = $localAid;
+                $localLParms['aid'] = $localAid;
+                $localAParms['id'] = $localAid;
+            }
+            
             if(isset($ret['items'][$i]['event_start']) && 
                      strtotime($ret['items'][$i]['event_start']) !== false) {
                 $ret['items'][$i]['dataConvert']['event_start'] = 
@@ -557,43 +626,170 @@ class EventRequest extends RinkfinderActiveRecord
                         strtotime($ret['items'][$i]['rejected_on']);
             }
             
-            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/update',
-                    'model' => 'EventRequest',
-                    'eid' => $ret['items'][$i]['id'],
-                )
-            );
+            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl($localErParms);
             
             if(is_numeric($ret['items'][$i]['event_id'])) {
-                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl(array(
-                        'management/update',
-                        'model' => 'Event',
-                        'eid' => $ret['items'][$i]['event_id'],
-                    )
-                );
-            }            
-            if(is_numeric($ret['items'][$i]['arena_id'])) {
-                $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl(array(
-                        'management/update',
-                        'model' => 'Arena',
-                        'aid' => $ret['items'][$i]['arena_id'],
-                    )
-                );
+                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl($localEParms);
             }            
             if(is_numeric($ret['items'][$i]['location_id'])) {
-                $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl(array(
-                        'management/update',
-                        'model' => 'Location',
-                        'lid' => $ret['items'][$i]['location_id'],
-                    )
-                );
+                $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl($localLParms);
             }
+            if(is_numeric($ret['items'][$i]['arena_id'])) {
+                $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl($localAParms);
+            }            
         }
         
         $ret['count'] = $eventRequestCount;
         $ret['model'] = 'eventRequest';
         $ret['action'] = 'index';
         $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(EventRequest::getStatuses(), 'name', 'display_name');
+        $ret['types'] = CHtml::listData(EventRequest::getTypes(), 'name', 'display_name');
+        
+        // Ok, lets return this stuff!!
+        return $ret;
+    }
+    
+    /**
+     * Returns a summary record for each event request for an arena assigned to user.
+     * The results can be further restricted by passing in a status code,
+     * type code, from date, to date, and arena id, 
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return mixed[] The event request details or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedRecord($id, $uid, $eid, $aid, $lid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/view',
+            'model' => 'EventRequest',
+            'id' => $id,
+            'eid' => $eid,
+            'aid' => $aid,
+        );
+        
+        $sql = "SELECT er.id, "
+                . "e.id AS event_id, "
+                . "CONCAT(DATE_FORMAT(e.start_date, '%m/%d/%Y'), ' ', DATE_FORMAT(e.start_time, '%h:%i %p')) AS event_start, "
+                . "a.name AS arena, "
+                . "a.id AS arena_id, "
+                . "(SELECT l.name FROM location l WHERE l.id = e.location_id AND l.arena_id = a.id) AS location, "
+                . "(SELECT l.id FROM location l WHERE l.id = e.location_id AND l.arena_id = a.id) AS location_id, "
+                . "er.requester_id, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.requester_id = p.user_id) AS requested_by, "
+                . "er.acknowledger_id, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledged_by, "
+                . "CASE WHEN er.acknowledged_on IS NULL THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
+                . "er.accepter_id, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepted_by, "
+                . "CASE WHEN er.accepted_on IS NULL THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
+                . "er.rejector_id, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejected_by, "
+                . "CASE WHEN er.rejected_on IS NULL THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
+                . "er.rejected_reason, "
+                . "er.notes, "
+                . "er.type_id, "
+                . "(SELECT t.display_name FROM event_request_type t WHERE t.id = er.type_id) AS type, "
+                . "er.status_id, "
+                . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status "
+                . "FROM event_request er "
+                . "    INNER JOIN event e "
+                . "    ON er.event_id = e.id "
+                . "    INNER JOIN arena a "
+                . "    ON e.arena_id = a.id "
+                . "    INNER JOIN arena_user_assignment aua "
+                . "    ON a.id = aua.arena_id "
+                . "    INNER JOIN user u "
+                . "    ON u.id = aua.user_id ";
+
+        if($lid !== null) {
+            $sql .= " INNER JOIN location l "
+                    . " ON l.arena_id = a.id ";
+
+            $parms['lid'] = $aid;
+            
+            $sql .= " AND e.location_id = :lid ";
+        }
+        
+        $sql .= "WHERE er.id = :id "
+                . " AND u.id = :uid "
+                . " AND er.event_id = :eid "
+                . " AND e.id = :eid "
+                . " AND e.arena_id = :aid "
+                . " AND a.id = :aid ";
+
+        
+        if($lid !== null) {
+            $sql .= " AND e.location_id = :lid "
+                    . " AND l.id = :lid";
+        }
+        
+        $sql .= "ORDER BY e.start_date ASC";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':id', $id, PDO::PARAM_INT);
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':eid', $eid, PDO::PARAM_INT);
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindParam(':lid', $lid, PDO::PARAM_INT);
+        }
+        
+        $ret['item'] = $command->queryRow(true);
+
+        $ret['count'] = is_array($ret['item']) ? 1 : 0;
+        $ret['model'] = 'EventRequest';
+        $ret['action'] = 'view';
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        
+        if($ret['count'] == 0) {
+            return $ret;
+        }
+
+        // Ok, we have our record!!
+        // So now we need to process it so that the user can update it
+        // and that sorts of stuff!
+        
+            if(isset($ret['items'][$i]['event_start']) && 
+                     strtotime($ret['items'][$i]['event_start']) !== false) {
+                $ret['items'][$i]['dataConvert']['event_start'] = 
+                        strtotime($ret['items'][$i]['event_start']);
+            }
+            if(isset($ret['items'][$i]['acknowledged_on']) && 
+                     strtotime($ret['items'][$i]['acknowledged_on']) !== false) {
+                $ret['items'][$i]['dataConvert']['acknowledged_on'] = 
+                        strtotime($ret['items'][$i]['acknowledged_on']);
+            }
+            if(isset($ret['items'][$i]['accepted_on']) && 
+                     strtotime($ret['items'][$i]['accepted_on']) !== false) {
+                $ret['items'][$i]['dataConvert']['accepted_on'] = 
+                        strtotime($ret['items'][$i]['accepted_on']);
+            }
+            if(isset($ret['items'][$i]['rejected_on']) && 
+                     strtotime($ret['items'][$i]['rejected_on']) !== false) {
+                $ret['items'][$i]['dataConvert']['rejected_on'] = 
+                        strtotime($ret['items'][$i]['rejected_on']);
+            }
+            
+            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl($localErParms);
+            
+            if(is_numeric($ret['items'][$i]['event_id'])) {
+                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl($localEParms);
+            }            
+            if(is_numeric($ret['items'][$i]['location_id'])) {
+                $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl($localLParms);
+            }
+            if(is_numeric($ret['items'][$i]['arena_id'])) {
+                $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl($localAParms);
+            }            
         
         // Ok, lets return this stuff!!
         return $ret;

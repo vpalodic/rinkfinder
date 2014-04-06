@@ -117,6 +117,116 @@ class Location extends RinkfinderActiveRecord
 		);
 	}
 
+    /**
+     * Returns an array of location types
+     * @return array[] the array of location types
+     * @throws CDbException
+     */
+    public static function getTypes()
+    {
+        $sql = 'SELECT * FROM location_type';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of location statuses
+     * @return array[] the array of location statuses
+     * @throws CDbException
+     */
+    public static function getStatuses()
+    {
+        $sql = 'SELECT * FROM location_status';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of attributes that are in the summary view
+     * @return string[] the array of attributes
+     */
+    public static function getSummaryAttributes()
+    {
+        return array(
+            'id' => array(
+                'name' => 'id',
+                'display' => 'ID',
+                'type' => 'numeric',
+                'link' => 'endpoint',
+            ),
+            'external_id' => array(
+                'name' => 'external_id',
+                'display' => 'External ID',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'name' => array(
+                'name' => 'name',
+                'display' => 'Name',
+                'type' => 'alpha',
+            ),
+            'arena' => array(
+                'name' => 'arena',
+                'display' => 'Arena',
+                'type' => 'alpha',
+                'hide' => 'phone,tablet',
+            ),
+            'arena_id' => array(
+                'name' => 'arena_id',
+                'display' => 'Arena ID',
+                'type' => 'numeric',
+                'hide' => 'all',
+                'link' => 'endpoint2',
+            ),
+            'length' => array(
+                'name' => 'length',
+                'display' => 'Length',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'width' => array(
+                'name' => 'width',
+                'display' => 'Width',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'radius' => array(
+                'name' => 'radius',
+                'display' => 'Radius',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'seating' => array(
+                'name' => 'seating',
+                'display' => 'Seating Capacity',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'tags' => array(
+                'name' => 'tags',
+                'display' => 'Tags',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'notes' => array(
+                'name' => 'notes',
+                'display' => 'Notes',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'type' => array(
+                'name' => 'type',
+                'display' => 'Type',
+                'type' => 'alpha',
+            ),
+            'status' => array(
+                'name' => 'status',
+                'display' => 'Status',
+                'type' => 'alpha',
+            ),
+        );
+    }
+
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
 	 *
@@ -237,4 +347,234 @@ class Location extends RinkfinderActiveRecord
         Tag::model()->updateFrequency($this->tags, '');
     }
 
+    /**
+     * Returns the location counts for arenas assigned to user.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The optional arena id to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event counts or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedCounts($uid, $aid = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Location',
+        );
+
+        $sql = 'SELECT s.id, s.name, s.description, s.display_name, '
+                . 's.display_order, '
+                . 'IF(sc.count IS NULL, 0, sc.count) AS count '
+                . 'FROM location_status s '
+                . 'LEFT JOIN '
+                . '(SELECT s1.id, COUNT(l.id) AS count '
+                . ' FROM location l '
+                . ' INNER JOIN arena a '
+                . ' ON l.arena_id = a.id '
+                . ' INNER JOIN arena_user_assignment aua '
+                . ' ON a.id = aua.arena_id '
+                . ' INNER JOIN user u '
+                . ' ON u.id = aua.user_id '
+                . ' INNER JOIN event_status s1 '
+                . ' ON l.status_id = s1.id '
+                . ' WHERE u.id = :uid  ';
+        
+        if($aid !== null) {
+            $sql .= "AND e.arena_id = :aid ";
+            $parms['aid'] = $aid;
+        }
+        
+        if($tid !== null) {
+            $sql .= "AND l.type_id = :tid ";
+            $parms['tid'] = $tid;
+        } else {
+            $sql .= "AND l.type_id = :ltype ";
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND l.status_id = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= ' GROUP BY s1.id) AS sc '
+                . ' ON s.id = sc.id '
+                . ' ORDER BY s.display_order ASC ';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $ltypeId = 0;
+        $countTotal = 0;
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($tid !== null) {
+            $command->bindParam(':tid', $tid, PDO::PARAM_INT);
+            $types = array();
+            $types[] = LocationType::model()->findByPk($tid);
+        } else {
+            $command->bindParam(':ltype', $ltypeId, PDO::PARAM_INT);
+            $types = LocationType::model()->findAll();
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        // Start with each type and then go for each status within each type
+        foreach($types as $type) {
+            $ltypeId = $type->id;
+
+            $typeCountTotal = 0;
+
+            $statuses = $command->queryAll(true);
+            
+            $statusCount = count($statuses);
+            
+            for($i = 0; $i < $statusCount; $i++) {
+                $typeCountTotal += (integer)$statuses[$i]['count'];
+                
+                $temp = $parms;
+                $temp['sid'] = $statuses[$i]['id'];
+                $temp['tid'] = $ltypeId;
+                
+                $statuses[$i]['endpoint'] = CHtml::normalizeUrl($temp);
+            }
+            
+            $countTotal += $typeCountTotal;
+            
+            $temp = $parms;
+            $temp['tid'] = $ltypeId;
+            
+            $ret['type'][] = array(
+                'id' => $type->id,
+                'name' => $type->name,
+                'description' => $type->description,
+                'display_name' => $type->display_name,
+                'display_order' => $type->display_order,
+                'count' => (integer)$typeCountTotal,
+                'status' => $statuses,
+                'endpoint' => CHtml::normalizeUrl($temp)
+            );
+        }
+        
+        $ret['total'] = $countTotal;
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        return $ret;
+    }
+    
+    /**
+     * Returns a summary record for each location for arenas assigned to user.
+     * The results can be further restricted by passing in a status code,
+     * type code, from date, to date, and arena id, 
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The optional arena id to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event summeries or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedSummary($uid, $aid = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Location',
+        );
+
+        $sql = "SELECT l.id, "
+                . "l.external_id, "
+                . "l.name, "
+                . "l.description, "
+                . "l.tags, "
+                . "a.name AS arena, "
+                . "a.id AS arena_id, "
+                . "l.length, "
+                . "l.width, "
+                . "l.radius, "
+                . "l.seating, "
+                . "l.notes, "
+                . "(SELECT t.display_name FROM location_type t WHERE t.id = l.type_id) AS type, "
+                . "(SELECT s.display_name FROM location_status s WHERE s.id = l.status_id) AS status "
+                . "FROM location l "
+                . "    INNER JOIN arena a "
+                . "    ON l.arena_id = a.id "
+                . "    INNER JOIN arena_user_assignment aua "
+                . "    ON a.id = aua.arena_id "
+                . "    INNER JOIN user u "
+                . "    ON u.id = aua.user_id "
+                . "WHERE u.id = :uid ";
+
+        if($aid !== null) {
+            $sql .= "AND l.arena_id = :aid ";
+            $parms['aid'] = $aid;
+        }
+        
+        if($tid !== null) {
+            $sql .= "AND l.type_id = :tid ";
+            $parms['tid'] = $tid;
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND l.status_id = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= "ORDER BY a.name, l.name ASC";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($tid !== null) {
+            $command->bindParam(':tid', $tid, PDO::PARAM_INT);
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        $ret['items'] = $command->queryAll(true);
+
+        $count = count($ret['items']);
+        
+        for($i = 0; $i < $count; $i++) {
+            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
+                    'management/view',
+                    'model' => 'Location',
+                    'id' => $ret['items'][$i]['id'],
+                )
+            );
+            
+            if(is_numeric($ret['items'][$i]['arena_id'])) {
+                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl(array(
+                        'management/view',
+                        'model' => 'Arena',
+                        'id' => $ret['items'][$i]['arena_id'],
+                    )
+                );
+            }            
+        }
+        
+        $ret['count'] = $count;
+        $ret['model'] = 'location';
+        $ret['action'] = 'index';
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(Location::getStatuses(), 'name', 'display_name');
+        $ret['types'] = CHtml::listData(Location::getTypes(), 'name', 'display_name');
+        
+        // Ok, lets return this stuff!!
+        return $ret;
+    }
 }

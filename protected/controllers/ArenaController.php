@@ -204,25 +204,51 @@ class ArenaController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);            
+        if(Yii::app()->request->isAjaxRequest) {
+            $this->renderPartial(
+                    'uploadArenas',
+                    array(
+                        'model' => $model,
+                        'fields' => Arena::getImportAttributes(),
+                        'path' => $path,
+                        'doReady' => false
+                    ),
+                    false,
+                    false
+            );
         } else {
-            Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
+            if(defined('YII_DEBUG')) {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
+            } else {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
+            }
+            
+            $this->includeCss = true;
+
+            $this->render(
+                    'uploadArenas',
+                    array(
+                        'model' => $model,
+                        'fields' => Arena::getImportAttributes(),
+                        'path' => $path,
+                        'doReady' => true
+                    )
+            );
         }
-        
-        $this->render(
-                'uploadArenas',
-                array(
-                    'model' => $model,
-                    'fields' => Arena::getImportAttributes(),
-                )
-        );
     }
 
     /**

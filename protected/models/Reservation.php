@@ -140,6 +140,18 @@ class Reservation extends RinkfinderActiveRecord
 	}
 
     /**
+     * Returns an array of reservation statuses
+     * @return array[] the array of reservation statuses
+     * @throws CDbException
+     */
+    public static function getStatuses()
+    {
+        $sql = 'SELECT * FROM reservation_status';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */
@@ -418,44 +430,44 @@ class Reservation extends RinkfinderActiveRecord
             }
             
             $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/update',
+                    'management/view',
                     'model' => 'Reservation',
-                    'rid' => $ret['items'][$i]['id'],
+                    'id' => $ret['items'][$i]['id'],
                 )
             );
             
             if(is_numeric($ret['items'][$i]['source'])) {
                 $ret['items'][$i]['endpoint1'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'EventRequest',
-                        'erid' => $ret['items'][$i]['source'],
+                        'id' => $ret['items'][$i]['source'],
                     )
                 );
             }
             
             if(is_numeric($ret['items'][$i]['event_id'])) {
                 $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Event',
-                        'eid' => $ret['items'][$i]['event_id'],
+                        'id' => $ret['items'][$i]['event_id'],
                     )
                 );
             }
             
             if(is_numeric($ret['items'][$i]['arena_id'])) {
                 $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Arena',
-                        'aid' => $ret['items'][$i]['arena_id'],
+                        'id' => $ret['items'][$i]['arena_id'],
                     )
                 );
             }
             
             if(is_numeric($ret['items'][$i]['location_id'])) {
                 $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Location',
-                        'lid' => $ret['items'][$i]['location_id'],
+                        'id' => $ret['items'][$i]['location_id'],
                     )
                 );
             }
@@ -465,6 +477,7 @@ class Reservation extends RinkfinderActiveRecord
         $ret['model'] = 'reservation';
         $ret['action'] = 'index';
         $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(Reservation::getStatuses(), 'name', 'display_name');
         
         // Ok, lets return this stuff!!
         return $ret;

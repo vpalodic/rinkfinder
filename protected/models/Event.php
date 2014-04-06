@@ -189,7 +189,7 @@ class Event extends RinkfinderActiveRecord
      * @return array[] the array of event types
      * @throws CDbException
      */
-    public static function getEventTypes()
+    public static function getTypes()
     {
         $sql = 'SELECT * FROM event_type';
         $command = Yii::app()->db->createCommand($sql);
@@ -201,7 +201,7 @@ class Event extends RinkfinderActiveRecord
      * @return array[] the array of event statuses
      * @throws CDbException
      */
-    public static function getEventStatuses()
+    public static function getStatuses()
     {
         $sql = 'SELECT * FROM event_status';
         $command = Yii::app()->db->createCommand($sql);
@@ -504,13 +504,13 @@ class Event extends RinkfinderActiveRecord
             ),
             'outstanding_event_requests' => array(
                 'name' => 'outstanding_event_requests',
-                'display' => 'Outstanding Event Requests',
+                'display' => 'Open Event Requests',
                 'type' => 'numeric',
                 'hide' => 'all'
             ),
             'outstanding_event_request_ids' => array(
                 'name' => 'outstanding_event_request_ids',
-                'display' => 'Outstanding Event Request IDs',
+                'display' => 'Open Event Request IDs',
                 'type' => 'alpha',
                 'hide' => 'all',
                 'link' => 'endpoint5',
@@ -518,13 +518,13 @@ class Event extends RinkfinderActiveRecord
             ),
             'outstanding_reservations' => array(
                 'name' => 'outstanding_reservations',
-                'display' => 'Outstanding Reservations',
+                'display' => 'Open Reservations',
                 'type' => 'numeric',
                 'hide' => 'all'
             ),
             'outstanding_reservation_ids' => array(
                 'name' => 'outstanding_reservation_ids',
-                'display' => 'Outstanding Reservation IDs',
+                'display' => 'Open Reservation IDs',
                 'type' => 'alpha',
                 'hide' => 'all',
                 'link' => 'endpoint6',
@@ -949,33 +949,33 @@ class Event extends RinkfinderActiveRecord
             }
             
             $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/update',
+                    'management/view',
                     'model' => 'Event',
-                    'eid' => $ret['items'][$i]['id'],
+                    'id' => $ret['items'][$i]['id'],
                 )
             );
             
             if(is_numeric($ret['items'][$i]['arena_id'])) {
                 $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Arena',
-                        'eid' => $ret['items'][$i]['arena_id'],
+                        'id' => $ret['items'][$i]['arena_id'],
                     )
                 );
             }            
             if(is_numeric($ret['items'][$i]['location_id'])) {
                 $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Location',
-                        'aid' => $ret['items'][$i]['location_id'],
+                        'id' => $ret['items'][$i]['location_id'],
                     )
                 );
             }            
             if(is_numeric($ret['items'][$i]['recurrence_id'])) {
                 $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl(array(
-                        'management/update',
+                        'management/view',
                         'model' => 'Recurrence',
-                        'lid' => $ret['items'][$i]['recurrence_id'],
+                        'id' => $ret['items'][$i]['recurrence_id'],
                     )
                 );
             }
@@ -986,9 +986,9 @@ class Event extends RinkfinderActiveRecord
                 
                 for($j = 0; $j < $tempLength; $j++) {
                         $ret['items'][$i]['endpoint5'][] = CHtml::normalizeUrl(array(
-                            'management/update',
+                            'management/view',
                             'model' => 'EventRequest',
-                            'erid' => $temp[$j],
+                            'id' => $temp[$j],
                         )
                     );
                 }
@@ -1000,9 +1000,9 @@ class Event extends RinkfinderActiveRecord
                 
                 for($j = 0; $j < $tempLength; $j++) {
                         $ret['items'][$i]['endpoint6'][] = CHtml::normalizeUrl(array(
-                            'management/update',
+                            'management/view',
                             'model' => 'Reservation',
-                            'rid' => $temp[$j],
+                            'id' => $temp[$j],
                         )
                     );
                 }
@@ -1013,6 +1013,8 @@ class Event extends RinkfinderActiveRecord
         $ret['model'] = 'event';
         $ret['action'] = 'index';
         $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(Event::getStatuses(), 'name', 'display_name');
+        $ret['types'] = CHtml::listData(Event::getTypes(), 'name', 'display_name');
         
         // Ok, lets return this stuff!!
         return $ret;

@@ -589,6 +589,7 @@ class SiteController extends Controller
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
@@ -601,6 +602,7 @@ class SiteController extends Controller
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
         }
         
         // Setup the endpoints for the webpage to be able to grab data!
@@ -610,11 +612,14 @@ class SiteController extends Controller
             'operations' => $this->createUrl('/management/getOperations'),
         );
         
+        $this->includeCss = true;
+        
         // display the management page
         $this->render(
                 'management',
                 array(
                     'endpoints' => $endpoints,
+                    'path' => $path,
                 )
         );        
     }

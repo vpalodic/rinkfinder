@@ -5,19 +5,29 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        if(defined('YII_DEBUG') && $this->includeCss) {
+            Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.css');
+        } elseif ($this->includeCss) {
+            Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.min.css');
+        }
+    ?>
     <title><?php echo CHtml::encode($this->pageTitle); ?></title>
     <?php Yii::app()->bootstrap->register(); ?>
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
-        if(defined('YII_DEBUG')) {
+        if(defined('YII_DEBUG') && $this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
-        } else {
+        } elseif ($this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
         }
     ?>
@@ -27,7 +37,7 @@
 </head>
 
 <body>
-<?php if(!isset($printing)): ?>
+<?php if($this->navigation): ?>
     <?php
         Yii::app()->clientScript->registerScript(
                     'fadeAndHideEffect',

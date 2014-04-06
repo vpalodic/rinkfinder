@@ -101,6 +101,124 @@ class Contact extends RinkfinderActiveRecord
 		);
 	}
 
+    /**
+     * Returns an array of contact statuses
+     * @return array[] the array of contact statuses
+     * @throws CDbException
+     */
+    public static function getStatuses()
+    {
+        return array(
+            array(
+                'id' => 0,
+                'name' => 'INACTIVE',
+                'description' => "Contact may be assigned to an Arena but will not show under contacts",
+                'display_name' => 'Inactive',
+                'display_order' => 2,
+                'active' => 1,
+            ),
+            array(
+                'id' => 1,
+                'name' => 'ACTIVE',
+                'description' => "Contact may be assigned to an Arena and will show under contacts",
+                'display_name' => 'Active',
+                'display_order' => 1,
+                'active' => 1,
+            )
+        );
+    }
+    
+    /**
+     * Returns an array of attributes that are in the summary view
+     * @return string[] the array of attributes
+     */
+    public static function getSummaryAttributes()
+    {
+        return array(
+            'id' => array(
+                'name' => 'id',
+                'display' => 'ID',
+                'type' => 'numeric',
+                'link' => 'endpoint',
+            ),
+            'first_name' => array(
+                'name' => 'first_name',
+                'display' => 'First Name',
+                'type' => 'alpha',
+            ),
+            'last_name' => array(
+                'name' => 'last_name',
+                'display' => 'Last Name',
+                'type' => 'alpha',
+            ),
+            'address_line1' => array(
+                'name' => 'address_line1',
+                'display' => 'Address Line 1',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'address_line2' => array(
+                'name' => 'address_line2',
+                'display' => 'Address Line 2',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'city' => array(
+                'name' => 'city',
+                'display' => 'City',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'state' => array(
+                'name' => 'state',
+                'display' => 'State',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'zip' => array(
+                'name' => 'zip',
+                'display' => 'Zip',
+                'type' => 'numeric',
+                'hide' => 'all'
+            ),
+            'phone' => array(
+                'name' => 'phone',
+                'display' => 'Phone',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'ext' => array(
+                'name' => 'ext',
+                'display' => 'Extension',
+                'type' => 'numeric',
+                'hide' => 'all'
+            ),
+            'fax' => array(
+                'name' => 'fax',
+                'display' => 'Fax',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'fax_ext' => array(
+                'name' => 'fax_ext',
+                'display' => 'Fax Extension',
+                'type' => 'numeric',
+                'hide' => 'all'
+            ),
+            'email' => array(
+                'name' => 'email',
+                'display' => 'E-mail',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
+            'active' => array(
+                'name' => 'active',
+                'display' => 'Status',
+                'type' => 'alpha',
+            ),
+        );
+    }
+
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
 	 *
@@ -179,16 +297,17 @@ class Contact extends RinkfinderActiveRecord
                 . '2 AS display_order, '
                 . 'IF(COUNT(c.id) IS NULL, 0, COUNT(c.id)) AS count '
                 . 'FROM contact c '
-                . 'INNER JOIN arena_contact_assignment aca '
-                . 'ON c.id = aca.contact_id '
-                . 'INNER JOIN arena a '
-                . 'ON a.id = aca.arena_id '
-                . 'INNER JOIN arena_user_assignment aua '
-                . 'ON a.id = aua.arena_id '
-                . 'INNER JOIN user u '
-                . 'ON u.id = aua.user_id '
                 . 'WHERE c.active = 0 '
-                . 'AND u.id = :uid ';
+                . 'AND '
+                . 'c.id IN (SELECT DISTINCT(aca.contact_id) '
+                . '    FROM arena_contact_assignment aca '
+                . '        INNER JOIN arena a '
+                . '        ON a.id = aca.arena_id '
+                . '        INNER JOIN arena_user_assignment aua '
+                . '        ON a.id = aua.arena_id '
+                . '        INNER JOIN user u '
+                . '        ON u.id = aua.user_id '
+                . '    WHERE u.id = :uid ';
         
         $sql2 = 'SELECT 1 AS id, '
                 . '"ACTIVE" AS name, '
@@ -197,22 +316,26 @@ class Contact extends RinkfinderActiveRecord
                 . '1 AS display_order, '
                 . 'IF(COUNT(c.id) IS NULL, 0, COUNT(c.id)) AS count '
                 . 'FROM contact c '
-                . 'INNER JOIN arena_contact_assignment aca '
-                . 'ON c.id = aca.contact_id '
-                . 'INNER JOIN arena a '
-                . 'ON a.id = aca.arena_id '
-                . 'INNER JOIN arena_user_assignment aua '
-                . 'ON a.id = aua.arena_id '
-                . 'INNER JOIN user u '
-                . 'ON u.id = aua.user_id '
                 . 'WHERE c.active = 1 '
-                . 'AND u.id = :uid ';
+                . 'AND '
+                . 'c.id IN (SELECT DISTINCT(aca.contact_id) '
+                . '    FROM arena_contact_assignment aca '
+                . '        INNER JOIN arena a '
+                . '        ON a.id = aca.arena_id '
+                . '        INNER JOIN arena_user_assignment aua '
+                . '        ON a.id = aua.arena_id '
+                . '        INNER JOIN user u '
+                . '        ON u.id = aua.user_id '
+                . '    WHERE u.id = :uid ';
 
 
         if($aid !== null) {
-            $sql .= "AND a.arena_id = :aid ";
-            $sql2 .= "AND a.arena_id = :aid ";
+            $sql .= "AND a.arena_id = :aid) ";
+            $sql2 .= "AND a.arena_id = :aid) ";
             $parms['aid'] = $aid;
+        } else {
+            $sql .= ")";
+            $sql2 .= ")";
         }
         
         if($sid !== null) {
@@ -256,4 +379,103 @@ class Contact extends RinkfinderActiveRecord
         return $ret;
     }
 
+    /**
+     * Returns a summary record for each contact assigned to user.
+     * The results can be further restricted by passing in an arena id
+     * or a status code.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The arena summeries or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedSummary($uid, $aid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        $parms = array(
+            'management/index',
+            'model' => 'Contact',
+        );
+
+        $sql = "SELECT c.id, "
+                . "c.first_name, "
+                . "c.last_name, "
+                . "c.address_line1, "
+                . "c.address_line2, "
+                . "c.city, "
+                . "c.state, "
+                . "c.zip, "
+                . "c.phone, "
+                . "c.ext, "
+                . "c.fax, "
+                . "c.fax_ext, "
+                . "c.email, "
+                . "CASE WHEN c.active <= 0 THEN 'Inactive' ELSE 'Active' END AS active "
+                . 'FROM contact c '
+                . 'WHERE c.id IN (SELECT DISTINCT(aca.contact_id) '
+                . '    FROM arena_contact_assignment aca '
+                . '        INNER JOIN arena a '
+                . '        ON a.id = aca.arena_id '
+                . '        INNER JOIN arena_user_assignment aua '
+                . '        ON a.id = aua.arena_id '
+                . '        INNER JOIN user u '
+                . '        ON u.id = aua.user_id '
+                . '    WHERE u.id = :uid ';
+
+        if($aid !== null) {
+            $sql .= "AND a.id = :aid) ";
+            $parms['aid'] = $aid;
+        } else {
+            $sql .= ") ";
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND c.active = :sid ";
+            $parms['sid'] = $sid;
+        }
+        
+        $sql .= "ORDER BY c.last_name, first_name ASC";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+
+        if($aid !== null) {
+            $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        }
+        
+        if($sid !== null) {
+            $command->bindParam(':sid', $sid, PDO::PARAM_INT);
+        }
+        
+        $ret['items'] = $command->queryAll(true);
+
+        $count = count($ret['items']);
+        
+        for($i = 0; $i < $count; $i++) {
+            if(is_numeric($ret['items'][$i]['phone'])) {
+                $ret['items'][$i]['phone'] = RinkfinderActiveRecord::format_telephone($ret['items'][$i]['phone']);
+            }
+            
+            if(is_numeric($ret['items'][$i]['fax'])) {
+                $ret['items'][$i]['fax'] = RinkfinderActiveRecord::format_telephone($ret['items'][$i]['fax']);
+            }
+            
+            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
+                    'management/view',
+                    'model' => 'Contact',
+                    'id' => $ret['items'][$i]['id'],
+                )
+            );
+        }
+        
+        $ret['count'] = $count;
+        $ret['model'] = 'contact';
+        $ret['action'] = 'index';
+        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(Contact::getStatuses(), 'name', 'display_name');
+        
+        // Ok, lets return this stuff!!
+        return $ret;
+    }
 }

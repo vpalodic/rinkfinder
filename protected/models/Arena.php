@@ -485,6 +485,18 @@ class Arena extends RinkfinderActiveRecord
     }
 
     /**
+     * Returns an array of arena statuses
+     * @return array[] the array of arena statuses
+     * @throws CDbException
+     */
+    public static function getStatuses()
+    {
+        $sql = 'SELECT * FROM arena_status';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */
@@ -629,13 +641,13 @@ class Arena extends RinkfinderActiveRecord
             ),
             'outstanding_event_requests' => array(
                 'name' => 'outstanding_event_requests',
-                'display' => 'Outstanding Event Requests',
+                'display' => 'Events With Open Requests',
                 'type' => 'numeric',
                 'hide' => 'all'
             ),
             'outstanding_reservations' => array(
                 'name' => 'outstanding_reservations',
-                'display' => 'Outstanding Reservations',
+                'display' => 'Events with Open Reservations',
                 'type' => 'numeric',
                 'hide' => 'all'
             ),
@@ -937,9 +949,9 @@ class Arena extends RinkfinderActiveRecord
             }
             
             $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
-                    'management/update',
+                    'management/view',
                     'model' => 'Arena',
-                    'aid' => $ret['items'][$i]['id'],
+                    'id' => $ret['items'][$i]['id'],
                 )
             );
         }
@@ -948,6 +960,7 @@ class Arena extends RinkfinderActiveRecord
         $ret['model'] = 'arena';
         $ret['action'] = 'index';
         $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $ret['statuses'] = CHtml::listData(Arena::getStatuses(), 'name', 'display_name');
         
         // Ok, lets return this stuff!!
         return $ret;

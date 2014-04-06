@@ -10,9 +10,85 @@
     "use strict";
     // public properties
     utilities.urls = {
+        assets: "",
         base: "",
         login: "",
         logout: ""
+    };
+    
+    utilities.debug = false;
+    
+    utilities.modal = {
+        nextModalId: 0,
+        
+        add: function (label, content, buttons, addClose, fullWidth) {
+            var that = this;
+            var modalBase = "utilitiesModal";
+            var modalId =  modalBase + that.nextModalId;
+            that.nextModalId += 1;
+            
+            var htmlClass = 'class="modal hide fade';
+            var footerButtons = '';
+            var closeButton = '<button class="btn btn-large" data-dismiss="' +
+                'modal" type="button" aria-hidden="true" id="close"><i class="' +
+                'icon-remove-sign"></i> Close</button>';
+            
+            if (typeof buttons === 'string')
+            {
+                footerButtons = buttons;
+                
+                if (addClose) {
+                    footerButtons += closeButton;
+                }
+            }
+            else
+            {
+                footerButtons = closeButton;
+            }
+            
+            if (fullWidth)
+            {
+                htmlClass += ' container"';
+            }
+            else
+            {
+                htmlClass += '"';
+            }
+            
+            var parts = ['<div id="' + modalId + '" ' + htmlClass +
+                ' tabindex="-1" role="dialog" aria-labelledby="' +
+                modalId + 'Label" aria-hidden="true" ' +
+                'data-backdrop="static" data-max-height="500">'];
+    
+            parts.push('<div id="' + modalId + 'Header" class="modal-header">' +
+                '<button type="button" class="close" data-dismiss="modal" ' +
+                'aria-hidden="true">&times;</button><h4 id="' +
+                modalId + 'Label">' + label + '</h4></div>');
+        
+            parts.push('<div id="' + modalId + 'Body" class="modal-body"></div>');
+        
+            parts.push('<div id="' + modalId + 'Footer" class="modal-footer">' +
+                    footerButtons + '</div>');
+        
+            parts.push('</div>');
+        
+            var $modal = $(parts.join("\n"));
+        
+            $modal.find('#' + modalId + 'Body').html(content);
+
+            // We tap in to the 'hidden' event to decrement the id!
+            $('body').on('hidden.' + modalId, '#' + modalId, function (e) {
+                $('body').off('hidden.' + modalId, e.target);
+
+                that.nextModalId -= 1;
+                
+                if (that.nextModalId < 0)
+                {
+                    that.nextModalId = 0;
+                }
+            })
+            return $modal;
+        }
     };
     
     utilities.ajaxError = {
@@ -36,9 +112,6 @@
                 response = false;
             }
             
-            $("#" + this.dialogBox + "Label").empty();
-            $("#" + this.dialogBox + "Label").html(label);
-
             var htmlOutput = "<p class=\"text-error\"><strong>" + message + "</strong></p>";
 
             htmlOutput += "<h4>Web Server Response</h4>";
@@ -80,9 +153,7 @@
                 htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</pre></strong>";
             }
 
-            $("#" + this.dialogBox + "Body").empty();
-            $("#" + this.dialogBox + "Body").html(htmlOutput);
-            $("#" + this.dialogBox).modal('show');
+            utilities.modal.add(label, htmlOutput, null, null, true).modal('show');
         }
     };
 

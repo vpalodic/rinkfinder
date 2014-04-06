@@ -1252,6 +1252,9 @@ class User extends RinkfinderActiveRecord
                 case 'contacts':
                     $dashData['contacts'] = Contact::getAssignedCounts($uid);
                     break;
+                case 'locations':
+                    $dashData['locations'] = Location::getAssignedCounts($uid);
+                    break;
                 case 'events':
                     $dashData['events'] = Event::getAssignedCounts($uid, null, $from, $to);
                     break;

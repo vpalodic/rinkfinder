@@ -25,26 +25,21 @@
     uploadEvents.loginUrl = "";
     uploadEvents.baseUrl = "";
     uploadEvents.arenaId = 0;
+    uploadEvents.arenaName = "";
     uploadEvents.step = 0;
     uploadEvents.eventType = 0;
     
     // public methods
-    uploadEvents.addUploadAndDeleteButtons = function () {
+    uploadEvents.addUploadButton = function () {
         $('<span>   </span><button id="uploadButton" class="btn btn-success ' +
           'btn-large disabled" name="yt0" type="button"><i class="icon-upload' +
-          ' icon-white"></i> Begin Upload</button> ' +
-          '<span>   </span><button id="deleteButton" style="display: none;" ' +
-          'class="btn btn-danger btn-large disabled" name="yt1" type="button">' +
-          '<i class="icon-trash icon-white"></i> Delete File</button>').insertAfter($(".qq-upload-button"));
+          ' icon-white"></i> Begin Upload</button>').insertAfter($(".qq-upload-button"));
     };
     
     uploadEvents.onUploadCancel = function (event, id, name) {
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
-        if ($("#deleteButton").css("display") !== "none") {
-            $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");
-        }
         return true;
     };
     
@@ -66,80 +61,11 @@
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
-        var response = false;
+        var label = "Upload File";
         
-        try
-        {
-            if (xhr && xhr.responseText)
-            {
-                response = JSON.parse(xhr.responseText);
-            }
-        }
-        catch (err)
-        {
-            response = false;
-        }
+        var message = "<strong>Failed to upload the data file.</strong>";
         
-        $("#eventModalLabel").html("Upload File");
-        
-        var htmlOutput = "<p class=\"text-error\"><strong>Failed to upload the data file.</strong></p>";
-        
-        htmlOutput += "<h4>Web Server Response</h4>";
-        htmlOutput += "<pre>Message: <strong>" + errorReason + "</strong>\n</pre>";
-
-        if (response !== false && response.existingFile) {
-            if($("#deleteButton").css("display") === "none") {
-                $("#deleteButton").prop("disabled", false);
-                $("#deleteButton").removeClass("disabled");
-                $("#deleteButton").animate({opacity: 1.0}, 0).fadeIn("fast");
-                
-                // register a click handler on the delete button!
-                $("#deleteButton").on("click", function () {
-                    uploadEvents.onDeleteButtonClick(response);
-                });
-            }
-        }
-        else if (response !== false)
-        {
-            htmlOutput += "<h4>Error Details</h4>";
-
-            if(response.error == 'LOGIN_REQUIRED') {
-                htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
-                        "onClick='document.location.reload(true);return false;'>" +
-                        "<i class='icon-user'></i> login</a> again.</strong>\n";
-            } else {
-                htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
-            }
-           
-            if (response.exception == true)
-            {
-                htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
-                htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
-                htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
-                
-                if (response.errorInfo != null)
-                {
-                    htmlOutput += "</pre><h4>Database Server Response</h4>";
-                    htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
-                    htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
-                    htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
-                }
-            }
-            
-            htmlOutput += "</pre>";
-            $("#eventModalBody").html(htmlOutput);
-            $("#eventModal").modal('show');
-        }
-        else if (xhr && xhr.responseText)
-        {
-            htmlOutput += "<h4>Error Details</h4>";
-            htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
-            $("#eventModalBody").html(htmlOutput);
-            $("#eventModal").modal('show');
-        } else {
-            $("#eventModalBody").html(htmlOutput);
-            $("#eventModal").modal('show');
-        }
+        utilities.ajaxError.show(label, message, xhr, "error", errorReason);
         
         $("#loadingScreen").html("");
         
@@ -167,10 +93,6 @@
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
         
-        if ($("#deleteButton").css("display") !== "none") {
-            $("#deleteButton").animate({opacity: 1.0}, 100).fadeOut("fast");
-        }
-        
         $("#EventUploadForm_fileName").fineUploader("uploadStoredFiles");
 
         return true;
@@ -185,75 +107,17 @@
             dataType: "json",
             data: { fid: response.fileUpload.id, name: response.fileUpload.name },
             success: function(result, status, xhr) {
-                $("#deleteButton").off("click");
-                $("#deleteButton").prop("disabled", true);
-                $("#deleteButton").addClass("disabled");
-                $("#deleteButton").animate({opacity: 1.0}, 0).fadeOut("fast");
                 $("#eventModalLabel").html("Delete Request");
                 $("#eventModalBody").html("<p>File has been deleted, please retry your upload.</p>");
                 $("#eventModal").modal('show');
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                var response = false;
-                
-                try
-                {
-                    if (xhr && xhr.responseText)
-                    {
-                        response = JSON.parse(xhr.responseText);
-                    }
-                }
-                catch (err)
-                {
-                    response = false;
-                }
-                
-                $("#eventModalLabel").html("Delete Request");
-
-                var htmlOutput = "<p class=\"text-error\"><strong>Failed to delete the file.</strong></p>";
-                
-                htmlOutput += "<h4>Web Server Response</h4>";
-                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
-                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
-                
-                if (response !== false)
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-
-                    if(response.error == 'LOGIN_REQUIRED') {
-                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
-                        "onClick='document.location.reload(true);return false;'>" +
-                        "<i class='icon-user'></i> login</a> again.</strong>\n";
-                    } else {
-                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
-                    }
-                    
-                    if (response.exception == true)
-                    {
-                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
-                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
-                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
-                        
-                        if (response.errorInfo != null)
-                        {
-                            htmlOutput += "</pre><h4>Database Server Response</h4>";
-                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
-                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
-                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
-                        }
-                    }
-                    
-                    htmlOutput += "</pre>";
-                }
-                else if (xhr && xhr.responseText)
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
-                }
-                
-                $("#eventModalBody").html(htmlOutput);
-                $("#eventModal").modal('show');
+                var label = "Delete Request";
+        
+                var message = "<strong>Failed to delete the file.</strong>";
+        
+                utilities.ajaxError.show(label, message, xhr, status, errorThrown);
                 
                 $("#loadingScreen").html("");
             }
@@ -333,65 +197,11 @@
                 return true;
             },
             error: function(xhr, status, errorThrown) {
-                var response = false;
-                
-                try
-                {
-                    if (xhr && xhr.responseText)
-                    {
-                        response = JSON.parse(xhr.responseText);
-                    }
-                }
-                catch (err)
-                {
-                    response = false;
-                }
-                
-                $("#eventModalLabel").html("Import Options");
-                
-                var htmlOutput = "<p class=\"text-error\"><strong>Failed to apply Import Options.</strong></p>";
-                
-                htmlOutput += "<h4>Web Server Response</h4>";
-                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
-                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
-                
-                if (response !== false)
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-
-                    if(response.error == 'LOGIN_REQUIRED') {
-                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
-                        "onClick='document.location.reload(true);return false;'>" +
-                        "<i class='icon-user'></i> login</a> again.</strong>\n";
-                    } else {
-                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
-                    }
-                    
-                    if (response.exception == true)
-                    {
-                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
-                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
-                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
-                        
-                        if (response.errorInfo != null)
-                        {
-                            htmlOutput += "</pre><h4>Database Server Response</h4>";
-                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
-                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
-                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
-                        }
-                    }
-                    
-                    htmlOutput += "</pre>";
-                }
-                else if (xhr && xhr.responseText)
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
-                }
-                
-                $("#eventModalBody").html(htmlOutput);
-                $("#eventModal").modal('show');
+                var label = "Import Options";
+        
+                var message = "<strong>Failed to apply Import Options.</strong>";
+        
+                utilities.ajaxError.show(label, message, xhr, status, errorThrown);
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
@@ -455,65 +265,11 @@
                 $("#loadingScreen").html("");
             },
             error: function(xhr, status, errorThrown) {
-                var response = false;
-                
-                try
-                {
-                    if (xhr && xhr.responseText)
-                    {
-                        response = JSON.parse(xhr.responseText);
-                    }
-                }
-                catch (err)
-                {
-                    response = false;
-                }
-                
-                $("#eventModalLabel").html("Import Data");
-                
-                var htmlOutput = "<p class=\"text-error\"><strong>Failed to import the the data file.</strong></p>";
-                
-                htmlOutput += "<h4>Web Server Response</h4>";
-                htmlOutput += "<pre>Status: <strong>" + status + "</strong>\n";
-                htmlOutput += "Message: <strong>" + errorThrown + "</strong>\n</pre>";
-                
-                if (response !== false)
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-
-                    if(response.error == 'LOGIN_REQUIRED') {
-                        htmlOutput += "<pre>Error: <strong>" + "Session has expired. Please <a href='#' " +
-                        "onClick='document.location.reload(true);return false;'>" +
-                        "<i class='icon-user'></i> login</a> again.</strong>\n";
-                    } else {
-                        htmlOutput += "<pre>Error: <strong>" + response.error + "</strong>\n";
-                    }
-                    
-                    if (response.exception == true)
-                    {
-                        htmlOutput += "Exception Code: <strong>" + response.errorCode + "</strong>\n";
-                        htmlOutput += "Exception File: <strong>" + response.errorFile + "</strong>\n";
-                        htmlOutput += "Exception Line: <strong>" + response.errorLine + "</strong>\n";
-                        
-                        if (response.errorInfo != null)
-                        {
-                            htmlOutput += "</pre><h4>Database Server Response</h4>";
-                            htmlOutput += "<pre>SQLSTATE Code: <strong>" + response.errorInfo.sqlState + "</strong>\n";
-                            htmlOutput += "Driver Code: <strong>" + response.errorInfo.mysqlError + "</strong>\n";
-                            htmlOutput += "Driver Message: <strong>" + response.errorInfo.message + "</strong>\n";
-                        }
-                    }
-                    
-                    htmlOutput += "</pre>";
-                }
-                else if (xhr && xhr.responseText) 
-                {
-                    htmlOutput += "<h4>Error Details</h4>";
-                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</strong></pre>";
-                }
-                
-                $("#eventModalBody").html(htmlOutput);
-                $("#eventModal").modal('show');
+                var label = "Import Data";
+        
+                var message = "<strong>Failed to import the the data file.</strong>";
+        
+                utilities.ajaxError.show(label, message, xhr, status, errorThrown);
                 
                 $("#step2Continue").prop("disabled", false);
                 $("#step2Continue").removeClass("disabled");
@@ -538,7 +294,7 @@
     };
     
     uploadEvents.setLoadingScreen = function (elementID) {
-        var strOutput = "<div id=\"loading\"><img src=\"" + this.baseUrl +
+        var strOutput = "<div id=\"loading\"><img src=\"" + utilities.urls.base +
                 "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif\"" + 
                 "alt=\"Loading...\" /><br />Please wait...</div>";
 	$(elementID).html(strOutput);
@@ -552,7 +308,7 @@
         // First add the table headers
         var strOutput = "<thead><tr><th>Table Column</th><th>Data File Column" +
                 "</th><th data-hide='phone'>Data File Example</th></tr>" +
-                "</thead><tbody></tbody><tfoot class='hide-if-no-paging'><tr>" +
+                "</thead><tbody></tbody><tfoot><tr>" +
                 "<td colspan='3'><div class='pagination pagination-centered'>" +
                 "</div></td></tr></tfoot>";
         
@@ -735,8 +491,6 @@
         $("#EventUploadForm_fileName").fineUploader("clearStoredFiles");
         $("#uploadButton").prop("disabled", true);
         $("#uploadButton").addClass("disabled");
-        $("#deleteButton").prop("disabled", true);
-        $("#deleteButton").addClass("disabled");
         $("#uploadEventsStep1").show();
     };
     
@@ -746,4 +500,187 @@
         return true;
     };
     
+    uploadEvents.onReady = function () {
+        if (typeof $.fn.fineUploader === "undefined")
+        { 
+            $.ajax({
+                url: utilities.urls.assets + (utilities.debug ? "/js/jquery.fineuploader-3.2.js" : "/js/jquery.fineuploader-3.2.min.js"),
+                dateType: "script",
+                cache: true,
+                success: function() {
+                    window.setTimeout(function () {
+                        uploadEvents.enableFineUploader();
+                    }, 1000);
+                },
+                error: function(xhr, status, errorThrown) {
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to retrieve javsScript file",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });
+        }
+        else
+        {
+            uploadEvents.enableFineUploader();
+        }
+        
+        if (typeof $.fn['bootstrapSwitch'] === "undefined")
+        {
+            $.ajax({
+                url: utilities.urls.assets + (utilities.debug ? "/js/bootstrap-switch.js" : "/js/bootstrap-switch.min.js"),
+                dateType: "script",
+                cache: true,
+                success: function() {
+                },
+                error: function(xhr, status, errorThrown) {
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to retrieve javsScript file",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });
+        }
+        
+        if (typeof $.fn.footable === "undefined") { 
+            $.ajax({
+                url: utilities.urls.assets + (utilities.debug ? "/js/footable.js" : "/js/footable.min.js"),
+                dateType: "script",
+                cache: true,
+                success: function() {
+                    $.ajax({
+                        url: utilities.urls.assets + (utilities.debug ? "/js/footable.paginate.js" : "/js/footable.paginate.min.js"),
+                        dateType: "script",
+                        cache: true,
+                        success: function() {
+                        },
+                        error: function(xhr, status, errorThrown) {
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to retrieve javsScript file",
+                                    xhr,
+                                    status,
+                                    errorThrown
+                            );
+                        }
+                    });
+                },
+                error: function(xhr, status, errorThrown) {
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to retrieve javsScript file",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });
+        }
+
+        uploadEvents.addUploadButton();
+        $("#step2Continue").on("click", function () {
+            return uploadEvents.onContinueStep2ButtonClick();
+        });
+        $("#step3Previous").on("click", function () {
+            return uploadEvents.onPreviousStep3ButtonClick();
+        });
+        $("#step3Continue").on("click", function () {
+            return uploadEvents.onContinueStep3ButtonClick();
+        });
+        $("#step4Continue").on("click", function () {
+            return uploadEvents.onContinueStep4ButtonClick();
+        });
+        $("#uploadButton").on("click", function () {
+            return uploadEvents.onUploadButtonClick();
+        });
+        $("#resetButton1").on("click", function () {
+            return uploadEvents.onResetButtonClick();
+        });
+        $("#resetButton2").on("click", function () {
+            return uploadEvents.onResetButtonClick();
+        });
+        $("#resetButton3").on("click", function () {
+            return uploadEvents.onResetButtonClick();
+        });
+            
+        $("#EventUploadForm_fileName").on("complete", function (event, id, name, response, xhr) {
+            return uploadEvents.onUploadComplete(event, id, name, response, xhr);
+        });
+        $("#EventUploadForm_fileName").on("submit", function (event, id, name) {
+            return uploadEvents.onUploadSubmit(event, id, name);
+        });
+        $("#EventUploadForm_fileName").on("cancel", function (event, id, name) {
+            return uploadEvents.onUploadCancel(event, id, name);
+        });
+        $("#EventUploadForm_fileName").on("manualRetry", function (event, id, name) {
+            return uploadEvents.onUploadRetry(event, id, name);
+        });
+        $("#EventUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {
+            return uploadEvents.onUploadError(event, id, name, errorReason, xhr);
+        });
+    };
+    
+    uploadEvents.enableFineUploader = function () {
+        $('#EventUploadForm_fileName').fineUploader( {
+            'request': {
+                'endpoint': utilities.urls.base + '/event/uploadEventsFile?aid=' + uploadEvents.arenaId,
+                'inputName': 'EventUploadForm[fileName]'
+            },
+            'validation': {
+                'allowedExtensions': ['csv','tsv','txt'],
+                'sizeLimit': null,
+                'minSizeLimit': null
+            },
+            'messages': {
+                'typeError': '{file} has an invalid extension. Valid extension(s): {extensions}.',
+                'sizeError': '{file} is too large, maximum file size is {sizeLimit}.',
+                'minSizeError': '{file} is too small, minimum file size is {minSizeLimit}.',
+                'emptyError:': '{file} is empty, please select files again without it.',
+                'noFilesError': 'No files to upload.', 
+                'onLeave': 'The files are being uploaded, if you leave now the upload will be cancelled.'
+            },
+            'debug': false,
+            'multiple': false,
+            'autoUpload': false,
+            'deleteFile': {
+                'enabled': true,
+                'endpoint': utilities.urls.base + '/event/uploadEventsFileDelete?aid=' + uploadEvents.arenaId
+            },
+            'dragAndDrop': {
+                'disableDefaultDropzone': true,
+                'enable': false
+            },
+            'text': {
+                'uploadButton': '<i class=\"icon-file icon-white\"><\/i> Select File'
+            },
+            'failedUploadTextDisplay': {
+                'mode': 'custom',
+                'responseProperty': 'error'
+            },
+            'retry': {
+                'showButton': true
+            },
+            'template': '<div class=\"qq-uploader\"><div class=\"qq-upload-button ' +
+                    'btn btn-warning btn-large\"><div>{uploadButtonText}<\/div>' +
+                    '<\/div><span class=\"qq-drop-processing\"><span>{dropProces' +
+                    'singText}<\/span><span class=\"qq-drop-processing-spinner\">' +
+                    '<\/span><\/span><ul class=\"qq-upload-list\"><\/ul><\/div>',
+            'classes': {
+                'button': 'qq-upload-button.btn.btn-warning.btn-large',
+                'success': 'alert alert-success',
+                'buttonHover': '',
+                'buttonFocus': ''
+            }
+        });
+    };
+    
+    uploadEvents.enableBootstrapSwitches = function () {
+        $('.make-switch')['bootstrapSwitch'](); // attach bootstrapswitch
+    };
 }( window.uploadEvents = window.uploadEvents || {}, jQuery ));

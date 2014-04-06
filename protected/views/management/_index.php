@@ -15,13 +15,43 @@
          Yii::app()->end();
     }
 ?>
-<label class="control-label" for="tableFilter" style="display: inline">
-    Search:
-</label>
-<input id="tableFilter" type="text" class="input-medium search-query" />
-<br />
-<br />
-<?php
+
+<form class="form-search">
+    <div class="input-prepend">
+        <span class="add-on">Search</span>
+        <input id="tableFilter" type="text" class="input-medium search-query" placeholder="Search" />
+    </div>
+    <?php if(isset($data['types'])) : ?>
+    <span> </span>
+    <div id="tableFilterTypeGroup" class="input-prepend">
+        <span class="add-on">Type:</span>
+        <select class="input-medium search-query" id="tableFilterType" placeholder="Type">
+            <option value=""></option>
+            <?php
+                foreach($data['types'] as $key => $display) {
+                    echo '<option value="' . $key . '">' . $display . '</option>';
+                }
+            ?>
+        </select>
+    </div>
+    <?php endif; ?>
+    <?php if(isset($data['statuses'])) : ?>
+    <span> </span>
+    <div id="tablefilterStatusGroup" class="input-prepend">
+        <span class="add-on">Status:</span>
+        <select class="input-medium search-query" id="tableFilterStatus" placeholder="Status">
+            <option value=""></option>
+            <?php
+                foreach($data['statuses'] as $key => $display) {
+                    echo '<option value="' . $key . '">' . $display . '</option>';
+                }
+            ?>
+        </select>
+    </div>
+    <?php endif; ?>
+</form>
+
+    <?php
     $headerCount = count($headers);
     $itemCount = (integer)$data['count'];
     
@@ -35,7 +65,7 @@
     // Start with the <table> tag
     $table = '<table id="' . $data['model'] . 'Footable" class="items '
             . 'table table-striped table-bordered table-condensed '
-            . 'table-hover footable toggle-large toggle-circle" '
+            . 'table-hover footable toggle-circle" '
             . 'style="padding: 0px;" data-filter="#tableFilter">';
     
     // Now we setup the <thead> and <tbody> tags!!!
@@ -141,10 +171,39 @@
 ?>
 
 <script type="text/javascript">
-    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('click', 'a', function (e) {
+    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('click', 'tbody a', function (e) {
         e.stopPropagation();
         e.preventDefault();
         
         console.log(e);
+    });
+    
+    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('footable_filtering', function (e) {
+        var selected = $('#tableFilterStatus').find(':selected').text();
+        var selected2 = $('#tableFilterType').find(':selected').text();
+        if (selected && selected.length > 0) {
+            e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected : selected;
+            e.clear = !e.filter;
+        }
+        if (selected2 && selected2.length > 0) {
+            e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected2 : selected2;
+            e.clear = !e.filter;
+        }
+    });
+
+    $('.clear-filter').click(function (e) {
+      e.preventDefault();
+      $('#tableFilterStatus').val('');
+      $('#tableFilterType').val('');
+    });
+
+    $('#tableFilterStatus').change(function (e) {
+      e.preventDefault();
+      $("#<?php echo $data['model'] . 'Footable'; ?>").trigger('footable_filter', {filter: $('#tableFilter').val()});
+    });
+
+    $('#tableFilterType').change(function (e) {
+      e.preventDefault();
+      $("#<?php echo $data['model'] . 'Footable'; ?>").trigger('footable_filter', {filter: $('#tableFilter').val()});
     });
 </script>

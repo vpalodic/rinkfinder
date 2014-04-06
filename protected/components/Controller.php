@@ -24,6 +24,16 @@ class Controller extends CController
     public $breadcrumbs = array();
 
     /**
+     * @var boolean controls if the main layout file loads custom CSS files
+     */
+    public $includeCss = false;
+
+    /**
+     * @var boolean controls if the main layout file should include navigation
+     */
+    public $navigation = true;
+
+    /**
      * Specifies the access control rules.
      * This method is used by the 'accessControl' filter.
      * @return array access control rules

@@ -1,6 +1,7 @@
 <?php
     /* @var $this SiteController */
     /* @var $endpoints array[] */
+    /* @var $path string */
 
     $this->pageTitle = Yii::app()->name . ' - Management';
     $this->breadcrumbs = array(
@@ -11,8 +12,10 @@
     Yii::app()->clientScript->registerScript(
             'setupManagementDash',
             'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
-            . 'utilities.urls.logout = "' . $this->createUrl('site/loout') . '";'
+            . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
+            . 'utilities.urls.assets = "' . $path . '";'
+            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
             . 'utilities.ajaxError.dialogBox = "managementModal";'
             . 'utilities.loadingScreen.parentId = "countsContainer";'
             . 'utilities.loadingScreen.containerId = "countsAccordionHeader";'
@@ -70,7 +73,7 @@
         <div id="countsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
                 <div class="row-fluid">
-                    <div id="requestsContainer" class="span3 accordion">
+                    <div id="requestsContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="requestsBadge" style="display: inline-block;">
                             </div>
@@ -87,7 +90,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="reservationsContainer" class="span3 accordion">
+                    <div id="reservationsContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="reservationsBadge" style="display: inline-block;">
                             </div>
@@ -104,7 +107,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="eventsContainer" class="span3 accordion">
+                    <div id="eventsContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="eventsBadge" style="display: inline-block;">
                             </div>
@@ -121,7 +124,9 @@
                             </div>
                         </div>
                     </div>
-                    <div id="arenasContainer" class="span3 accordion">
+                </div>
+                <div class="row-fluid">
+                    <div id="arenasContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="arenasBadge" style="display: inline-block;">
                             </div>
@@ -138,9 +143,24 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row-fluid">
-                    <div id="contactsContainer" class="span3 accordion">
+                    <div id="locationsContainer" class="span4 accordion">
+                        <div class="accordion-heading">
+                            <div id="locationsBadge" style="display: inline-block;">
+                            </div>
+                            <a class="accordion-toggle" data-toggle="collapse"
+                               data-parent="locationsContainer" href="#locationsCollapse"
+                               style="display: inline-block;">
+                                <h5 id="locationsHeader">Locations</h5>
+                            </a>
+                        </div>
+                        <div id="locationsCollapse" class="accordion-body collapse in">
+                            <div class="accordion-inner">
+                                <div id="locationsWell" class="well well-large">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="contactsContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="contactsBadge" style="display: inline-block;">
                             </div>
@@ -172,121 +192,10 @@
         </div>
         <div id="operationsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
-                <div id="requestsContainer" class="span6 accordion">
-                    <div class="accordion-heading">
-                        <a class="accordion-toggle" data-toggle="collapse"
-                           data-parent="requestsContainer" href="#requestsCollapse"
-                           style="display: inline-block;">
-                            <h5 id="requestsHeader">Requests</h5>
-                        </a>
-                    </div>
-                    <div id="requestsCollapse" class="accordion-body collapse in">
-                        <div class="accordion-inner">
-                            <div id="requestsWell" class="well well-large">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="reservationsContainer" class="span6 accordion">
-                    <div class="accordion-heading">
-                        <a class="accordion-toggle" data-toggle="collapse"
-                           data-parent="reservationsContainer" href="#reservationsCollapse"
-                           style="display: inline-block;">
-                            <h5 id="reservationsHeader">Reservations</h5>
-                        </a>
-                    </div>
-                    <div id="reservationsCollapse" class="accordion-body collapse in">
-                        <div class="accordion-inner">
-                            <div id="reservationsWell" class="well well-large">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="eventsContainer" class="span6 accordion">
-                    <div class="accordion-heading">
-                        <a class="accordion-toggle" data-toggle="collapse"
-                           data-parent="eventsContainer" href="#eventsCollapse"
-                           style="display: inline-block;">
-                            <h5 id="eventsHeader">Events</h5>
-                        </a>
-                    </div>
-                    <div id="eventsCollapse" class="accordion-body collapse in">
-                        <div class="accordion-inner">
-                            <div id="eventsWell" class="well well-large">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="arenasContainer" class="span6 accordion">
-                    <div class="accordion-heading">
-                        <a class="accordion-toggle" data-toggle="collapse"
-                           data-parent="arenasContainer" href="#arenasCollapse"
-                           style="display: inline-block;">
-                            <h5 id="arenasHeader">Arenas</h5>
-                        </a>
-                    </div>
-                    <div id="arenasCollapse" class="accordion-body collapse in">
-                        <div class="accordion-inner">
-                            <div id="arenasWell" class="well well-large">
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Error Modal Dialog -->
-<div id="managementModal" class="modal hide fade" 
-     tabindex="-1" role="dialog" aria-labelledby="managementModalLabel"
-     aria-hidden="true" data-width="760" data-backdrop="static" data-max-height="500" data-keyboard="false">
-  <div id="managementModalHeader" class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h4 id="managementModalLabel"></h4>
-  </div>
-  <div id="managementModalBody" class="modal-body">
-  </div>
-  <div id="managementModalFooter" class="modal-footer">
-    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
-        <i class="icon-remove-sign"></i> Close
-    </button>
-  </div>
-</div><!-- Error Modal Dialog -->
-
-<!-- Index Modal Dialog -->
-<div id="managementDataModal" class="modal hide fade container" 
-     tabindex="-1" role="dialog" aria-labelledby="managementDataModalLabel"
-     aria-hidden="true" data-backdrop="static" data-max-height="500" data-keyboard="false">
-  <div id="managementDataModalHeader" class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h4 id="managementDataModalLabel"></h4>
-  </div>
-  <div id="managementDataModalBody" class="modal-body">
-  </div>
-  <div id="managementDataModalFooter" class="modal-footer">
-    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
-        <i class="icon-remove-sign"></i> Close
-    </button>
-  </div>
-</div><!-- Index Modal Dialog -->
-
-<!-- View / Edit Modal Dialog -->
-<div id="managementEditDataModal" class="modal hide fade container" 
-     tabindex="-1" role="dialog" aria-labelledby="managementEditDataModalLabel"
-     aria-hidden="true" data-backdrop="static" data-max-height="500" data-keyboard="false">
-  <div id="managementEditDataModalHeader" class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h4 id="managementEditDataModalLabel"></h4>
-  </div>
-  <div id="managementEditDataModalBody" class="modal-body">
-  </div>
-  <div id="managementEditDataModalFooter" class="modal-footer">
-    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
-        <i class="icon-remove-sign"></i> Close
-    </button>
-  </div>
-</div><!-- View / Edit Modal Dialog -->
 
 <script type="text/javascript">
 $('#reportrange').daterangepicker(

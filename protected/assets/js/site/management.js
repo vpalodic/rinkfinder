@@ -19,6 +19,7 @@
     management.mainContainer = "";
     management.fromDate = moment().subtract('days', 29);
     management.toDate = moment().add('days', 29);
+    management.isLoading = false;
     
     management.processCounts = function (result, status, xhr) {
         if (status !== "success" || result.success !== true)
@@ -39,6 +40,9 @@
                 case "contacts":
                     this.processCount(countSection, countSections.contacts);
                     break;
+                case "locations":
+                    this.processCount(countSection, countSections.locations);
+                    break;
                 case "events":
                     this.processCount(countSection, countSections.events);
                     break;
@@ -54,7 +58,7 @@
     
     management.createBadge = function (type, count) {
         var badgeHtml = '<span class="badge';
-        if (type != '')
+        if (type !== '')
         {
             badgeHtml += ' ' + type + '">';
         }
@@ -77,7 +81,7 @@
         var htmlOutput = '<i class="fa fa-list fa-lg"></i> ' + name.capitalize();
         
         $badge.empty();
-        linkHtml += 'id="' + name + 'BadgeLink">';
+        linkHtml += 'id="' + name + 'BadgeLink" class="btn btn-info">';
         linkHtml += management.createBadge('badge-info', data.total) + '</a>';
         $(linkHtml).appendTo($badge);
         
@@ -104,13 +108,18 @@
 
         if (data.hasOwnProperty('type'))
         {
-            htmlOutput = '<ul id="' + name + 'UnorderedList" class="unstyled">';
+            htmlOutput = '<ul id="' + name + 'UnorderedList" class="unstyled" style="padding: 0px 0px;margin: 0px 0px">';
             for (i = 0; i < data.type.length; i++) {
                 objType = data.type[i];
-            
+                
+                if (objType.count <= 0)
+                {
+                    continue;
+                }
+
                 linkIds.push(['#' + name + 'Type' + objType.id + 'BadgeLink',
                     objType.endpoint, name.capitalize() + ": " + objType.display_name]);
-                linkHtml = '<a href="#" id="' + name + 'Type' + objType.id + 'BadgeLink">';
+                linkHtml = '<a href="#" id="' + name + 'Type' + objType.id + 'BadgeLink" class="btn btn-success btn-block">';
                 linkHtml += management.createBadge('badge-success', objType.count);
 
                 htmlOutput += '<li data-name="' + objType.name + '" data-id=' +
@@ -118,21 +127,26 @@
                         ' data-display_name="' + objType.display_name + '" ' +
                         'data-display_order=' + objType.display_order +
                         ' rel="tooltip" title="' + objType.description + '" ' +
-                        'style="word-break:break-all;word-wrap:break-word;">' +
+                        'style="word-break:break-all;word-wrap:break-word;padding: 5px 5px;margin: 0px 0px;">' +
                         linkHtml + ' <strong>' + objType.display_name + 
                         '</strong>' + '</a>';
 
                 if (objType.hasOwnProperty('status')) {
-                    htmlOutput += '<ul class="inline">';
+                    htmlOutput += '<ul class="inline" style="padding: 5px 5px;">';
                     for (j = 0; j < objType.status.length; j++) {
                         objStatus = objType.status[j];
             
+                        if (objStatus.count <= 0)
+                        {
+                            continue;
+                        }
+
                         linkIds.push(['#' + name + 'Type' + objType.id + 
                                 'Status' + objStatus.id + 'BadgeLink',
                                 objStatus.endpoint, name.capitalize() + ": " + 
                                         objType.display_name + " - " + 
                                         objStatus.display_name]);
-                        linkHtml = '<a href="#" id="' + name + 'Type' + 
+                        linkHtml = '<a href="#" class="btn btn-warning" id="' + name + 'Type' + 
                                 objType.id + 'Status' + objStatus.id + 'BadgeLink">';
                         linkHtml += management.createBadge('badge-warning', objStatus.count);
 
@@ -141,7 +155,7 @@
                                 ' data-display_name="' + objStatus.display_name + '" ' +
                                 'data-display_order=' + objStatus.display_order +
                                 'rel="tooltip" title="' + objStatus.description + '" ' +
-                                'style="word-break:break-all;word-wrap:break-word;">' +
+                                'style="word-break:break-all;word-wrap:break-word;padding: 5px 5px;margin: 0px 0px;">' +
                                 linkHtml + ' <strong>' + objStatus.display_name +
                                 '</strong></li>' + '</a>';
                     }
@@ -156,13 +170,18 @@
         }
         else if (data.hasOwnProperty('status'))
         {
-            htmlOutput = '<ul id="' + name + 'UnorderedList" class="unstyled">';
+            htmlOutput = '<ul id="' + name + 'UnorderedList" class="unstyled" style="padding: 5px 5px;">';
             for (i = 0; i < data.status.length; i++) {
                 objStatus = data.status[i];
             
+                if (objStatus.count <= 0)
+                {
+                    continue;
+                }
+
                 linkIds.push(['#' + name + 'Status' + objStatus.id + 'BadgeLink',
                     objStatus.endpoint, name.capitalize() + ": " + objStatus.display_name]);
-                linkHtml = '<a href="#" id="' + name + 'Status' + objStatus.id + 'BadgeLink">';
+                linkHtml = '<a href="#" class="btn btn-success btn-block" id="' + name + 'Status' + objStatus.id + 'BadgeLink">';
                 linkHtml += management.createBadge('badge-success', objStatus.count);
 
                 htmlOutput += '<li data-name="' + objStatus.name + '" data-id=' +
@@ -170,21 +189,26 @@
                         ' data-display_name="' + objStatus.display_name + '" ' +
                         'data-display_order=' + objStatus.display_order +
                         'rel="tooltip" title="' + objStatus.description + '" ' +
-                        'style="word-break:break-all;word-wrap:break-word;">' +
+                        'style="word-break:break-all;word-wrap:break-word;padding: 5px 5px;">' +
                         linkHtml + ' <strong>' + objStatus.display_name +
                         '</strong>' + '</a>';
 
                 if (objStatus.hasOwnProperty('type')) {
-                    htmlOutput += '<ul class="inline">';
+                    htmlOutput += '<ul class="inline" style="padding: 5px 5px;">';
                     for (j = 0; j < objStatus.type.length; j++) {
                         objType = objStatus.type[j];
             
+                        if (objType.count <= 0)
+                        {
+                            continue;
+                        }
+
                         linkIds.push(['#' + name + 'Status' + objStatus.id + 
                                 'Type' + objType.id + 'BadgeLink',
                                 objType.endpoint, name.capitalize() + ": " +
                                         objStatus.display_name + " - " + 
                                         objType.display_name]);
-                        linkHtml = '<a href="#" id="' + name + 'Status' + 
+                        linkHtml = '<a href="#" class="btn btn-warning" id="' + name + 'Status' + 
                                 objStatus.id + 'Type' + objType.id + 'BadgeLink">';
                         linkHtml += management.createBadge('badge-warning', objType.count);
 
@@ -193,7 +217,7 @@
                                 ' data-display_name="' + objType.display_name + '" ' +
                                 'data-display_order=' + objType.display_order +
                                 'rel="tooltip" title="' + objType.description + '" ' +
-                                'style="word-break:break-all;word-wrap:break-word;">' +
+                                'style="word-break:break-all;word-wrap:break-word;padding: 5px 5px;">' +
                                 linkHtml + ' <strong>' + objType.display_name + 
                                 '</strong></a></li>';
                     }
@@ -222,6 +246,12 @@
     };
     
     management.getCounts = function (noLoading) {
+        if (this.isLoading)
+        {
+            return;
+        }
+        
+        this.isLoading = true;
         var that = this;
         var thatNoLoading = noLoading;
         
@@ -234,7 +264,7 @@
             type: "GET",
             dataType: "json",
             data: {
-                model: ["arenas", "contacts", "events", "requests", "reservations"],
+                model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
                 from: management.fromDate.format('YYYY-MM-DD'),
                 to: management.toDate.format('YYYY-MM-DD')
             },
@@ -245,9 +275,11 @@
                     if (!thatNoLoading) {
                         utilities.loadingScreen.hide();
                     }
+                    that.isLoading = false;
                 },
                 100
                 );
+        
             },
             error: function(xhr, status, errorThrown) {
                 utilities.ajaxError.show(
@@ -260,6 +292,7 @@
                 if (!thatNoLoading) {
                     utilities.loadingScreen.hide();
                 }
+                that.isLoading = false;
             }
         });
 
@@ -267,23 +300,7 @@
     };
     
     management.handleBadgeClick = function (url, name) {
-        var $modal = $('#' + management.dialogBox);
-        var $label = $modal.find('#' + management.dialogBox + "Label");
-        var $body = $modal.find('#' + management.dialogBox + "Body");
-        
-        $label.empty().html(name);
-        
-        $body.empty();
-        
-        $modal.off('shown');
-        $modal.on('shown', function (e) {
-            //console.log(e);
-        });
-        
-        $modal.off('hidden');
-        $modal.on('hidden', function (e) {
-            //('#' + management.dialogBox + "Body").empty();
-        });
+        var $modal = utilities.modal.add(name, '', false, false, true);
         
         $modal.modal({
             loading: true,
@@ -299,8 +316,8 @@
     management.getModalData = function ($modal, url, dataType) {
         var that = this;
         var $thatModal = $modal;
-
-        $.ajax({                        
+        
+         $.ajax({                        
             url: url,
             type: "GET",
             dataType: "html",
@@ -308,8 +325,6 @@
                 output: "html"
             },
             success: function(result, status, xhr) {
-//                console.log(result);
-//                console.log(xhr);
                 // Its possible we will get a session timeout so check for it!
                 var myjsonObj = false;
                 try
@@ -340,8 +355,8 @@
                 }
 
                 window.setTimeout(function () {
-                    $thatModal.modal('loading');
                     $thatModal.find('.modal-body').empty().append(that.processModalData(result, status, xhr));
+                    $thatModal.modal('loading');
                 }, 1000);
             },
             error: function(xhr, status, errorThrown) {
