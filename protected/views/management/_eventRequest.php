@@ -68,7 +68,7 @@
                 <div class="well">
                     <button class="btn btn-block btn-large btn-primary" type="button" data-toggle="tooltip"
                             data-original-title="Send message to requester">
-                        <i class="fa fa-envelope"></i> Contact Requester
+                        <i class="fa fa-envelope"></i> Message
                     </button>                    
                     <?php if(!isset($data['item']['fields']['acknowledger']['value'])) : ?>
                         <button class="btn btn-block btn-large btn-warning" type="button" data-toggle="tooltip"
@@ -220,8 +220,10 @@
                                     <address>
                                         <strong>
                                             <?php echo $data['item']['fields']['requester_name']['value']; ?>
-                                        </strong><br />
+                                        </strong>
+                                        <br />
                                         <abbr title="Email">E:</abbr> <?php echo $data['item']['fields']['requester_email']['value']; ?>
+                                        <br />
                                         <abbr title="Phone">P:</abbr> <?php echo $data['item']['fields']['requester_phone']['value']; ?>
                                     </address>
                                 </a>
@@ -279,7 +281,7 @@
                                    <?php if($data['item']['fields']['requester_phone']['editable'] == false): ?>
                                    data-disable="true"
                                    <?php endif; ?>
-                                   data-mode="inline"
+                                   data-mode="popup"
                                    <?php if(isset($data['item']['fields']['requester_phone']['inputmask'])): ?>
                                    data-inputmask="<?php echo json_encode($data['item']['fields']['requester_phone']['inputmask']); ?>"
                                    <?php endif; ?>
@@ -500,6 +502,13 @@ $(document).ready(function() {
     
     $('#requester_phone').editable({
         params: <?php echo json_encode($data['parms']); ?>,
+        display: function(value, sourceData) {
+            //display checklist as comma-separated values
+            var html = '';
+            
+            html = value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+            $(this).html(html);
+        }
     });
     
     $("#<?php echo $data['item']['fields']['requester_phone']['name']; ?>").on('shown', function(e, editable) {
