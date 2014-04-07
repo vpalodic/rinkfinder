@@ -66,20 +66,24 @@
             <div class="span6">
                 <strong>Actions</strong><br />
                 <div class="well">
+                    <button class="btn btn-block btn-large btn-primary" type="button" data-toggle="tooltip"
+                            data-original-title="Send message to requester">
+                        <i class="fa fa-envelope"></i> Contact Requester
+                    </button>                    
                     <?php if(!isset($data['item']['fields']['acknowledger']['value'])) : ?>
-                        <button class="btn btn-large btn-warning" type="button" data-toggle="tooltip"
+                        <button class="btn btn-block btn-large btn-warning" type="button" data-toggle="tooltip"
                                     data-original-title="Acknowledge this request">
                                 <i class="fa fa-lg fa-square"></i> Acknowledge
                         </button>
                     <?php endif; ?>
                     <?php if(!isset($data['item']['fields']['accepter']['value'])) : ?>
-                        <button class="btn btn-large btn-success" type="button" data-toggle="tooltip"
+                        <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
                                 data-original-title="Accept this request">
                             <i class="fa fa-lg fa-check"></i> Accept
                         </button>
                     <?php endif; ?>
                     <?php if(!isset($data['item']['fields']['rejector']['value'])) : ?>
-                        <button class="btn btn-large btn-danger" type="button" data-toggle="tooltip"
+                        <button class="btn btn-block btn-large btn-danger" type="button" data-toggle="tooltip"
                                 data-original-title="Reject this request">
                             <i class="fa fa-lg fa-times"></i> Reject
                         </button>
@@ -112,8 +116,8 @@
                                    <?php if(isset($data['item']['fields']['created_on']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['created_on']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['created_on']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['created_on']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['created_on']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['created_on']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['created_on']['editable'] == false): ?>
                                    data-disabled="true"
@@ -141,8 +145,8 @@
                                    <?php if(isset($data['item']['fields']['type_id']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['type_id']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['type_id']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['type_id']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['type_id']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['type_id']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['type_id']['editable'] == false): ?>
                                    data-disabled="true"
@@ -173,8 +177,8 @@
                                    <?php if(isset($data['item']['fields']['status_id']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['status_id']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['status_id']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['status_id']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['status_id']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['status_id']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['status_id']['editable'] == false): ?>
                                    data-disabled="true"
@@ -205,8 +209,8 @@
                                    <?php if(isset($data['item']['fields']['requester_name']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['requester_name']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_name']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_name']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['requester_name']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['requester_name']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['requester_name']['editable'] == false): ?>
                                    data-disabled="true"
@@ -218,10 +222,6 @@
                                             <?php echo $data['item']['fields']['requester_name']['value']; ?>
                                         </strong><br />
                                         <abbr title="Email">E:</abbr> <?php echo $data['item']['fields']['requester_email']['value']; ?>
-                                        <button class="btn btn-primary" type="button" data-toggle="tooltip"
-                                                data-original-title="Send message to requester">
-                                            <i class="fa fa-envelope"></i>
-                                        </button><br />
                                         <abbr title="Phone">P:</abbr> <?php echo $data['item']['fields']['requester_phone']['value']; ?>
                                     </address>
                                 </a>
@@ -244,8 +244,8 @@
                                    <?php if(isset($data['item']['fields']['requester_email']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['requester_email']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_email']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_email']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['requester_email']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['requester_email']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['requester_email']['editable'] == false): ?>
                                    data-disabled="true"
@@ -273,13 +273,16 @@
                                    <?php if(isset($data['item']['fields']['requester_phone']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['requester_phone']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_phone']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_phone']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['requester_phone']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['requester_phone']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['requester_phone']['editable'] == false): ?>
-                                   data-disabled="true"
+                                   data-disable="true"
                                    <?php endif; ?>
                                    data-mode="inline"
+                                   <?php if(isset($data['item']['fields']['requester_phone']['inputmask'])): ?>
+                                   data-inputmask="<?php echo json_encode($data['item']['fields']['requester_phone']['inputmask']); ?>"
+                                   <?php endif; ?>
                                    title="<?php echo $data['item']['fields']['requester_phone']['label']; ?>">
                                     <?php echo $data['item']['fields']['requester_phone']['value']; ?>
                                 </a>
@@ -307,8 +310,8 @@
                                    <?php if(isset($data['item']['fields']['event_id']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['event_id']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['event_id']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['event_id']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['event_id']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['event_id']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['event_id']['editable'] == false): ?>
                                    data-disabled="true"
@@ -336,8 +339,8 @@
                                    <?php if(isset($data['item']['fields']['event_start']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['event_start']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['event_start']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['event_start']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['event_start']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['event_start']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['event_start']['editable'] == false): ?>
                                    data-disabled="true"
@@ -365,8 +368,8 @@
                                    <?php if(isset($data['item']['fields']['arena_id']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['arena_id']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['arena_id']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['arena_id']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['arena_id']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['arena_id']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['arena_id']['editable'] == false): ?>
                                    data-disabled="true"
@@ -394,8 +397,8 @@
                                    <?php if(isset($data['item']['fields']['arena']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['arena']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['arena']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['arena']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['arena']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['arena']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['arena']['editable'] == false): ?>
                                    data-disabled="true"
@@ -423,8 +426,8 @@
                                    <?php if(isset($data['item']['fields']['location_id']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['location_id']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['location_id']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['location_id']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['location_id']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['location_id']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['location_id']['editable'] == false): ?>
                                    data-disabled="true"
@@ -452,8 +455,8 @@
                                    <?php if(isset($data['item']['fields']['location']['format'])): ?>
                                    data-format="<?php echo $data['item']['fields']['location']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['location']['viewFormat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['location']['viewFormat']; ?>"
+                                   <?php if(isset($data['item']['fields']['location']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['location']['viewformat']; ?>"
                                    <?php endif; ?>
                                    <?php if($data['item']['fields']['location']['editable'] == false): ?>
                                    data-disabled="true"
@@ -489,6 +492,25 @@ $(document).ready(function() {
     
     $('#requester_name').editable({
         params: <?php echo json_encode($data['parms']); ?>,
+    });
+    
+    $('#requester_email').editable({
+        params: <?php echo json_encode($data['parms']); ?>,
+    });
+    
+    $('#requester_phone').editable({
+        params: <?php echo json_encode($data['parms']); ?>,
+    });
+    
+    $("#<?php echo $data['item']['fields']['requester_phone']['name']; ?>").on('shown', function(e, editable) {
+        if (editable) {
+            $(this).data('editable').input.$input.inputmask(
+            {
+                "mask": "<?php echo $data['item']['fields']['requester_phone']['inputmask']['mask']; ?>",
+                "clearIncomplete": true,
+                'autoUnmask' : true
+            });
+        }
     });
     
     $('#event_id').editable({

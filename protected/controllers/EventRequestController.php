@@ -269,7 +269,21 @@ class EventRequestController extends Controller
         // If we are updating via ajax, then we do something a little bit
         // differently as we will update one attribute at a time!
         if(Yii::app()->request->isAjaxRequest) {
+            $model = new EventRequest();
             
+            $model->$_POST['name'] = $_POST['value'];
+            
+            $valid = $model->validate(array($_POST['name']));
+            
+            if(!$valid) {
+                $error = $model->getError($_POST['name']);
+                
+                $this->sendResponseHeaders(400, 'html');
+                
+                echo $error;
+            } else {
+                // The attribute is valid and so we should save it!!
+            }
         } else {
             $model=$this->loadModel($id);
 
