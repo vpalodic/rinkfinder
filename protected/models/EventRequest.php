@@ -7,6 +7,9 @@
  * @property integer $id
  * @property integer $event_id
  * @property integer $requester_id
+ * @property string $requester_name
+ * @property string $requester_email
+ * @property string $requester_phone
  * @property integer $acknowledger_id
  * @property string $acknowledged_on
  * @property integer $accepter_id
@@ -37,153 +40,289 @@
  */
 class EventRequest extends RinkfinderActiveRecord
 {
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'event_request';
-	}
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'event_request';
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
-			array('event_id, requester_id, type_id, status_id, created_on, updated_on', 'required'),
-			array('event_id, requester_id, acknowledger_id, accepter_id, rejector_id, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('rejected_reason', 'length', 'max'=>255),
-			array('acknowledged_on, accepted_on, rejected_on, notes', 'safe'),
-			// The following rule is used by search().
-			// @todo Please remove those attributes that should not be searched.
-			array('id, event_id, requester_id, acknowledger_id, acknowledged_on, accepter_id, accepted_on, rejector_id, rejected_on, rejected_reason, notes, type_id, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
-		);
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        return array(
+            array(
+                'event_id, requester_id, requester_name, requester_email, requester_phone, type_id',
+                'required'
+            ),
+            array(
+                'acknowledged_by, acknowledged_on',
+                'required',
+                'on' => 'acknowledging'
+            ),
+            array(
+                'accepted_by, accepted_on',
+                'required',
+                'on' => 'accepting'
+            ),
+            array(
+                'rejected_by, rejected_on, rejected_reason',
+                'required',
+                'on' => 'rejecting'
+            ),
+            array(
+                'event_id, requester_id, acknowledger_id, accepter_id, rejector_id, type_id, status_id',
+                'numerical',
+                'integerOnly' => true
+            ),
+            array(
+                'rejected_reason',
+                'length',
+                'max' => 255
+            ),
+            array(
+                'requester_name',
+                'length',
+                'max' => 256
+            ),
+            array(
+                'requester_email',
+                'length',
+                'max' => 128
+            ),
+            array(
+                'requester_phone',
+                'length',
+                'max' => 10,
+                'min' => 10
+            ),
+            array(
+                'acknowledged_on, accepted_on, rejected_on, created_on, updated_on, notes',
+                'safe'
+            ),
+            // The following rule is used by search().
+            // @todo Please remove those attributes that should not be searched.
+            array(
+                'id, event_id, requester_id, requester_name, requester_email, requester_pone, acknowledger_id, acknowledged_on, accepter_id, accepted_on, rejector_id, rejected_on, rejected_reason, notes, type_id, status_id, created_by_id, created_on, updated_by_id, updated_on',
+                'safe',
+                'on' => 'search'
+            ),
+        );
+    }
 
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array(
-			'event' => array(self::BELONGS_TO, 'Event', 'event_id'),
-			'requester' => array(self::BELONGS_TO, 'User', 'requester_id'),
-			'acknowledger' => array(self::BELONGS_TO, 'User', 'acknowledger_id'),
-			'accepter' => array(self::BELONGS_TO, 'User', 'accepter_id'),
-			'rejector' => array(self::BELONGS_TO, 'User', 'rejector_id'),
-			'type' => array(self::BELONGS_TO, 'EventRequestType', 'type_id'),
-			'status' => array(self::BELONGS_TO, 'EventRequestStatus', 'status_id'),
-			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
-			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
-			'reservations' => array(self::HAS_MANY, 'Reservation', 'source_id'),
-		);
-	}
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        // NOTE: you may need to adjust the relation name and the related
+        // class name for the relations automatically generated below.
+        return array(
+            'event' => array(self::BELONGS_TO, 'Event', 'event_id'),
+            'requester' => array(self::BELONGS_TO, 'User', 'requester_id', 'select' => array('id', 'username', 'status_id')),
+            'acknowledger' => array(self::BELONGS_TO, 'User', 'acknowledger_id', 'select' => array('id', 'username', 'status_id')),
+            'accepter' => array(self::BELONGS_TO, 'User', 'accepter_id', 'select' => array('id', 'username', 'status_id')),
+            'rejector' => array(self::BELONGS_TO, 'User', 'rejector_id', 'select' => array('id', 'username', 'status_id')),
+            'type' => array(self::BELONGS_TO, 'EventRequestType', 'type_id'),
+            'status' => array(self::BELONGS_TO, 'EventRequestStatus', 'status_id'),
+            'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id', 'select' => array('id', 'username', 'status_id')),
+            'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id', 'select' => array('id', 'username', 'status_id')),
+            'reservations' => array(self::HAS_MANY, 'Reservation', 'source_id'),
+        );
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'id' => 'ID',
-			'event_id' => 'Event',
-			'requester_id' => 'Requester',
-			'acknowledger_id' => 'Acknowledger',
-			'acknowledged_on' => 'Acknowledged On',
-			'accepter_id' => 'Accepter',
-			'accepted_on' => 'Accepted On',
-			'rejector_id' => 'Rejector',
-			'rejected_on' => 'Rejected On',
-			'rejected_reason' => 'Rejected Reason',
-			'notes' => 'Notes',
-			'type_id' => 'Type',
-			'status_id' => 'Status',
-			'lock_version' => 'Lock Version',
-			'created_by_id' => 'Created By',
-			'created_on' => 'Created On',
-			'updated_by_id' => 'Updated By',
-			'updated_on' => 'Updated On',
-		);
-	}
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+            'id' => 'ID',
+            'event_id' => 'Event',
+            'requester_id' => 'Requester',
+            'requester_name' => 'Requester Name',
+            'requester_email' => 'Requester Email',
+            'requester_phone' => 'Requester Phone',
+            'acknowledger_id' => 'Acknowledger',
+            'acknowledged_on' => 'Acknowledged On',
+            'accepter_id' => 'Accepter',
+            'accepted_on' => 'Accepted On',
+            'rejector_id' => 'Rejector',
+            'rejected_on' => 'Rejected On',
+            'rejected_reason' => 'Rejected Reason',
+            'notes' => 'Notes',
+            'type_id' => 'Type',
+            'status_id' => 'Status',
+            'lock_version' => 'Lock Version',
+            'created_by_id' => 'Created By',
+            'created_on' => 'Created On',
+            'updated_by_id' => 'Updated By',
+            'updated_on' => 'Updated On',
+        );
+    }
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 *
-	 * Typical usecase:
-	 * - Initialize the model fields with values from filter form.
-	 * - Execute this method to get CActiveDataProvider instance which will filter
-	 * models according to data in model fields.
-	 * - Pass data provider to CGridView, CListView or any similar widget.
-	 *
-	 * @return CActiveDataProvider the data provider that can return the models
-	 * based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		// @todo Please modify the following code to remove attributes that should not be searched.
+    /**
+     * Retrieves a list of models based on the current search/filter conditions.
+     *
+     * Typical usecase:
+     * - Initialize the model fields with values from filter form.
+     * - Execute this method to get CActiveDataProvider instance which will filter
+     * models according to data in model fields.
+     * - Pass data provider to CGridView, CListView or any similar widget.
+     *
+     * @return CActiveDataProvider the data provider that can return the models
+     * based on the search/filter conditions.
+     */
+    public function search()
+    {
+        // @todo Please modify the following code to remove attributes that should not be searched.
 
-		$criteria=new CDbCriteria;
+        $criteria = new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
-		$criteria->compare('event_id',$this->event_id);
-		$criteria->compare('requester_id',$this->requester_id);
-		$criteria->compare('acknowledger_id',$this->acknowledger_id);
-		$criteria->compare('acknowledged_on',$this->acknowledged_on,true);
-		$criteria->compare('accepter_id',$this->accepter_id);
-		$criteria->compare('accepted_on',$this->accepted_on,true);
-		$criteria->compare('rejector_id',$this->rejector_id);
-		$criteria->compare('rejected_on',$this->rejected_on,true);
-		$criteria->compare('rejected_reason',$this->rejected_reason,true);
-		$criteria->compare('notes',$this->notes,true);
-		$criteria->compare('type_id',$this->type_id);
-		$criteria->compare('status_id',$this->status_id);
-		$criteria->compare('lock_version',$this->lock_version);
-		$criteria->compare('created_by_id',$this->created_by_id);
-		$criteria->compare('created_on',$this->created_on,true);
-		$criteria->compare('updated_by_id',$this->updated_by_id);
-		$criteria->compare('updated_on',$this->updated_on,true);
+        $criteria->compare('id', $this->id);
+        $criteria->compare('event_id', $this->event_id);
+        $criteria->compare('requester_id', $this->requester_id);
+        $criteria->compare('requester_name', $this->requester_name);
+        $criteria->compare('requester_email', $this->requester_email);
+        $criteria->compare('requester_phone', $this->requester_phone);
+        $criteria->compare('acknowledger_id', $this->acknowledger_id);
+        $criteria->compare('acknowledged_on', $this->acknowledged_on, true);
+        $criteria->compare('accepter_id', $this->accepter_id);
+        $criteria->compare('accepted_on', $this->accepted_on, true);
+        $criteria->compare('rejector_id', $this->rejector_id);
+        $criteria->compare('rejected_on', $this->rejected_on, true);
+        $criteria->compare('rejected_reason', $this->rejected_reason, true);
+        $criteria->compare('notes', $this->notes, true);
+        $criteria->compare('type_id', $this->type_id);
+        $criteria->compare('status_id', $this->status_id);
+        $criteria->compare('lock_version', $this->lock_version);
+        $criteria->compare('created_by_id', $this->created_by_id);
+        $criteria->compare('created_on', $this->created_on, true);
+        $criteria->compare('updated_by_id', $this->updated_by_id);
+        $criteria->compare('updated_on', $this->updated_on, true);
 
-		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
-		));
-	}
+        return new CActiveDataProvider($this, array(
+            'criteria'=>$criteria,
+        ));
+    }
 
-	/**
-	 * Returns the static model of the specified AR class.
-	 * Please note that you should have this exact method in all your CActiveRecord descendants!
-	 * @param string $className active record class name.
-	 * @return EventRequest the static model class
-	 */
-	public static function model($className=__CLASS__)
-	{
-		return parent::model($className);
-	}
+    /**
+     * Returns the static model of the specified AR class.
+     * Please note that you should have this exact method in all your CActiveRecord descendants!
+     * @param string $className active record class name.
+     * @return EventRequest the static model class
+     */
+    public static function model($className=__CLASS__)
+    {
+        return parent::model($className);
+    }
         
     /**
      * Returns an array of event request types
+     * @param boolean $activeOnly If true, then only active values will be returned
      * @return array[] the array of event request types
      * @throws CDbException
      */
-    public static function getTypes()
+    public static function getTypes($activeOnly = false)
     {
-        $sql = 'SELECT * FROM event_request_type';
+        $sql = 'SELECT * FROM event_request_type ';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1 ';
+        }
+        
+        $sql .= ' ORDER BY display_order ASC';
+        
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
     }
     
     /**
      * Returns an array of event request statuses
+     * @param boolean $activeOnly If true, then only active values will be returned
      * @return array[] the array of event request statuses
      * @throws CDbException
      */
-    public static function getStatuses()
+    public static function getStatuses($activeOnly = false)
     {
-        $sql = 'SELECT * FROM event_request_status';
+        $sql = 'SELECT * FROM event_request_status ';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1 ';
+        }
+        
+        $sql .= ' ORDER BY display_order ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Acknowledges a request by updating the record and by sending an e-mail to
+     * the requester that their request was acknowledged.
+     * @param boolean $activeOnly If true, then only active values will be returned
+     * @return boolean true if the request was successfully acknowleged
+     * @throws CDbException
+     */
+    public function acknowledgeRequest()
+    {
+        $sql = 'SELECT * FROM event_request_type';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1';
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Accepts a request by updating the record, by sending an e-mail to
+     * the requester that their request was accepted, and it creates a
+     * reservation in the system on the requester's behalf for the event. All
+     * other requests will automatically be rejected with the reason that the
+     * event has already been reserved.
+     * @param boolean $activeOnly If true, then only active values will be returned
+     * @return boolean true if the request was successfully acknowleged
+     * @throws CDbException
+     */
+    public function acceptRequest()
+    {
+        $sql = 'SELECT * FROM event_request_type';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1';
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Rejects a request by updating the record, by sending an e-mail to
+     * the requester that their request was not accepted, and it creates a
+     * reservation in the system on the requester's behalf for the event. All
+     * other requests will automatically be rejected with the reason that the
+     * event has already been reserved.
+     * @param boolean $activeOnly If true, then only active values will be returned
+     * @return boolean true if the request was successfully acknowleged
+     * @throws CDbException
+     */
+    public function rejectRequest()
+    {
+        $sql = 'SELECT * FROM event_request_type';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1 ';
+        }
+        
+        $sql .= 'ORDER BY display_order ASC';
+        
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
     }
@@ -239,9 +378,15 @@ class EventRequest extends RinkfinderActiveRecord
                 'hide' => 'all',
                 'link' => 'endpoint4',
             ),
-            'requested_by' => array(
-                'name' => 'requested_by',
+            'requester_name' => array(
+                'name' => 'requester_name',
                 'display' => 'Requested By',
+                'type' => 'alpha',
+                'hide' => 'phone',
+            ),
+            'created_on' => array(
+                'name' => 'created_on',
+                'display' => 'Requested On',
                 'type' => 'alpha',
                 'hide' => 'phone',
             ),
@@ -255,7 +400,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'acknowledged_on',
                 'display' => 'Acknowledged On',
                 'type' => 'numeric',
-                'hide' => 'phone'
+                'hide' => 'phone,tablet'
             ),
             'accepted_by' => array(
                 'name' => 'accepted_by',
@@ -267,7 +412,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'accepted_on',
                 'display' => 'Accepted On',
                 'type' => 'numeric',
-                'hide' => 'phone'
+                'hide' => 'phone,tablet'
             ),
             'rejected_by' => array(
                 'name' => 'rejected_by',
@@ -279,7 +424,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'rejected_on',
                 'display' => 'Rejected On',
                 'type' => 'numeric',
-                'hide' => 'phone'
+                'hide' => 'phone,tablet'
             ),
             'rejected_reason' => array(
                 'name' => 'rejected_reason',
@@ -306,6 +451,206 @@ class EventRequest extends RinkfinderActiveRecord
         );
     }
 
+    /**
+     * Retrieve either a field or indexed field list
+     * @param string $field If null, returns the entire list
+     * @return mixed If no field is provided, it is an array indexed by the
+     * field values. If a valid field is provided, then it is the
+     * details for only that field.
+     */
+    public static function fieldDetails($field = null)
+    {
+        $_items = array(
+            'id' => array(
+                'name' => 'id',
+                'label' => 'ID',
+                'controlType' => 'text',
+                'type' => 'numeric',
+                'primary' => true,
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'event_id' => array(
+                'name' => 'event_id',
+                'label' => 'Event ID',
+                'controlType' => 'text',
+                'type' => 'numeric',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'event_start' => array(
+                'name' => 'event_start',
+                'label' => 'Event Start',
+                'controlType' => 'datetime',
+                'type' => 'datetime',
+                'format' => 'yyyy-mm-dd hh:ii',
+                'viewFormat' => 'mm/dd/yyyy HH:ii P',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'arena' => array(
+                'name' => 'arena',
+                'label' => 'Arena',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'arena_id' => array(
+                'name' => 'arena_id',
+                'label' => 'Arena ID',
+                'controlType' => 'text',
+                'type' => 'numeric',
+                'editable' => false,
+                'hidden' => true,
+            ),
+            'location' => array(
+                'name' => 'location',
+                'label' => 'Location',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'location_id' => array(
+                'name' => 'location_id',
+                'label' => 'Location ID',
+                'controlType' => 'text',
+                'type' => 'numeric',
+                'editable' => false,
+                'hidden' => true,
+            ),
+            'created_on' => array(
+                'name' => 'created_on',
+                'label' => 'Requested On',
+                'controlType' => 'datetime',
+                'type' => 'datetime',
+                'format' => 'yyyy-mm-dd hh:ii',
+                'viewFormat' => 'mm/dd/yyyy HH:ii P',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'requester_name' => array(
+                'name' => 'requester_name',
+                'label' => 'Requested By',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'requester_email' => array(
+                'name' => 'requester_email',
+                'label' => 'Requester E-mail',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'requester_phone' => array(
+                'name' => 'requester_phone',
+                'label' => 'Requester Phone',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'acknowledger' => array(
+                'name' => 'acknowledger',
+                'label' => 'Acknowledged By',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'acknowledged_on' => array(
+                'name' => 'acknowledged_on',
+                'label' => 'Acknowledged On',
+                'controlType' => 'datetime',
+                'type' => 'datetime',
+                'format' => 'yyyy-mm-dd hh:ii',
+                'viewFormat' => 'mm/dd/yyyy HH:ii P',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'accepter' => array(
+                'name' => 'accepter',
+                'label' => 'Accepted By',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'accepted_on' => array(
+                'name' => 'accepted_on',
+                'label' => 'Accepted On',
+                'controlType' => 'datetime',
+                'type' => 'datetime',
+                'format' => 'yyyy-mm-dd hh:ii',
+                'viewFormat' => 'mm/dd/yyyy HH:ii P',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'rejector' => array(
+                'name' => 'rejector',
+                'label' => 'Rejected By',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'rejected_on' => array(
+                'name' => 'rejected_on',
+                'label' => 'Rejected On',
+                'controlType' => 'datetime',
+                'type' => 'datetime',
+                'format' => 'yyyy-mm-dd hh:ii',
+                'viewFormat' => 'mm/dd/yyyy HH:ii P',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'rejected_reason' => array(
+                'name' => 'rejected_reason',
+                'label' => 'Rejection Reason',
+                'controlType' => 'text',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'notes' => array(
+                'name' => 'notes',
+                'display' => 'Notes',
+                'controlType' => 'textarea',
+                'type' => 'alpha',
+                'editable' => true,
+                'hidden' => false,
+            ),
+            'type_id' => array(
+                'name' => 'type_id',
+                'label' => 'Type',
+                'type' => 'alpha',
+                'controlType' => 'select',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'status_id' => array(
+                'name' => 'status_id',
+                'label' => 'Status',
+                'type' => 'alpha',
+                'controlType' => 'select',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => false,
+            ),
+        );
+        
+        if(isset($field)) {
+            return isset($_items[$field]) ? $_items[$field] : false;
+        } else {
+            return $_items;
+        }
+    }
+    
     /**
      * Returns the event request count for each type and status 
      * plus the total count for each type and the total count for all.
@@ -482,17 +827,18 @@ class EventRequest extends RinkfinderActiveRecord
                 . "a.id AS arena_id, "
                 . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location, "
                 . "(SELECT l.id FROM location l WHERE l.id = e.location_id) AS location_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.requester_id = p.user_id) AS requested_by, "
+                . "er.requester_name, "
                 . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledged_by, "
-                . "CASE WHEN er.acknowledged_on IS NULL THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
+                . "CASE WHEN er.acknowledged_on IS NULL OR er.acknowledged_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
                 . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepted_by, "
-                . "CASE WHEN er.accepted_on IS NULL THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
+                . "CASE WHEN er.accepted_on IS NULL OR er.accepted_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
                 . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejected_by, "
-                . "CASE WHEN er.rejected_on IS NULL THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
+                . "CASE WHEN er.rejected_on IS NULL OR er.rejected_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
                 . "er.rejected_reason, "
                 . "er.notes, "
                 . "(SELECT t.display_name FROM event_request_type t WHERE t.id = er.type_id) AS type, "
-                . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status "
+                . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status, "
+                . "CASE WHEN er.created_on IS NULL OR er.created_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.created_on, '%m/%d/%Y %h:%i %p') END AS created_on "
                 . "FROM event_request er "
                 . "    INNER JOIN event e "
                 . "    ON er.event_id = e.id "
@@ -674,6 +1020,25 @@ class EventRequest extends RinkfinderActiveRecord
             'aid' => $aid,
         );
         
+        $recordParms = array(
+            'id' => $id,
+            'eid' => $eid,
+            'aid' => $aid
+        );
+        
+        $updateParms = array(
+            'eventRequest/update',
+        );
+        
+        $typeParms = array(
+            'eventRequest/type',
+        );
+        
+        $statusParms = array(
+            'eventRequest/status',
+            'output' => 'json'
+        );
+        
         $sql = "SELECT er.id, "
                 . "e.id AS event_id, "
                 . "CONCAT(DATE_FORMAT(e.start_date, '%m/%d/%Y'), ' ', DATE_FORMAT(e.start_time, '%h:%i %p')) AS event_start, "
@@ -682,22 +1047,25 @@ class EventRequest extends RinkfinderActiveRecord
                 . "(SELECT l.name FROM location l WHERE l.id = e.location_id AND l.arena_id = a.id) AS location, "
                 . "(SELECT l.id FROM location l WHERE l.id = e.location_id AND l.arena_id = a.id) AS location_id, "
                 . "er.requester_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.requester_id = p.user_id) AS requested_by, "
+                . "er.requester_name, "
+                . "er.requester_email, "
+                . "er.requester_phone, "
                 . "er.acknowledger_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledged_by, "
-                . "CASE WHEN er.acknowledged_on IS NULL THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledger, "
+                . "CASE WHEN er.acknowledged_on IS NULL OR er.acknowledged_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
                 . "er.accepter_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepted_by, "
-                . "CASE WHEN er.accepted_on IS NULL THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepter, "
+                . "CASE WHEN er.accepted_on IS NULL OR er.accepted_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
                 . "er.rejector_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejected_by, "
-                . "CASE WHEN er.rejected_on IS NULL THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
+                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejector, "
+                . "CASE WHEN er.rejected_on IS NULL OR er.rejected_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
                 . "er.rejected_reason, "
                 . "er.notes, "
                 . "er.type_id, "
                 . "(SELECT t.display_name FROM event_request_type t WHERE t.id = er.type_id) AS type, "
                 . "er.status_id, "
-                . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status "
+                . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status, "
+                . "DATE_FORMAT(er.created_on, '%m/%d/%Y %h:%i %p') AS created_on "
                 . "FROM event_request er "
                 . "    INNER JOIN event e "
                 . "    ON er.event_id = e.id "
@@ -712,7 +1080,8 @@ class EventRequest extends RinkfinderActiveRecord
             $sql .= " INNER JOIN location l "
                     . " ON l.arena_id = a.id ";
 
-            $parms['lid'] = $aid;
+            $parms['lid'] = $lid;
+            $recordParms['lid'] = $lid;
             
             $sql .= " AND e.location_id = :lid ";
         }
@@ -727,10 +1096,10 @@ class EventRequest extends RinkfinderActiveRecord
         
         if($lid !== null) {
             $sql .= " AND e.location_id = :lid "
-                    . " AND l.id = :lid";
+                    . " AND l.id = :lid ";
         }
         
-        $sql .= "ORDER BY e.start_date ASC";
+        $sql .= " ORDER BY e.start_date ASC";
         
         $command = Yii::app()->db->createCommand($sql);
         
@@ -743,53 +1112,57 @@ class EventRequest extends RinkfinderActiveRecord
             $command->bindParam(':lid', $lid, PDO::PARAM_INT);
         }
         
-        $ret['item'] = $command->queryRow(true);
-
-        $ret['count'] = is_array($ret['item']) ? 1 : 0;
-        $ret['model'] = 'EventRequest';
-        $ret['action'] = 'view';
-        $ret['endpoint'] = CHtml::normalizeUrl($parms);
+        $row = $command->queryRow(true);
         
+        $ret['item'] = false;
+        $ret['count'] = is_array($row) ? 1 : 0;
+        $ret['model'] = 'EventRequest';
+        $ret['endpoint']['view'] = CHtml::normalizeUrl($parms);
+
         if($ret['count'] == 0) {
             return $ret;
         }
 
-        // Ok, we have our record!!
-        // So now we need to process it so that the user can update it
-        // and that sorts of stuff!
+        $fields = array();
         
-            if(isset($ret['items'][$i]['event_start']) && 
-                     strtotime($ret['items'][$i]['event_start']) !== false) {
-                $ret['items'][$i]['dataConvert']['event_start'] = 
-                        strtotime($ret['items'][$i]['event_start']);
-            }
-            if(isset($ret['items'][$i]['acknowledged_on']) && 
-                     strtotime($ret['items'][$i]['acknowledged_on']) !== false) {
-                $ret['items'][$i]['dataConvert']['acknowledged_on'] = 
-                        strtotime($ret['items'][$i]['acknowledged_on']);
-            }
-            if(isset($ret['items'][$i]['accepted_on']) && 
-                     strtotime($ret['items'][$i]['accepted_on']) !== false) {
-                $ret['items'][$i]['dataConvert']['accepted_on'] = 
-                        strtotime($ret['items'][$i]['accepted_on']);
-            }
-            if(isset($ret['items'][$i]['rejected_on']) && 
-                     strtotime($ret['items'][$i]['rejected_on']) !== false) {
-                $ret['items'][$i]['dataConvert']['rejected_on'] = 
-                        strtotime($ret['items'][$i]['rejected_on']);
-            }
+        foreach($row as $field => $value) {
+            $fieldData = EventRequest::fieldDetails($field);
             
-            $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl($localErParms);
-            
-            if(is_numeric($ret['items'][$i]['event_id'])) {
-                $ret['items'][$i]['endpoint2'] = CHtml::normalizeUrl($localEParms);
-            }            
-            if(is_numeric($ret['items'][$i]['location_id'])) {
-                $ret['items'][$i]['endpoint4'] = CHtml::normalizeUrl($localLParms);
+            if(is_array($fieldData)) {
+                if($field == 'acknowledger' || $field == 'accepter' ||
+                        $field == 'rejector') {
+                    if(empty($value)) {
+                        $fieldData['button']['enabled'] = true;
+                        $fieldData['button']['name'] = $field . '_id';
+                    }
+                }
+                
+                if($field == 'requester_phone') {
+                    if(!empty($value) && is_numeric($value)) {
+                        $fieldData['value'] = RinkfinderActiveRecord::format_telephone($value);
+                    }
+                } elseif($field == 'type_id') {
+                    $fieldData['value'] = $row['type'];
+                    $fieldData['source'] = CHtml::normalizeUrl($typeParms);
+                } elseif($field == 'status_id') {
+                    $fieldData['value'] = $row['status'];
+                    $fieldData['source'] = CHtml::normalizeUrl($statusParms);
+                } else {
+                    $fieldData['value'] = $value;
+                }
+                
+                $fields[$field] = $fieldData;
             }
-            if(is_numeric($ret['items'][$i]['arena_id'])) {
-                $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl($localAParms);
-            }            
+        }
+        
+        $ret['item']['fields'] = $fields;
+        $ret['endpoint']['update'] = CHtml::normalizeUrl($updateParms);
+        $ret['endpoint']['type'] = CHtml::normalizeUrl($typeParms);
+        $ret['endpoint']['status'] = CHtml::normalizeUrl($statusParms);
+        $ret['pk']['name'] = 'id';
+        $ret['pk']['value'] = isset($ret['item']['fields']['id']['value']) ? 
+                $ret['item']['fields']['id']['value'] : 0;
+        $ret['parms'] = $recordParms;
         
         // Ok, lets return this stuff!!
         return $ret;

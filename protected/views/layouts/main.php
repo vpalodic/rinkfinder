@@ -22,12 +22,16 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.css');
+            Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
         } elseif ($this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
         }
     ?>

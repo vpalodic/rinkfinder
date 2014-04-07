@@ -12,7 +12,7 @@
 	// controller action is handling ajax validation correctly.
 	// There is a call to performAjaxValidation() commented in generated controller code.
 	// See class documentation of CActiveForm for details on this.
-	'enableAjaxValidation'=>false,
+	'enableAjaxValidation' => true,
 )); ?>
 
     <p class="help-block">Fields with <span class="required">*</span> are required.</p>
@@ -22,6 +22,12 @@
             <?php echo $form->textFieldControlGroup($model,'event_id',array('span'=>5)); ?>
 
             <?php echo $form->textFieldControlGroup($model,'requester_id',array('span'=>5)); ?>
+
+            <?php echo $form->textFieldControlGroup($model,'requester_name',array('span'=>5)); ?>
+
+            <?php echo $form->textFieldControlGroup($model,'requester_email',array('span'=>5)); ?>
+
+            <?php echo $form->textFieldControlGroup($model,'requester_phone',array('span'=>5)); ?>
 
             <?php echo $form->textFieldControlGroup($model,'acknowledger_id',array('span'=>5)); ?>
 

@@ -340,11 +340,11 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'title' => 'Phone Number',
                 'field_type' => 'VARCHAR',
                 'field_size' => 10,
-                'field_size_min' => 0,
-                'required' => 2,
+                'field_size_min' => 10,
+                'required' => 1,
                 'match' => '',
                 'range' => '',
-                'error_message' => 'Invalid Phone Number (length 10 digit phone number).',
+                'error_message' => 'Invalid Phone Number (10 digit phone number).',
                 'other_validator' => '',
                 'default' => '',
                 'widget' => '',
@@ -615,6 +615,35 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
             )
         );
         
+        // First insert the user account
+        $this->insert('user', array(
+                'id' => 3,
+                'username' => 'guest_user',
+                'email' => 'guest@rinkfinder.com',
+                'password' => '$2y$11$4SOqQpalypKG9tgx0076pOXwonA4gcPZ.skwwW3xXEgxBRl00ZzhK',
+                'status_id' => 1,
+                'failed_logins' => 0,
+                'user_key' => '834198d9c507807b2b1ae6e0ecb5089abec8dd02744ea8c3e43cfb20fa399b20',
+                'activated_on' => new CDbExpression('NOW()'),
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
+        
+        // Now insert the account profile
+        $this->insert('profile', array(
+                'user_id' => 3,
+                'first_name' => 'Guest',
+                'last_name' => 'User',
+                'address_line1' => '123 Main St.',
+                'city' => 'Saint Paul',
+                'state' => 'MN',
+                'zip' => '55122',
+                'phone' => '6128675309',
+                'created_on' => new CDbExpression('NOW()'),
+                'updated_on' => new CDbExpression('NOW()'),
+            )
+        );
     }
     
     private function dropProfileFieldTable()

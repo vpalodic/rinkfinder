@@ -210,7 +210,7 @@ class ManagementController extends Controller
                 $this->handleArenaReservationPolicyView($id, $outputFormat);
                 break;
             case 'recurrence':
-                $this->handleArenaReservationPolicyView($id, $outputFormat);
+                $this->handleRecurrenceView($id, $outputFormat);
                 break;
             default:
                 if($outputFormat == "html" || $outputFormat == "xml") {
@@ -333,14 +333,62 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
-            $this->renderPartial(
-                    "_eventRequest",
-                    array(
-                        'model' => new EventRequest(),
-                        'data' => $data,
-                        'headers' => EventRequest::getViewAttributes(),
-                        'ownView' => true
-                    ));
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_eventRequest",
+                        array(
+                            'model' => new EventRequest(),
+                            'data' => $data,
+    //                        'headers' => EventRequest::getViewAttributes(),
+                            'ownView' => true,
+                            'newRecord' => false
+                        ));
+            } else {
+                // Publish and register our jQuery plugin
+                $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+
+                if(defined('YII_DEBUG')) {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
+                } else {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.min.js', CClientScript::POS_BEGIN);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
+                }
+        
+                $this->navigation = true;
+                $this->includeCss = true;
+                $this->render(
+                        "_eventRequest",
+                        array(
+                            'model' => new EventRequest(),
+                            'data' => $data,
+    //                        'headers' => EventRequest::getViewAttributes(),
+                            'ownView' => true,
+                            'newRecord' => false
+                        ));
+            }
         }
     }
     

@@ -6,7 +6,7 @@ class EventRequestController extends Controller
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-	public $layout='//layouts/column2';
+	public $layout='//layouts/column1';
 
 	/**
 	 * @return array action filters
@@ -32,7 +32,7 @@ class EventRequestController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update'),
+				'actions'=>array('create','update', 'type', 'status'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -79,29 +79,215 @@ class EventRequestController extends Controller
 		));
 	}
 
-	/**
-	 * Updates a particular model.
-	 * If update is successful, the browser will be redirected to the 'view' page.
-	 * @param integer $id the ID of the model to be updated
-	 */
-	public function actionUpdate($id)
-	{
-		$model=$this->loadModel($id);
+    /**
+     * Gets a list of available types for the event request
+     */
+    public function actionType()
+    {
+        Yii::trace("In actionType.", "application.controllers.EventRequestController");
+        
+        // Default to XML output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        if(!Yii::app()->user->isSiteUser()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
 
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
+        // Try and get the data!
+        try {
+            $dataTemp = EventRequest::getTypes(true);
+            
+            foreach($dataTemp as $record) {
+                $data[] = array(
+                    'value' => $record['id'],
+                    'text' => $record['display_name']
+                );
+            }
+            
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
 
-		if (isset($_POST['EventRequest'])) {
-			$model->attributes=$_POST['EventRequest'];
-			if ($model->save()) {
-				$this->redirect(array('view','id'=>$model->id));
-			}
-		}
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
 
-		$this->render('update',array(
-			'model'=>$model,
-		));
-	}
+            echo json_encode($data);
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "details", "eventrequest");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
+
+    /**
+     * Gets a list of available status values for the event request
+     */
+    public function actionStatus()
+    {
+        Yii::trace("In actionType.", "application.controllers.EventRequestController");
+        
+        // Default to XML output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        if(!Yii::app()->user->isSiteUser()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+
+        // Try and get the data!
+        try {
+            $dataTemp = EventRequest::getStatuses(true);
+            
+            foreach($dataTemp as $record) {
+                $data[] = array(
+                    'value' => $record['id'],
+                    'text' => $record['display_name']
+                );
+            }
+            
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode($data);
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "details", "eventrequest");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
+
+    /**
+     * Updates a particular model.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id the ID of the model to be updated
+     */
+    public function actionUpdate($id = null)
+    {
+        // If we are updating via ajax, then we do something a little bit
+        // differently as we will update one attribute at a time!
+        if(Yii::app()->request->isAjaxRequest) {
+            
+        } else {
+            $model=$this->loadModel($id);
+
+            // Uncomment the following line if AJAX validation is needed
+            // $this->performAjaxValidation($model);
+
+            if (isset($_POST['EventRequest'])) {
+                $model->attributes=$_POST['EventRequest'];
+                if ($model->save()) {
+                    $this->redirect(array('view','id'=>$model->id));
+                }
+            }
+
+            $this->render('update',array(
+                'model' => $model,
+            ));
+        }
+    }
 
 	/**
 	 * Deletes a particular model.

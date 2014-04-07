@@ -104,7 +104,8 @@ class Arena extends RinkfinderActiveRecord
             array(
                 'phone, ext, fax, fax_ext',
                 'length',
-                'max' => 10
+                'max' => 10,
+                'min' => 10
             ),
             array(
                 'logo, url',

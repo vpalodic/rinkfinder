@@ -8,7 +8,7 @@
 .sectionHeader
 {
     padding: 10px;
-    font-size: 2.0em;
+    font-size: 1.75em;
     font-weight: bold;
     color: #FFFFFF;
     border-top-left-radius: 5px;
@@ -29,7 +29,7 @@
     padding-left: 0px;
     padding-bottom: 0px;
     padding-right: 0px;
-    font-size: 1.75em;
+    font-size: 1.50em;
     font-weight: bold;
     color: #0d1b72;
     border-top-left-radius: 5px;
@@ -335,12 +335,23 @@
 }   
 
 .panel-primary {
-    border-color: #428BCA;
+    border-color: #0d1b72;
 }   
 
 .panel-primary > .panel-heading {
-    background-color: #428BCA;
-    border-color: #428BCA;
+    color: #FFFFFF;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background: #0d1b72; /* Old browsers */
+    background: -moz-linear-gradient(top,  #0d1b72 0%, #207cca 65%, #2989d8 71%, #7db9e8 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0d1b72), color-stop(65%,#207cca), color-stop(71%,#2989d8), color-stop(100%,#7db9e8)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #0d1b72 0%,#207cca 65%,#2989d8 71%,#7db9e8 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0d1b72', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
+    background-color: #0d1b72;
+    border-color: #0d1b72;
     color: #FFFFFF;
 }   
 
@@ -352,7 +363,7 @@
 }   
 
 .panel-title {
-    font-size: 16px;
+    font-size: 1.75em;
     margin-bottom: 0;
     margin-top: 0;
 }   
@@ -402,15 +413,15 @@
     cursor: pointer;
 }
 
-.table-user-information > tbody > tr {
+.table-information > tbody > tr {
     border-top: 1px solid rgb(221, 221, 221);
 }
 
-.table-user-information > tbody > tr:first-child {
+.table-information > tbody > tr:first-child {
     border-top: 0;
 }
 
 
-.table-user-information > tbody > tr > td {
+.table-information > tbody > tr > td {
     border-top: 0;
 }
