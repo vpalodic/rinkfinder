@@ -266,26 +266,166 @@ class EventRequestController extends Controller
      */
     public function actionUpdate($id = null)
     {
+        Yii::trace("In actionUpdate.", "application.controllers.EventRequestController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // We need to grab and validate our parameters from the request body
+        // The parameters will be different depending if this is an Ajax
+        // request or not
+
         // If we are updating via ajax, then we do something a little bit
         // differently as we will update one attribute at a time!
         if(Yii::app()->request->isAjaxRequest) {
+            // Grab all of the parameters!
+            $name = isset($_POST['name']) ? $_POST['name'] : null;
+            $value = isset($_POST['value']) ? $_POST['value'] : null;
+            $pk = isset($_POST['pk']) ? $_POST['pk'] : null;
+            $id = isset($_POST['id']) ? $_POST['id'] : null;
+            $eid = isset($_POST['eid']) ? $_POST['eid'] : null;
+            $aid = isset($_POST['aid']) ? $_POST['aid'] : null;
+            $lid = isset($_POST['lid']) ? $_POST['lid'] : null;
+            // Always restrict to the currently logged in user!
+            $uid = Yii::app()->user->id;
+            
+            if($name === null || $value === null || $id === null ||
+                    $eid === null || $aid === null || $pk === null || $pk != $id) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, 'Invalid parameters');
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+                
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Invalid parameters',
+                        )
+                );
+                Yii::app()->end();
+            }
+            
+            // Ok, we have what appear to be valid parameters and so
+            // it is time to validate and then update the value!
             $model = new EventRequest();
             
-            $model->$_POST['name'] = $_POST['value'];
+            $model->$name = $value;
             
-            $valid = $model->validate(array($_POST['name']));
+            $valid = $model->validate(array($name));
             
             if(!$valid) {
-                $error = $model->getError($_POST['name']);
+                $errors = $model->getErrors($name);
                 
-                $this->sendResponseHeaders(400, 'html');
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    $output = '';
+
+                    foreach($errors as $error) {
+                        if($output == '') {
+                            $output = $error;
+                        } else {
+                            $output .= '<br>' . $error;
+                        }
+                    }
+                    
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
                 
-                echo $error;
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($errors),
+                        )
+                );
+                Yii::app()->end();
             } else {
                 // The attribute is valid and so we should save it!!
+                try {
+                    // We don't blindly save it even though we validated that
+                    // the user is a restricted manager. We could do another
+                    // check to see if the user is assigned to the arena but,
+                    // we are going to do that check during the update!
+                    // So, we will know if the user is valid if our update query
+                    // affects one row. If it affects zero rows, then the user
+                    // wasn't authorized and we will throw a 403 error!
+                    if(EventRequest::saveAssignedRecordAttributes(array($name => $value), $id, $uid, $eid, $aid, $lid) == false) {
+                        $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
+
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, $output);
+                        }
+                        
+                        $this->sendResponseHeaders(400, 'json');
+                        
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => json_encode($output),
+                                )
+                        );
+                        Yii::app()->end();
+                    }
+                    
+                } catch (Exception $ex) {
+                    if($ex instanceof CHttpException) {
+                        throw $ex;
+                    }
+                    
+                    if($outputFormat == "html" || $outputFormat == "xml") {
+                        throw new CHttpException(500, "Internal Server Error");
+                    }
+                    
+                    $errorInfo = null;
+                    
+                    if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                        $errorInfo = array(
+                            "sqlState" => $ex->errorInfo[0],
+                            "mysqlError" => $ex->errorInfo[1],
+                            "message" => $ex->errorInfo[2],
+                        );
+                    }
+                    
+                    $this->sendResponseHeaders(500, 'json');
+
+                    echo json_encode(
+                            array(
+                                'success' => false,
+                                'error' => $ex->getMessage(),
+                                'exception' => true,
+                                'errorCode' => $ex->getCode(),
+                                'errorFile' => $ex->getFile(),
+                                'errorLine' => $ex->getLine(),
+                                'errorInfo' => $errorInfo,
+                            )
+                    );
+                    
+                    Yii::app()->end();
+                }
             }
         } else {
-            $model=$this->loadModel($id);
+            $model = $this->loadModel($id);
 
             // Uncomment the following line if AJAX validation is needed
             // $this->performAjaxValidation($model);
@@ -293,7 +433,7 @@ class EventRequestController extends Controller
             if (isset($_POST['EventRequest'])) {
                 $model->attributes=$_POST['EventRequest'];
                 if ($model->save()) {
-                    $this->redirect(array('view','id'=>$model->id));
+                    $this->redirect(array('view','id' => $model->id));
                 }
             }
 

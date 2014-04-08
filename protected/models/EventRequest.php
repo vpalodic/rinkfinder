@@ -621,7 +621,7 @@ class EventRequest extends RinkfinderActiveRecord
             ),
             'notes' => array(
                 'name' => 'notes',
-                'display' => 'Notes',
+                'label' => 'Notes',
                 'controlType' => 'textarea',
                 'type' => 'alpha',
                 'editable' => true,
@@ -1054,13 +1054,13 @@ class EventRequest extends RinkfinderActiveRecord
                 . "er.requester_email, "
                 . "er.requester_phone, "
                 . "er.acknowledger_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledger, "
+                . "(SELECT CONCAT(p.first_name, ' ', p.last_name) FROM profile p WHERE er.acknowledger_id = p.user_id) AS acknowledger, "
                 . "CASE WHEN er.acknowledged_on IS NULL OR er.acknowledged_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.acknowledged_on, '%m/%d/%Y %h:%i %p') END AS acknowledged_on, "
                 . "er.accepter_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepter, "
+                . "(SELECT CONCAT(p.first_name, ' ', p.last_name) FROM profile p WHERE er.accepter_id = p.user_id) AS accepter, "
                 . "CASE WHEN er.accepted_on IS NULL OR er.accepted_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.accepted_on, '%m/%d/%Y %h:%i %p') END AS accepted_on, "
                 . "er.rejector_id, "
-                . "(SELECT CONCAT(p.last_name, ', ', p.first_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejector, "
+                . "(SELECT CONCAT(p.first_name, ' ', p.last_name) FROM profile p WHERE er.rejector_id = p.user_id) AS rejector, "
                 . "CASE WHEN er.rejected_on IS NULL OR er.rejected_on = '0000-00-00 00:00:00' THEN NULL ELSE DATE_FORMAT(er.rejected_on, '%m/%d/%Y %h:%i %p') END AS rejected_on, "
                 . "er.rejected_reason, "
                 . "er.notes, "
@@ -1102,8 +1102,6 @@ class EventRequest extends RinkfinderActiveRecord
                     . " AND l.id = :lid ";
         }
         
-        $sql .= " ORDER BY e.start_date ASC";
-        
         $command = Yii::app()->db->createCommand($sql);
         
         $command->bindParam(':id', $id, PDO::PARAM_INT);
@@ -1132,9 +1130,22 @@ class EventRequest extends RinkfinderActiveRecord
             $fieldData = EventRequest::fieldDetails($field);
             
             if(is_array($fieldData)) {
-                if($field == 'acknowledger' || $field == 'accepter' ||
-                        $field == 'rejector') {
-                    if(empty($value)) {
+                if($field == 'acknowledger') {
+                    if(!isset($value)) {
+                        $fieldData['button']['enabled'] = true;
+                        $fieldData['button']['name'] = $field . '_id';
+                    }
+                }
+                
+                if($field == 'accepter' && !isset($row['rejector'])) {
+                    if(!isset($value)) {
+                        $fieldData['button']['enabled'] = true;
+                        $fieldData['button']['name'] = $field . '_id';
+                    }
+                }
+                
+                if($field == 'rejector') {
+                    if(!isset($value) && !isset($row['accepter'])) {
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
                     }
@@ -1168,6 +1179,135 @@ class EventRequest extends RinkfinderActiveRecord
         $ret['parms'] = $recordParms;
         
         // Ok, lets return this stuff!!
+        return $ret;
+    }
+    
+    /**
+     * Returns true if successful and false if not
+     * @param array $attributes The attributes of the Event Request we will save.
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return mixed[] The event request details or an empty array.
+     * @throws CDbException
+     */
+    public static function saveAssignedRecordAttributes($attributes, $id, $uid, $eid, $aid, $lid = null)
+    {
+        $ret = false;
+        
+        if(!is_array($attributes) || count($attributes) < 1) {
+            return $ret;
+        }
+        
+        $sql = "UPDATE event_request "
+                . "SET updated_on = NOW(), "
+                . "    updated_by_id = :uid, ";
+        
+        $paramNames = array();
+        $paramCount = 0;
+        
+        // Set the update values of the query
+        foreach($attributes as $name => $value) {
+            $paramName = ":" . $name . (string)$paramCount;
+            
+            if($paramCount == 0) {
+                $sql .= $name . " = " . $paramName;
+            } else {
+                $sql .= ", " . $name . " = " . $paramName;
+            }
+            
+            $paramNames[$paramName] = $value;
+            
+            $paramCount += 1;
+        }
+        
+        $sql .= " WHERE id = :id "
+                . " AND event_id = :eid "
+                . " AND event_id IN (SELECT e.id "
+                . "    FROM event e "
+                . "        INNER JOIN arena a "
+                . "        ON e.arena_id = a.id "
+                . "        INNER JOIN arena_user_assignment aua "
+                . "        ON a.id = aua.arena_id "
+                . "        INNER JOIN user u "
+                . "        ON u.id = aua.user_id ";
+        
+        if($lid !== null) {
+            $sql .= " INNER JOIN location l "
+                    . " ON l.arena_id = a.id ";
+        }
+        
+        $sql .= " WHERE e.id = :eid "
+                . " AND a.id = :aid "
+                . " AND u.id = :uid ";
+
+        if($lid !== null) {
+            $sql .= " AND l.id = :lid "
+                    . " AND e.location_id = :lid ";
+        }
+        
+        $sql .= ")";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':id', $id, PDO::PARAM_INT);
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':eid', $eid, PDO::PARAM_INT);
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindParam(':lid', $lid, PDO::PARAM_INT);
+        }
+        
+        foreach($paramNames as $name => $value) {
+            $command->bindValue($name, $value);
+        }
+        
+        // Since we are updating, we are going to do this in a transaction
+        // in case something catastrophic, such as more than one row being
+        // updated, happens.
+        
+        $transaction = Yii::app()->db->beginTransaction();
+
+        try
+        {
+            // Just update the record and if more than one row affected
+            // we will roll back the transaction and return false!
+            $count = $command->execute();
+            
+            if($count != 1) {
+                $ret = false;
+            } else {
+                $ret = true;
+            }
+            
+            if($transaction->active == true && $ret == true) {
+                $transaction->commit();
+            } elseif($transaction->active == true && $ret == false) {
+                $transaction->rollback();
+            }
+        }
+        catch(Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+        
         return $ret;
     }
 }

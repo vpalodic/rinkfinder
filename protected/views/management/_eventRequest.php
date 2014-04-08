@@ -39,11 +39,13 @@
 <div class="panel panel-primary">
     <div class="panel-heading">
         <h3 class="panel-title">
-            Event Request #: <?php echo $data['item']['fields']['id']['value']; ?>
+            Event <?php echo $data['item']['fields']['type_id']['value']; ?> Request: #<?php echo $data['item']['fields']['id']['value']; ?>
         </h3>
     </div>
     <div class="panel-body">
-        <?php if(!isset($data['item']['fields']['acknowledger']['value'])) : ?>
+        <?php if(!isset($data['item']['fields']['acknowledger']['value']) &&
+                isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
+                $data['item']['fields']['acknowledger']['button']['enabled'] == true) : ?>
         <div class="row-fluid">
             <div class="alert alert-danger">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -52,8 +54,12 @@
             </div>
         </div>
         <?php endif; ?>
-        <?php if(!isset($data['item']['fields']['accepter']['value']) && 
-                !isset($data['item']['fields']['rejector']['value'])) : ?>
+        <?php if((!isset($data['item']['fields']['accepter']['value']) &&
+                            isset($data['item']['fields']['accepter']['button']['enabled']) && 
+                                $data['item']['fields']['accepter']['button']['enabled'] == true) && 
+                (!isset($data['item']['fields']['rejector']['value']) &&
+                            isset($data['item']['fields']['rejector']['button']['enabled']) && 
+                                $data['item']['fields']['rejector']['button']['enabled'] == true)) : ?>
         <div class="row-fluid">
             <div class="alert">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -66,27 +72,58 @@
             <div class="span6">
                 <strong>Actions</strong><br />
                 <div class="well">
-                    <button class="btn btn-block btn-large btn-primary" type="button" data-toggle="tooltip"
-                            data-original-title="Send message to requester">
-                        <i class="fa fa-envelope"></i> Message
+                    <button class="btn btn-block btn-large btn-primary " type="button" data-toggle="tooltip"
+                            data-original-title="Send message to requester" id="message">
+                        <i class="fa fa-lg fa-envelope"></i> Message
                     </button>                    
-                    <?php if(!isset($data['item']['fields']['acknowledger']['value'])) : ?>
+                    <?php if(!isset($data['item']['fields']['acknowledger']['value']) &&
+                            isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
+                                $data['item']['fields']['acknowledger']['button']['enabled'] == true) : ?>
                         <button class="btn btn-block btn-large btn-warning" type="button" data-toggle="tooltip"
-                                    data-original-title="Acknowledge this request">
+                                    data-original-title="Acknowledge this request"
+                                    id="<?php echo $data['item']['fields']['acknowledger']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-square"></i> Acknowledge
                         </button>
                     <?php endif; ?>
-                    <?php if(!isset($data['item']['fields']['accepter']['value'])) : ?>
+                    <?php if(!isset($data['item']['fields']['accepter']['value']) &&
+                            isset($data['item']['fields']['accepter']['button']['enabled']) && 
+                                $data['item']['fields']['accepter']['button']['enabled'] == true) : ?>
                         <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
-                                data-original-title="Accept this request">
+                                data-original-title="Accept this request"
+                                    id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
                             <i class="fa fa-lg fa-check"></i> Accept
                         </button>
                     <?php endif; ?>
-                    <?php if(!isset($data['item']['fields']['rejector']['value'])) : ?>
-                        <button class="btn btn-block btn-large btn-danger" type="button" data-toggle="tooltip"
-                                data-original-title="Reject this request">
+                    <?php if(!isset($data['item']['fields']['rejector']['value']) &&
+                            isset($data['item']['fields']['rejector']['button']['enabled']) && 
+                                $data['item']['fields']['rejector']['button']['enabled'] == true) : ?>
+                        <button class="btn btn-block btn-large btn-danger <?php echo $data['item']['fields']['rejector']['button']['name']; ?>"
+                                type="button" data-toggle="tooltip" data-original-title="Reject this request">
                             <i class="fa fa-lg fa-times"></i> Reject
                         </button>
+                    <a class="rejector_id_reason" style="display: none;" href="#"
+                        id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>"
+                        data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
+                        data-pk="<?php echo $data['pk']['value']; ?>"
+                        data-send="never"
+                        data-url="<?php echo $data['endpoint']['update']; ?>"
+                        data-disabled="false"
+                        data-mode="popup"
+                        title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
+                        <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
+                    </a>
+                    <a sclass="rejector_id_reason" tyle="display: none;" href="#"
+                        id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>"
+                        data-type="<?php echo $data['item']['fields']['rejector']['controlType']; ?>" 
+                        data-pk="<?php echo $data['pk']['value']; ?>"
+                        data-send="never"
+                        data-url="<?php echo $data['endpoint']['update']; ?>"
+                        data-disabled="false"
+                        data-value="<?php echo Yii::app()->user->id; ?>"
+                        data-mode="popup"
+                        title="<?php echo $data['item']['fields']['rejector']['label']; ?>">
+                        <?php echo Yii::app()->user->id; ?>
+                    </a>
                     <?php endif; ?>
                 </div>
                 <img class="img-circle"
@@ -229,64 +266,248 @@
                                 </a>
                             </td>
                         </tr>
-                        <?php if($data['item']['fields']['requester_email']['hidden'] == true): ?>
+                        <?php if($data['item']['fields']['notes']['hidden'] == true): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
                         <?php endif; ?>
                             <td>
-                                <?php echo $data['item']['fields']['requester_email']['label']; ?>
+                                <?php echo $data['item']['fields']['notes']['label']; ?>
                             </td>
                             <td>
                                 <a href="#"
-                                   id="<?php echo $data['item']['fields']['requester_email']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['requester_email']['controlType']; ?>" 
+                                   id="<?php echo $data['item']['fields']['notes']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['notes']['controlType']; ?>" 
                                    data-pk="<?php echo $data['pk']['value']; ?>"
                                    data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['requester_email']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['requester_email']['format']; ?>"
+                                   <?php if(isset($data['item']['fields']['notes']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['notes']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_email']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_email']['viewformat']; ?>"
+                                   <?php if(isset($data['item']['fields']['notes']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['notes']['viewformat']; ?>"
                                    <?php endif; ?>
-                                   <?php if($data['item']['fields']['requester_email']['editable'] == false): ?>
+                                   <?php if($data['item']['fields']['notes']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="popup"
+                                   title="<?php echo $data['item']['fields']['notes']['label']; ?>">
+                                </a>
+                                <pre style="overflow: auto; min-height: 60px; max-height: 120px;" id="<?php echo $data['item']['fields']['notes']['name']; ?>History"><?php echo $data['item']['fields']['notes']['value']; ?></pre>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['acknowledger']['hidden'] == true ||
+                                (isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
+                                $data['item']['fields']['acknowledger']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['acknowledger']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['acknowledger']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['acknowledger']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['acknowledger']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['acknowledger']['format']; ?>"
+                                   <?php endif; ?>
+                                   <?php if(isset($data['item']['fields']['acknowledger']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['acknowledger']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['acknowledger']['editable'] == false): ?>
                                    data-disabled="true"
                                    <?php endif; ?>
                                    data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['requester_email']['label']; ?>">
-                                    <?php echo $data['item']['fields']['requester_email']['value']; ?>
+                                   title="<?php echo $data['item']['fields']['acknowledger']['label']; ?>">
+                                    <?php echo $data['item']['fields']['acknowledger']['value']; ?>
                                 </a>
                             </td>
                         </tr>
-                        <?php if($data['item']['fields']['requester_phone']['hidden'] == true): ?>
+                        <?php if($data['item']['fields']['acknowledged_on']['hidden'] == true ||
+                                (isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
+                                $data['item']['fields']['acknowledger']['button']['enabled'] == true)): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
                         <?php endif; ?>
                             <td>
-                                <?php echo $data['item']['fields']['requester_phone']['label']; ?>
+                                <?php echo $data['item']['fields']['acknowledged_on']['label']; ?>
                             </td>
                             <td>
                                 <a href="#"
-                                   id="<?php echo $data['item']['fields']['requester_phone']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['requester_phone']['controlType']; ?>" 
+                                   id="<?php echo $data['item']['fields']['acknowledged_on']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['acknowledged_on']['controlType']; ?>" 
                                    data-pk="<?php echo $data['pk']['value']; ?>"
                                    data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['requester_phone']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['requester_phone']['format']; ?>"
+                                   <?php if(isset($data['item']['fields']['acknowledged_on']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['acknowledged_on']['format']; ?>"
                                    <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_phone']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_phone']['viewformat']; ?>"
+                                   <?php if(isset($data['item']['fields']['acknowledged_on']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['acknowledged_on']['viewformat']; ?>"
                                    <?php endif; ?>
-                                   <?php if($data['item']['fields']['requester_phone']['editable'] == false): ?>
-                                   data-disable="true"
+                                   <?php if($data['item']['fields']['acknowledged_on']['editable'] == false): ?>
+                                   data-disabled="true"
                                    <?php endif; ?>
-                                   data-mode="popup"
-                                   <?php if(isset($data['item']['fields']['requester_phone']['inputmask'])): ?>
-                                   data-inputmask="<?php echo json_encode($data['item']['fields']['requester_phone']['inputmask']); ?>"
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['acknowledged_on']['label']; ?>">
+                                    <?php echo $data['item']['fields']['acknowledged_on']['value']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['accepter']['hidden'] == true ||
+                                (isset($data['item']['fields']['accepter']['button']['enabled']) && 
+                                $data['item']['fields']['accepter']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['accepter']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['accepter']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['accepter']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['accepter']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['accepter']['format']; ?>"
                                    <?php endif; ?>
-                                   title="<?php echo $data['item']['fields']['requester_phone']['label']; ?>">
-                                    <?php echo $data['item']['fields']['requester_phone']['value']; ?>
+                                   <?php if(isset($data['item']['fields']['accepter']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['accepter']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['accepter']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['accepter']['label']; ?>">
+                                    <?php echo $data['item']['fields']['accepter']['value']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['accepted_on']['hidden'] == true ||
+                                (isset($data['item']['fields']['accepter']['button']['enabled']) && 
+                                $data['item']['fields']['accepter']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['accepted_on']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['accepted_on']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['accepted_on']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['accepted_on']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['accepted_on']['format']; ?>"
+                                   <?php endif; ?>
+                                   <?php if(isset($data['item']['fields']['accepted_on']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['accepted_on']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['accepted_on']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['accepted_on']['label']; ?>">
+                                    <?php echo $data['item']['fields']['accepted_on']['value']; ?>
+                                </a>
+                            </td>
+                        <?php if($data['item']['fields']['rejector']['hidden'] == true ||
+                                (isset($data['item']['fields']['rejector']['button']['enabled']) && 
+                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['rejector']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['rejector']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['rejector']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['rejector']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['rejector']['format']; ?>"
+                                   <?php endif; ?>
+                                   <?php if(isset($data['item']['fields']['rejector']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['rejector']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['rejector']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['rejector']['label']; ?>">
+                                    <?php echo $data['item']['fields']['rejector']['value']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['rejected_on']['hidden'] == true ||
+                                (isset($data['item']['fields']['rejector']['button']['enabled']) && 
+                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['rejected_on']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['rejected_on']['name']; ?>"
+                                   data-type="<?php echo $data['item']['fields']['rejected_on']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['rejected_on']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['rejected_on']['format']; ?>"
+                                   <?php endif; ?>
+                                   <?php if(isset($data['item']['fields']['rejected_on']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['rejected_on']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['rejected_on']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['rejected_on']['label']; ?>">
+                                    <?php echo $data['item']['fields']['rejected_on']['value']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['rejected_reason']['hidden'] == true ||
+                                (isset($data['item']['fields']['rejector']['button']['enabled']) && 
+                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['rejected_reason']['label']; ?>
+                            </td>
+                            <td>
+                                <a href="#"
+                                   id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>Static"
+                                   data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
+                                   data-pk="<?php echo $data['pk']['value']; ?>"
+                                   data-url="<?php echo $data['endpoint']['update']; ?>"
+                                   <?php if(isset($data['item']['fields']['rejected_reason']['format'])): ?>
+                                   data-format="<?php echo $data['item']['fields']['rejected_reason']['format']; ?>"
+                                   <?php endif; ?>
+                                   <?php if(isset($data['item']['fields']['rejected_reason']['viewformat'])): ?>
+                                   data-viewformat="<?php echo $data['item']['fields']['rejected_reason']['viewformat']; ?>"
+                                   <?php endif; ?>
+                                   <?php if($data['item']['fields']['rejected_reason']['editable'] == false): ?>
+                                   data-disabled="true"
+                                   <?php endif; ?>
+                                   data-mode="inline"
+                                   title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
+                                    <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
                                 </a>
                             </td>
                         </tr>
@@ -485,19 +706,19 @@ $(document).ready(function() {
     });
     
     $('#type_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#status_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#requester_name').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#requester_email').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#requester_phone').editable({
@@ -505,6 +726,11 @@ $(document).ready(function() {
         display: function(value, sourceData) {
             //display checklist as comma-separated values
             var html = '';
+            
+            if (typeof value === 'undefined' || value.length <= 0)
+            {
+                return;
+            }
             
             html = value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
             $(this).html(html);
@@ -516,14 +742,14 @@ $(document).ready(function() {
             $(this).data('editable').input.$input.inputmask(
             {
                 "mask": "<?php echo $data['item']['fields']['requester_phone']['inputmask']['mask']; ?>",
-                "clearIncomplete": true,
+                "clearIncomplete": false,
                 'autoUnmask' : true
             });
         }
     });
     
     $('#event_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#event_start').editable({
@@ -534,27 +760,108 @@ $(document).ready(function() {
     });
     
     $('#arena_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#arena').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#location_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
+        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#location').editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $('#acknowledger').editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $('#acknowledged_on').editable({
         params: <?php echo json_encode($data['parms']); ?>,
+        datetimepicker: {
+            showMeridian: true
+        }
+    });
+    
+    $('#accepter').editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $('#accepted_on').editable({
+        params: <?php echo json_encode($data['parms']); ?>,
+        datetimepicker: {
+            showMeridian: true
+        }
+    });
+    
+    $('#rejector').editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $('#rejected_on').editable({
+        params: <?php echo json_encode($data['parms']); ?>,
+        datetimepicker: {
+            showMeridian: true
+        }
+    });
+    
+    $(".rejector_id_reason").editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $(".<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $(".<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").click(function (e) {
+        e.preventDefault();
+        
+        e.stopPropagation();
+        
+        // Show the 
+        $(".<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").editable('show');
+    });
+    
+    $('#rejected_reason').editable({
+        params: <?php echo json_encode($data['parms']); ?>
+    });
+    
+    $('#notes').editable({
+        emptytext: "Add Note",
+        params: <?php echo json_encode($data['parms']); ?>,
+        success: function(response, newValue) {
+            if (response)
+            {
+                return "Data not saved. Please refresh the page as it appears the session has expired."
+            }
+            
+            $(this).data('editable').hide();
+            $("#<?php echo $data['item']['fields']['notes']['name']; ?>History").text(newValue);
+            $(this).data('editable').input.$input.val('');
+            newValue = '';
+            return "Note added";
+        },
+        validate: function(value) {
+            var oldNotes = $("#<?php echo $data['item']['fields']['notes']['name']; ?>History").text();
+            oldNotes += moment().format("MM/DD/YYYY h:mm:ss A") + " by <?php echo Yii::app()->user->fullName; ?>:\r\n\r\n";
+            oldNotes += value + "\r\n\r\n";
+            return {newValue: oldNotes};
+        }
+    });
+    
+    $("#<?php echo $data['item']['fields']['notes']['name']; ?>").on('shown', function(e, editable) {
+        if (editable) {
+            var $input = $(this).data('editable').input.$input;
+            var val = $input.val();
+            console.log(val);
+        }
     });
     
     $('[data-toggle="tooltip"]').tooltip();
 
-    $('button').click(function(e) {
-        e.preventDefault();
-        alert("This is a demo.\n :-)");
-    });
 });
 </script>
 <?php endif; ?>

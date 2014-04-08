@@ -220,9 +220,7 @@ class EventController extends Controller
                         'eventTypes' => CHtml::listData(Event::getTypes(), 'id', 'display_name'),
                         'path' => $path,
                         'doReady' => false
-                    ),
-                    false,
-                    false
+                    )
             );
         } else {
             if(defined('YII_DEBUG')) {

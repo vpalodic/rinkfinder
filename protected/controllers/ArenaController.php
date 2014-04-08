@@ -212,9 +212,7 @@ class ArenaController extends Controller
                         'fields' => Arena::getImportAttributes(),
                         'path' => $path,
                         'doReady' => false
-                    ),
-                    false,
-                    false
+                    )
             );
         } else {
             if(defined('YII_DEBUG')) {
