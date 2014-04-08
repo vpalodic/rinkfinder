@@ -339,7 +339,6 @@ class ManagementController extends Controller
                         array(
                             'model' => new EventRequest(),
                             'data' => $data,
-    //                        'headers' => EventRequest::getViewAttributes(),
                             'ownView' => true,
                             'newRecord' => false
                         ));
@@ -386,7 +385,6 @@ class ManagementController extends Controller
                         array(
                             'model' => new EventRequest(),
                             'data' => $data,
-    //                        'headers' => EventRequest::getViewAttributes(),
                             'ownView' => true,
                             'newRecord' => false
                         ));

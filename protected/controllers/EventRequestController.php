@@ -299,6 +299,7 @@ class EventRequestController extends Controller
         // differently as we will update one attribute at a time!
         if(Yii::app()->request->isAjaxRequest) {
             // Grab all of the parameters!
+            $action = isset($_POST['action']) ? $_POST['action'] : null;
             $name = isset($_POST['name']) ? $_POST['name'] : null;
             $value = isset($_POST['value']) ? $_POST['value'] : null;
             $pk = isset($_POST['pk']) ? $_POST['pk'] : null;
@@ -309,7 +310,7 @@ class EventRequestController extends Controller
             // Always restrict to the currently logged in user!
             $uid = Yii::app()->user->id;
             
-            if($name === null || $value === null || $id === null ||
+            if((($name === null || $value === null) && $action == null) || $id === null ||
                     $eid === null || $aid === null || $pk === null || $pk != $id) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
                     throw new CHttpException(400, 'Invalid parameters');

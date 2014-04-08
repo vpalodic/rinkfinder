@@ -101,23 +101,19 @@
                                 type="button" data-toggle="tooltip" data-original-title="Reject this request">
                             <i class="fa fa-lg fa-times"></i> Reject
                         </button>
-                    <a class="rejector_id_reason" style="display: none;" href="#"
+                    <a class="rejector_id_reason btn-block text-center" style="display: none;" href="#"
                         id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>"
                         data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
-                        data-pk="<?php echo $data['pk']['value']; ?>"
-                        data-send="never"
-                        data-url="<?php echo $data['endpoint']['update']; ?>"
+                        data-pk="<?php echo $data['pk']['value']; ?>",
                         data-disabled="false"
                         data-mode="popup"
                         title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
                         <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
                     </a>
-                    <a sclass="rejector_id_reason" tyle="display: none;" href="#"
+                    <a class="rejector_id_reason" style="display: none;" href="#"
                         id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>"
                         data-type="<?php echo $data['item']['fields']['rejector']['controlType']; ?>" 
-                        data-pk="<?php echo $data['pk']['value']; ?>"
-                        data-send="never"
-                        data-url="<?php echo $data['endpoint']['update']; ?>"
+                        data-pk="<?php echo $data['pk']['value']; ?>",
                         data-disabled="false"
                         data-value="<?php echo Yii::app()->user->id; ?>"
                         data-mode="popup"
@@ -698,33 +694,10 @@
 </div>
 <script type="text/javascript">
 $(document).ready(function() {
-    $('#created_on').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
-        datetimepicker: {
-            showMeridian: true
-        }
-    });
-    
-    $('#type_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#status_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#requester_name').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#requester_email').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#requester_phone').editable({
+    $('#<?php echo $data['item']['fields']['requester_phone']['name']; ?>').editable({
         params: <?php echo json_encode($data['parms']); ?>,
         display: function(value, sourceData) {
-            //display checklist as comma-separated values
+            // display the supplied digits as a phone number!
             var html = '';
             
             if (typeof value === 'undefined' || value.length <= 0)
@@ -738,6 +711,7 @@ $(document).ready(function() {
     });
     
     $("#<?php echo $data['item']['fields']['requester_phone']['name']; ?>").on('shown', function(e, editable) {
+        // ensure that we only get the unmasked value
         if (editable) {
             $(this).data('editable').input.$input.inputmask(
             {
@@ -746,33 +720,6 @@ $(document).ready(function() {
                 'autoUnmask' : true
             });
         }
-    });
-    
-    $('#event_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#event_start').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
-        datetimepicker: {
-            showMeridian: true
-        }
-    });
-    
-    $('#arena_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#arena').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#location_id').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#location').editable({
-        params: <?php echo json_encode($data['parms']); ?>
     });
     
     $('#acknowledger').editable({
@@ -816,47 +763,78 @@ $(document).ready(function() {
         params: <?php echo json_encode($data['parms']); ?>
     });
     
+    $("#<?php echo $data['item']['fields']['rejected_reason']['name']; ?>.rejector_id_reason").on('save', function (e, params) {        
+        if (arguments.length != 2)
+        {
+            return;
+        }
+        
+        $element = $("#<?php echo $data['item']['fields']['rejected_reason']['name']; ?>.rejector_id_reason");
+        $id = $("#<?php echo $data['item']['fields']['rejector']['button']['name']; ?>.rejector_id_reason");
+        $element.hide();
+        $element.editable('setValue', params.newValue);
+        $id.editable('setValue', <?php echo Yii::app()->user->id; ?> , false)
+        
+        // Ok, we will submit the data to the server
+        $(".rejector_id_reason").editable('submit', {
+            url: "<?php echo $data['endpoint']['update']; ?>",
+            data: <?php $data['parms']['action'] = 'reject'; $data['parms']['pk'] = $data['pk']['value']; echo json_encode($data['parms']); ?>,
+            success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+                
+                // We update the rejected on
+                $("<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").fade();
+            }
+        });
+            
+    });
+    
     $(".<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").click(function (e) {
         e.preventDefault();
         
         e.stopPropagation();
         
-        // Show the 
-        $(".<?php echo $data['item']['fields']['rejector']['button']['name']; ?>").editable('show');
+        // Show the editable
+        $element = $("#<?php echo $data['item']['fields']['rejected_reason']['name']; ?>.rejector_id_reason");
+        
+        $element.show();
+        $element.editable('show');
     });
     
     $('#rejected_reason').editable({
         params: <?php echo json_encode($data['parms']); ?>
     });
     
-    $('#notes').editable({
+    $("#<?php echo $data['item']['fields']['notes']['name']; ?>").editable({
         emptytext: "Add Note",
         params: <?php echo json_encode($data['parms']); ?>,
         success: function(response, newValue) {
-            if (response)
+            if (typeof response !== 'undefined' && response.length > 0)
             {
-                return "Data not saved. Please refresh the page as it appears the session has expired."
+                return "Data not saved. Please refresh the page as it appears" +
+                        " the session has expired."
             }
             
+            // We hide the editable, set the history, and then clear the value
+            // of the editable!
             $(this).data('editable').hide();
             $("#<?php echo $data['item']['fields']['notes']['name']; ?>History").text(newValue);
             $(this).data('editable').input.$input.val('');
             newValue = '';
+            
+            // What we return gets added to the editable window.
             return "Note added";
         },
         validate: function(value) {
+            // Here we add our timestamp information to the note.
             var oldNotes = $("#<?php echo $data['item']['fields']['notes']['name']; ?>History").text();
             oldNotes += moment().format("MM/DD/YYYY h:mm:ss A") + " by <?php echo Yii::app()->user->fullName; ?>:\r\n\r\n";
             oldNotes += value + "\r\n\r\n";
             return {newValue: oldNotes};
-        }
-    });
-    
-    $("#<?php echo $data['item']['fields']['notes']['name']; ?>").on('shown', function(e, editable) {
-        if (editable) {
-            var $input = $(this).data('editable').input.$input;
-            var val = $input.val();
-            console.log(val);
         }
     });
     
