@@ -505,7 +505,7 @@
         { 
             $.ajax({
                 url: utilities.urls.assets + (utilities.debug ? "/js/jquery.fineuploader-3.2.js" : "/js/jquery.fineuploader-3.2.min.js"),
-                dateType: "script",
+                dataType: "script",
                 cache: true,
                 success: function() {
                     window.setTimeout(function () {
@@ -532,7 +532,7 @@
         {
             $.ajax({
                 url: utilities.urls.assets + (utilities.debug ? "/js/bootstrap-switch.js" : "/js/bootstrap-switch.min.js"),
-                dateType: "script",
+                dataType: "script",
                 cache: true,
                 success: function() {
                 },
@@ -549,38 +549,7 @@
         }
         
         if (typeof $.fn.footable === "undefined") { 
-            $.ajax({
-                url: utilities.urls.assets + (utilities.debug ? "/js/footable.js" : "/js/footable.min.js"),
-                dateType: "script",
-                cache: true,
-                success: function() {
-                    $.ajax({
-                        url: utilities.urls.assets + (utilities.debug ? "/js/footable.paginate.js" : "/js/footable.paginate.min.js"),
-                        dateType: "script",
-                        cache: true,
-                        success: function() {
-                        },
-                        error: function(xhr, status, errorThrown) {
-                            utilities.ajaxError.show(
-                                    "Error",
-                                    "Failed to retrieve javsScript file",
-                                    xhr,
-                                    status,
-                                    errorThrown
-                            );
-                        }
-                    });
-                },
-                error: function(xhr, status, errorThrown) {
-                    utilities.ajaxError.show(
-                        "Error",
-                        "Failed to retrieve javsScript file",
-                        xhr,
-                        status,
-                        errorThrown
-                    );
-                }
-            });
+            uploadEvents.loadFootable();
         }
 
         uploadEvents.addUploadButton();
@@ -623,6 +592,85 @@
         });
         $("#EventUploadForm_fileName").on("error", function (event, id, name, errorReason, xhr) {
             return uploadEvents.onUploadError(event, id, name, errorReason, xhr);
+        });
+    };
+    
+    uploadEvents.loadFootable = function () {
+        $.ajax({
+            url: utilities.urls.assets + (utilities.debug ? "/js/footable.js" : "/js/footable.min.js"),
+            dataType: "script",
+            cache: true,
+            success: function() {
+                uploadEvents.loadPaginate();
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                    "Error",
+                    "Failed to retrieve javsScript file",
+                    xhr,
+                    status,
+                    errorThrown
+                );
+            }
+        });
+    };
+    
+    uploadEvents.loadPaginate = function () {
+        $.ajax({
+            url: utilities.urls.assets + (utilities.debug ? "/js/footable.paginate.js" : "/js/footable.paginate.min.js"),
+            dataType: "script",
+            cache: true,
+            success: function() {
+                uploadEvents.loadSort();
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                    "Error",
+                    "Failed to retrieve javsScript file",
+                    xhr,
+                    status,
+                    errorThrown
+                );
+            }
+        });
+    };
+    
+    uploadEvents.loadSort = function () {
+        $.ajax({
+            url: utilities.urls.assets + (utilities.debug ? "/js/footable.sort.js" : "/js/footable.sort.min.js"),
+            dataType: "script",
+            cache: true,
+            success: function() {
+                uploadEvents.loadFilter();
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                    "Error",
+                    "Failed to retrieve javsScript file",
+                    xhr,
+                    status,
+                    errorThrown
+                );
+            }
+        });
+    };
+    
+    uploadEvents.loadFilter = function () {
+        $.ajax({
+            url: utilities.urls.assets + (utilities.debug ? "/js/footable.filter.js" : "/js/footable.filter.min.js"),
+            dataType: "script",
+            cache: true,
+            success: function() {
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                    "Error",
+                    "Failed to retrieve javsScript file",
+                    xhr,
+                    status,
+                    errorThrown
+                );
+            }
         });
     };
     

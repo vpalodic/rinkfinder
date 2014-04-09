@@ -6,6 +6,9 @@
      * @var $this ManagementController
      * @var $data []
      * @var $headers []
+     * @var $doReady boolean
+     * @var $path string
+     * @var $jsFile string
      * 
      */
 ?>
@@ -170,40 +173,36 @@
     echo $table;
 ?>
 
+<?php if($doReady) : ?>
+<?php
+    Yii::app()->clientScript->registerScript(
+            'doReady_Index',
+            'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
+            . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
+            . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
+            . 'utilities.urls.assets = "' . $path . '";'
+            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . '_index.data = ' . json_encode($data) . ';'
+            . '_index.headers = ' . json_encode($headers) . ';'
+            . '_index.loadScriptFile = true;'
+            . '_index.scriptFile = "' . $jsFile . '";'
+            . '_index.onReady();',
+            CClientScript::POS_READY
+    );
+?>
+<?php else: ?>
 <script type="text/javascript">
-    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('click', 'tbody a', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        console.log(e);
-    });
-    
-    $("#<?php echo $data['model'] . 'Footable'; ?>").footable().on('footable_filtering', function (e) {
-        var selected = $('#tableFilterStatus').find(':selected').text();
-        var selected2 = $('#tableFilterType').find(':selected').text();
-        if (selected && selected.length > 0) {
-            e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected : selected;
-            e.clear = !e.filter;
-        }
-        if (selected2 && selected2.length > 0) {
-            e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected2 : selected2;
-            e.clear = !e.filter;
-        }
-    });
-
-    $('.clear-filter').click(function (e) {
-      e.preventDefault();
-      $('#tableFilterStatus').val('');
-      $('#tableFilterType').val('');
-    });
-
-    $('#tableFilterStatus').change(function (e) {
-      e.preventDefault();
-      $("#<?php echo $data['model'] . 'Footable'; ?>").trigger('footable_filter', {filter: $('#tableFilter').val()});
-    });
-
-    $('#tableFilterType').change(function (e) {
-      e.preventDefault();
-      $("#<?php echo $data['model'] . 'Footable'; ?>").trigger('footable_filter', {filter: $('#tableFilter').val()});
-    });
+    $(document).ready(function () {
+    utilities.urls.login = "<?php echo $this->createUrl('site/login'); ?>";
+    utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
+    utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
+    utilities.urls.assets = "<?php echo $path; ?>";
+    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    _index.data = <?php echo json_encode($data); ?>;
+    _index.headers = <?php echo json_encode($headers); ?>;
+    _index.loadScriptFile = true;
+    _index.scriptFile = "<?php echo $jsFile; ?>";
+    _index.onReady();
+});
 </script>
+<?php endif; ?>

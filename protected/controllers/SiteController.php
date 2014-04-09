@@ -585,13 +585,14 @@ class SiteController extends Controller
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
@@ -600,13 +601,14 @@ class SiteController extends Controller
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js', CClientScript::POS_END);
         }
         
         // Setup the endpoints for the webpage to be able to grab data!

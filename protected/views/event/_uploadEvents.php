@@ -286,7 +286,7 @@
 <?php if($doReady) : ?>
 <?php
     Yii::app()->clientScript->registerScript(
-            'doReady',
+            'doReadyUploadEvents',
             'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'

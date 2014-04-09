@@ -400,7 +400,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'acknowledged_on',
                 'display' => 'Acknowledged On',
                 'type' => 'numeric',
-                'hide' => 'phone,tablet'
+                'hide' => 'all'
             ),
             'accepted_by' => array(
                 'name' => 'accepted_by',
@@ -412,7 +412,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'accepted_on',
                 'display' => 'Accepted On',
                 'type' => 'numeric',
-                'hide' => 'phone,tablet'
+                'hide' => 'all'
             ),
             'rejected_by' => array(
                 'name' => 'rejected_by',
@@ -424,7 +424,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'name' => 'rejected_on',
                 'display' => 'Rejected On',
                 'type' => 'numeric',
-                'hide' => 'phone,tablet'
+                'hide' => 'all'
             ),
             'rejected_reason' => array(
                 'name' => 'rejected_reason',
@@ -1132,22 +1132,34 @@ class EventRequest extends RinkfinderActiveRecord
             if(is_array($fieldData)) {
                 if($field == 'acknowledger') {
                     if(!isset($value)) {
+                        $recordParms['acknowledged'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
+                    } else {
+                        $recordParms['acknowledged'] = true;
+                        $fieldData['button']['enabled'] = false;
                     }
                 }
                 
-                if($field == 'accepter' && !isset($row['rejector'])) {
-                    if(!isset($value)) {
+                if($field == 'accepter') {
+                    if(!isset($value) && !isset($row['rejector'])) {
+                        $recordParms['accepted'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
+                    } else {
+                        $recordParms['accepted'] = true;
+                        $fieldData['button']['enabled'] = false;
                     }
                 }
                 
                 if($field == 'rejector') {
                     if(!isset($value) && !isset($row['accepter'])) {
+                        $recordParms['rejected'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
+                    } else {
+                        $recordParms['rejected'] = true;
+                        $fieldData['button']['enabled'] = false;
                     }
                 }
                 
@@ -1190,7 +1202,7 @@ class EventRequest extends RinkfinderActiveRecord
      * @param integer $eid The event id the request was generated from.
      * @param integer $aid The arena id the event was genereated from.
      * @param integer $lid The optional location id to event was generated from.
-     * @return mixed[] The event request details or an empty array.
+     * @return boolean True if attributes have been saved.
      * @throws CDbException
      */
     public static function saveAssignedRecordAttributes($attributes, $id, $uid, $eid, $aid, $lid = null)
@@ -1263,6 +1275,363 @@ class EventRequest extends RinkfinderActiveRecord
         
         foreach($paramNames as $name => $value) {
             $command->bindValue($name, $value);
+        }
+        
+        // Since we are updating, we are going to do this in a transaction
+        // in case something catastrophic, such as more than one row being
+        // updated, happens.
+        
+        $transaction = Yii::app()->db->beginTransaction();
+
+        try
+        {
+            // Just update the record and if more than one row affected
+            // we will roll back the transaction and return false!
+            $count = $command->execute();
+            
+            if($count != 1) {
+                $ret = false;
+            } else {
+                $ret = true;
+            }
+            
+            if($transaction->active == true && $ret == true) {
+                $transaction->commit();
+            } elseif($transaction->active == true && $ret == false) {
+                $transaction->rollback();
+            }
+        }
+        catch(Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns True if the record was successfully acknowledged.
+     * @param boolean $acknowledged Has this record already been acknowledged?
+     * @param boolean $accepted Has this record already been accepted?
+     * @param boolean $rejected Has this record already been rejected?
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return boolean True if the record was successfully acknowledged.
+     * @throws CDbException
+     */
+    public static function acknowledgeAssignedRecord($acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
+    {
+        $ret = false;
+        
+        if($acknowledged === true || $accepted === true || $rejected === true) {
+            // We do not acknowledge a request that has already been either
+            // acknowledged, accepted, or rejected!
+            return $ret;
+        }
+        
+        // Ok, we do two things
+        $sql = "UPDATE event_request "
+                . "SET updated_on = NOW(), "
+                . "    updated_by_id = :uid, "
+                . "    acknowledger_id = :uid, "
+                . "    acknowledged_on = NOW() "
+                . " WHERE id = :id "
+                . " AND event_id = :eid "
+                . " AND acknowledger_id IS NULL "
+                . " AND accepter_id IS NULL "
+                . " AND rejector_id IS NULL "
+                . " AND event_id IN (SELECT e.id "
+                . "    FROM event e "
+                . "        INNER JOIN arena a "
+                . "        ON e.arena_id = a.id "
+                . "        INNER JOIN arena_user_assignment aua "
+                . "        ON a.id = aua.arena_id "
+                . "        INNER JOIN user u "
+                . "        ON u.id = aua.user_id ";
+        
+        if($lid !== null) {
+            $sql .= " INNER JOIN location l "
+                    . " ON l.arena_id = a.id ";
+        }
+        
+        $sql .= " WHERE e.id = :eid "
+                . " AND a.id = :aid "
+                . " AND u.id = :uid ";
+
+        if($lid !== null) {
+            $sql .= " AND l.id = :lid "
+                    . " AND e.location_id = :lid ";
+        }
+        
+        $sql .= ")";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':id', $id, PDO::PARAM_INT);
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':eid', $eid, PDO::PARAM_INT);
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindParam(':lid', $lid, PDO::PARAM_INT);
+        }
+        
+        // Since we are updating, we are going to do this in a transaction
+        // in case something catastrophic, such as more than one row being
+        // updated, happens.
+        
+        $transaction = Yii::app()->db->beginTransaction();
+
+        try
+        {
+            // Just update the record and if more than one row affected
+            // we will roll back the transaction and return false!
+            $count = $command->execute();
+            
+            if($count != 1) {
+                $ret = false;
+            } else {
+                $ret = true;
+            }
+            
+            if($transaction->active == true && $ret == true) {
+                $transaction->commit();
+            } elseif($transaction->active == true && $ret == false) {
+                $transaction->rollback();
+            }
+        }
+        catch(Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns True if the record was successfully accepted.
+     * @param boolean $acknowledged Has this record already been acknowledged?
+     * @param boolean $accepted Has this record already been accepted?
+     * @param boolean $rejected Has this record already been rejected?
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return boolean True if the record was successfully acknowledged.
+     * @throws CDbException
+     */
+    public static function acceptAssignedRecord($acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
+    {
+        $ret = false;
+        
+        if($accepted === true || $rejected === true) {
+            // We do not accept a request that has already been either
+            // accepted, or rejected!
+            return $ret;
+        }
+        
+        // Ok, we do two things
+        $sql = "UPDATE event_request "
+                . "SET updated_on = NOW(), "
+                . "    updated_by_id = :uid, "
+                . "    acknowledger_id = :uid "
+                . "    acknowledged_on = NOW() "
+                . " WHERE id = :id "
+                . " AND event_id = :eid "
+                . " AND acknowledger_id IS NULL "
+                . " AND accepter_id IS NULL "
+                . " AND rejector_id IS NULL "
+                . " AND event_id IN (SELECT e.id "
+                . "    FROM event e "
+                . "        INNER JOIN arena a "
+                . "        ON e.arena_id = a.id "
+                . "        INNER JOIN arena_user_assignment aua "
+                . "        ON a.id = aua.arena_id "
+                . "        INNER JOIN user u "
+                . "        ON u.id = aua.user_id ";
+        
+        if($lid !== null) {
+            $sql .= " INNER JOIN location l "
+                    . " ON l.arena_id = a.id ";
+        }
+        
+        $sql .= " WHERE e.id = :eid "
+                . " AND a.id = :aid "
+                . " AND u.id = :uid ";
+
+        if($lid !== null) {
+            $sql .= " AND l.id = :lid "
+                    . " AND e.location_id = :lid ";
+        }
+        
+        $sql .= ")";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':id', $id, PDO::PARAM_INT);
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':eid', $eid, PDO::PARAM_INT);
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindParam(':lid', $lid, PDO::PARAM_INT);
+        }
+        
+        // Since we are updating, we are going to do this in a transaction
+        // in case something catastrophic, such as more than one row being
+        // updated, happens.
+        
+        $transaction = Yii::app()->db->beginTransaction();
+
+        try
+        {
+            // Just update the record and if more than one row affected
+            // we will roll back the transaction and return false!
+            $count = $command->execute();
+            
+            if($count != 1) {
+                $ret = false;
+            } else {
+                $ret = true;
+            }
+            
+            if($transaction->active == true && $ret == true) {
+                $transaction->commit();
+            } elseif($transaction->active == true && $ret == false) {
+                $transaction->rollback();
+            }
+        }
+        catch(Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns True if the record was successfully acknowledged.
+     * @param boolean $acknowledged Has this record already been acknowledged?
+     * @param boolean $accepted Has this record already been accepted?
+     * @param boolean $rejected Has this record already been rejected?
+     * @param string $rejectedReason Why the record was reject?
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return boolean True if the record was successfully acknowledged.
+     * @throws CDbException
+     */
+    public static function rejectAssignedRecord($acknowledged, $accepted, $rejected, $rejectedReason, $id, $uid, $eid, $aid, $lid = null)
+    {
+        $ret = false;
+        
+        if($accepted === true || $rejected === true || empty($rejectedReason)) {
+            // We do not reject a request that has already been either
+            // accepted, or rejected!
+            return $ret;
+        }
+        
+        // Ok, we do two things
+        $sql = "UPDATE event_request "
+                . "SET updated_on = NOW(), "
+                . "    updated_by_id = :uid, ";
+        
+        if($acknowledged === false) {
+            $sql .= "    acknowledger_id = :uid, "
+                . "    acknowledged_on = NOW(), ";
+        }
+        
+        $sql .= " rejector_id = :uid, "
+                . " rejected_on = NOW(),"
+                . " rejected_reason = :reason "
+                . " WHERE id = :id "
+                . " AND event_id = :eid "
+                . " AND acknowledger_id IS NULL "
+                . " AND accepter_id IS NULL "
+                . " AND rejector_id IS NULL "
+                . " AND event_id IN (SELECT e.id "
+                . "    FROM event e "
+                . "        INNER JOIN arena a "
+                . "        ON e.arena_id = a.id "
+                . "        INNER JOIN arena_user_assignment aua "
+                . "        ON a.id = aua.arena_id "
+                . "        INNER JOIN user u "
+                . "        ON u.id = aua.user_id ";
+        
+        if($lid !== null) {
+            $sql .= " INNER JOIN location l "
+                    . " ON l.arena_id = a.id ";
+        }
+        
+        $sql .= " WHERE e.id = :eid "
+                . " AND a.id = :aid "
+                . " AND u.id = :uid ";
+
+        if($lid !== null) {
+            $sql .= " AND l.id = :lid "
+                    . " AND e.location_id = :lid ";
+        }
+        
+        $sql .= ")";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':reason', $rejectedReason, PDO::PARAM_STR);
+        $command->bindParam(':id', $id, PDO::PARAM_INT);
+        $command->bindParam(':uid', $uid, PDO::PARAM_INT);
+        $command->bindParam(':eid', $eid, PDO::PARAM_INT);
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindParam(':lid', $lid, PDO::PARAM_INT);
         }
         
         // Since we are updating, we are going to do this in a transaction

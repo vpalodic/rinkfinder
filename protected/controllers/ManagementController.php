@@ -361,6 +361,7 @@ class ManagementController extends Controller
                     Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.js', CClientScript::POS_END);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.js', CClientScript::POS_END);
                 } else {
                     Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
@@ -376,6 +377,7 @@ class ManagementController extends Controller
                     Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.min.js', CClientScript::POS_END);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.min.js', CClientScript::POS_END);
                 }
         
                 $this->navigation = true;
@@ -545,11 +547,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_arena.js';
+            } else {
+                $jsFile = $path . '/js/management/_arena.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Arena::getSummaryAttributes()
+                        'headers' => Arena::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }
@@ -629,11 +643,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_contact.js';
+            } else {
+                $jsFile = $path . '/js/management/_contact.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Contact::getSummaryAttributes()
+                        'headers' => Contact::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }
@@ -714,7 +740,7 @@ class ManagementController extends Controller
                     array(
                         'success' => true,
                         'error' => false,
-                        'data' => $data,
+                        'data' => $data
                     )
             );
         
@@ -728,11 +754,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_event.js';
+            } else {
+                $jsFile = $path . '/js/management/_event.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Event::getSummaryAttributes()
+                        'headers' => Event::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }
@@ -827,11 +865,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_eventRequest.js';
+            } else {
+                $jsFile = $path . '/js/management/_eventRequest.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => EventRequest::getSummaryAttributes()
+                        'headers' => EventRequest::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }
@@ -921,11 +971,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_reservation.js';
+            } else {
+                $jsFile = $path . '/js/management/_reservation.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Reservation::getSummaryAttributes()
+                        'headers' => Reservation::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }
@@ -1010,11 +1072,23 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            if(defined('YII_DEBUG')) {
+                $jsFile = $path . '/js/management/_location.js';
+            } else {
+                $jsFile = $path . '/js/management/_location.min.js';
+            }
+            
             $this->renderPartial(
                     "_index",
                     array(
                         'data' => $data,
-                        'headers' => Location::getSummaryAttributes()
+                        'headers' => Location::getSummaryAttributes(),
+                        'doReady' => false,
+                        'path' => $path,
+                        'jsFile' => $jsFile
                     ));
         }
     }

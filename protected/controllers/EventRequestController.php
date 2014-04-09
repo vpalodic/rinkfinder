@@ -297,9 +297,15 @@ class EventRequestController extends Controller
 
         // If we are updating via ajax, then we do something a little bit
         // differently as we will update one attribute at a time!
-        if(Yii::app()->request->isAjaxRequest) {
+        if(Yii::app()->request->isAjaxRequest && Yii::app()->request->isPostRequest) {
             // Grab all of the parameters!
             $action = isset($_POST['action']) ? $_POST['action'] : null;
+            $requesterName = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
+            $requesterEmail = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
+            $acknowledged = isset($_POST['acknowledged']) ? $_POST['acknowledged'] : null;
+            $accepted = isset($_POST['accepted']) ? $_POST['accepted'] : null;
+            $rejected = isset($_POST['rejected']) ? $_POST['rejected'] : null;
+            $rejectedReason = isset($_POST['rejected_reason']) ? $_POST['rejected_reason'] : null;
             $name = isset($_POST['name']) ? $_POST['name'] : null;
             $value = isset($_POST['value']) ? $_POST['value'] : null;
             $pk = isset($_POST['pk']) ? $_POST['pk'] : null;
@@ -327,10 +333,63 @@ class EventRequestController extends Controller
                 Yii::app()->end();
             }
             
+            // Check for an action!!!
+            if(isset($action) && !empty($action)) {
+                if($action == 'reject') {
+                    // ensure that we have a reason!
+                    if(!isset($rejectedReason)) {
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, 'Invalid parameters');
+                        }
+                        
+                        $this->sendResponseHeaders(400, 'json');
+                        
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => 'Invalid parameters',
+                                )
+                        );
+                        Yii::app()->end();
+                    }
+                }
+                
+                if(!isset($requesterEmail) || !isset($requesterName)) {
+                    if($outputFormat == "html" || $outputFormat == "xml") {
+                        throw new CHttpException(400, 'Invalid parameters');
+                    }
+
+                    $this->sendResponseHeaders(400, 'json');
+
+                    echo json_encode(
+                            array(
+                                'success' => false,
+                                'error' => 'Invalid parameters',
+                            )
+                    );
+                    Yii::app()->end();
+                }
+                
+                return $this->handleAction(array(
+                    'output' => $outputFormat,
+                    'action' => $action,
+                    'rejected_reason' => $rejectedReason,
+                    'rejected' => $rejected,
+                    'acknowledged' => $acknowledged,
+                    'accepted' => $accepted,
+                    'requester_name' => $requesterName,
+                    'requester_email' => $requesterEmail,
+                    'id' => $id,
+                    'uid' => $uid,
+                    'eid' => $eid,
+                    'aid' => $aid,
+                    'lid' => $lid
+                ));
+            }
+            
             // Ok, we have what appear to be valid parameters and so
             // it is time to validate and then update the value!
             $model = new EventRequest();
-            
             $model->$name = $value;
             
             $valid = $model->validate(array($name));
@@ -425,22 +484,6 @@ class EventRequestController extends Controller
                     Yii::app()->end();
                 }
             }
-        } else {
-            $model = $this->loadModel($id);
-
-            // Uncomment the following line if AJAX validation is needed
-            // $this->performAjaxValidation($model);
-
-            if (isset($_POST['EventRequest'])) {
-                $model->attributes=$_POST['EventRequest'];
-                if ($model->save()) {
-                    $this->redirect(array('view','id' => $model->id));
-                }
-            }
-
-            $this->render('update',array(
-                'model' => $model,
-            ));
         }
     }
 
@@ -518,4 +561,36 @@ class EventRequestController extends Controller
 			Yii::app()->end();
 		}
 	}
+        
+    protected function handleAction($params)
+    {
+        $bRet = false;
+        // Ensure we have a valid action!
+        // and delegate to the appropriate model handler!
+        switch($params['action']) {
+            case 'acknowledge':
+                $bRet = EventRequest::acknowledgeAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                break;
+            case 'accept':
+                $bRet = EventRequest::acceptAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                break;
+            case 'reject':
+                $bRet = EventRequest::rejectAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['rejected_reason'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                break;
+            default:
+                if($params['output'] == "html" || $params['output'] == "xml") {
+                    throw new CHttpException(400, 'Invalid action');
+                }
+                
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Invalid action',
+                        )
+                );
+                Yii::app()->end();
+        }
+    }
 }
