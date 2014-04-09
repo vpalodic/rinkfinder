@@ -140,25 +140,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['created_on']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['created_on']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['created_on']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['created_on']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['created_on']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['created_on']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['created_on']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['created_on']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['created_on']['label']; ?>">
-                                    <?php echo $data['item']['fields']['created_on']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['created_on']['name']; ?>">
+                                <?php echo $data['item']['fields']['created_on']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['type_id']['hidden'] == true): ?>
@@ -169,28 +152,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['type_id']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['type_id']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['type_id']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['type_id']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['type_id']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['type_id']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['type_id']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['type_id']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   <?php if($data['item']['fields']['type_id']['controlType'] == 'select'): ?>
-                                   data-source="<?php echo $data['item']['fields']['type_id']['source']; ?>"
-                                   <?php endif; ?>
-                                   title="<?php echo $data['item']['fields']['type_id']['label']; ?>">
-                                    <?php echo $data['item']['fields']['type_id']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['type_id']['name']; ?>">
+                                <?php echo $data['item']['fields']['type_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['status_id']['hidden'] == true): ?>
@@ -201,28 +164,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['status_id']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['status_id']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['status_id']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['status_id']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['status_id']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['status_id']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['status_id']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['status_id']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   <?php if($data['item']['fields']['status_id']['controlType'] == 'select'): ?>
-                                   data-source="<?php echo $data['item']['fields']['status_id']['source']; ?>"
-                                   <?php endif; ?>
-                                   title="<?php echo $data['item']['fields']['status_id']['label']; ?>">
-                                    <?php echo $data['item']['fields']['status_id']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['status_id']['name']; ?>">
+                                <?php echo $data['item']['fields']['status_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['requester_name']['hidden'] == true): ?>
@@ -233,33 +176,17 @@
                             <td>
                                 <?php echo $data['item']['fields']['requester_name']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['requester_name']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['requester_name']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['requester_name']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['requester_name']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['requester_name']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['requester_name']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['requester_name']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['requester_name']['label']; ?>">
-                                    <address>
-                                        <strong>
-                                            <?php echo $data['item']['fields']['requester_name']['value']; ?>
-                                        </strong>
-                                        <br />
-                                        <abbr title="Email">E:</abbr> <?php echo $data['item']['fields']['requester_email']['value']; ?>
-                                        <br />
-                                        <abbr title="Phone">P:</abbr> <?php echo $data['item']['fields']['requester_phone']['value']; ?>
-                                    </address>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['requester_name']['name']; ?>">
+                                <address>
+                                    <strong>
+                                        <?php echo $data['item']['fields']['requester_name']['value']; ?>
+                                    </strong>
+                                    <br />
+                                    <abbr title="Email">E:</abbr> <a href="mailto:<?php echo $data['item']['fields']['requester_email']['value']; ?>">
+                                    <?php echo $data['item']['fields']['requester_email']['value']; ?></a>
+                                    <br />
+                                    <abbr title="Phone">P:</abbr> <?php echo $data['item']['fields']['requester_phone']['value']; ?>
+                                </address>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['notes']['hidden'] == true): ?>
@@ -301,25 +228,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['acknowledger']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['acknowledger']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['acknowledger']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['acknowledger']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['acknowledger']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['acknowledger']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['acknowledger']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['acknowledger']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['acknowledger']['label']; ?>">
-                                    <?php echo $data['item']['fields']['acknowledger']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['acknowledger']['name']; ?>">
+                                <?php echo $data['item']['fields']['acknowledger']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['acknowledged_on']['hidden'] == true ||
@@ -332,25 +242,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['acknowledged_on']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['acknowledged_on']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['acknowledged_on']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['acknowledged_on']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['acknowledged_on']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['acknowledged_on']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['acknowledged_on']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['acknowledged_on']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['acknowledged_on']['label']; ?>">
-                                    <?php echo $data['item']['fields']['acknowledged_on']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['acknowledged_on']['name']; ?>">
+                                <?php echo $data['item']['fields']['acknowledged_on']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['accepter']['hidden'] == true ||
@@ -363,25 +256,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['accepter']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['accepter']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['accepter']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['accepter']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['accepter']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['accepter']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['accepter']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['accepter']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['accepter']['label']; ?>">
-                                    <?php echo $data['item']['fields']['accepter']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['accepter']['name']; ?>">
+                                <?php echo $data['item']['fields']['accepter']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['accepted_on']['hidden'] == true ||
@@ -394,25 +270,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['accepted_on']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['accepted_on']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['accepted_on']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['accepted_on']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['accepted_on']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['accepted_on']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['accepted_on']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['accepted_on']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['accepted_on']['label']; ?>">
-                                    <?php echo $data['item']['fields']['accepted_on']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['accepted_on']['name']; ?>">
+                                <?php echo $data['item']['fields']['accepted_on']['value']; ?>
                             </td>
                         <?php if($data['item']['fields']['rejector']['hidden'] == true ||
                                 (isset($data['item']['fields']['rejector']['button']['enabled']) && 
@@ -424,25 +283,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['rejector']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['rejector']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['rejector']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['rejector']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['rejector']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['rejector']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['rejector']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['rejector']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['rejector']['label']; ?>">
-                                    <?php echo $data['item']['fields']['rejector']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['rejector']['name']; ?>">
+                                <?php echo $data['item']['fields']['rejector']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['rejected_on']['hidden'] == true ||
@@ -455,25 +297,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['rejected_on']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['rejected_on']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['rejected_on']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['rejected_on']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['rejected_on']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['rejected_on']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['rejected_on']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['rejected_on']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['rejected_on']['label']; ?>">
-                                    <?php echo $data['item']['fields']['rejected_on']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['rejected_on']['name']; ?>">
+                                <?php echo $data['item']['fields']['rejected_on']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['rejected_reason']['hidden'] == true ||
@@ -486,25 +311,8 @@
                             <td>
                                 <?php echo $data['item']['fields']['rejected_reason']['label']; ?>
                             </td>
-                            <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>Static"
-                                   data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['rejected_reason']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['rejected_reason']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['rejected_reason']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['rejected_reason']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['rejected_reason']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
-                                    <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
-                                </a>
+                            <td id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>">
+                                <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
                             </td>
                         </tr>
                     </tbody>
@@ -521,24 +329,7 @@
                                 <?php echo $data['item']['fields']['event_id']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['event_id']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['event_id']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['event_id']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['event_id']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['event_id']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['event_id']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['event_id']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['event_id']['label']; ?>">
-                                    <?php echo $data['item']['fields']['event_id']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['event_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['event_start']['hidden'] == true): ?>
@@ -550,24 +341,7 @@
                                 <?php echo $data['item']['fields']['event_start']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['event_start']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['event_start']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['event_start']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['event_start']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['event_start']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['event_start']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['event_start']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['event_start']['label']; ?>">
-                                    <?php echo $data['item']['fields']['event_start']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['event_start']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['arena_id']['hidden'] == true): ?>
@@ -579,24 +353,7 @@
                                 <?php echo $data['item']['fields']['arena_id']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['arena_id']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['arena_id']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['arena_id']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['arena_id']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['arena_id']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['arena_id']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['arena_id']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['arena_id']['label']; ?>">
-                                    <?php echo $data['item']['fields']['arena_id']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['arena_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['arena']['hidden'] == true): ?>
@@ -608,24 +365,7 @@
                                 <?php echo $data['item']['fields']['arena']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['arena']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['arena']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['arena']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['arena']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['arena']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['arena']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['arena']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['arena']['label']; ?>">
-                                    <?php echo $data['item']['fields']['arena']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['arena']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['location_id']['hidden'] == true): ?>
@@ -637,24 +377,7 @@
                                 <?php echo $data['item']['fields']['location_id']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['location_id']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['location_id']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['location_id']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['location_id']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['location_id']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['location_id']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['location_id']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['location_id']['label']; ?>">
-                                    <?php echo $data['item']['fields']['location_id']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['location_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['location']['hidden'] == true): ?>
@@ -666,24 +389,7 @@
                                 <?php echo $data['item']['fields']['location']['label']; ?>
                             </td>
                             <td>
-                                <a href="#"
-                                   id="<?php echo $data['item']['fields']['location']['name']; ?>"
-                                   data-type="<?php echo $data['item']['fields']['location']['controlType']; ?>" 
-                                   data-pk="<?php echo $data['pk']['value']; ?>"
-                                   data-url="<?php echo $data['endpoint']['update']; ?>"
-                                   <?php if(isset($data['item']['fields']['location']['format'])): ?>
-                                   data-format="<?php echo $data['item']['fields']['location']['format']; ?>"
-                                   <?php endif; ?>
-                                   <?php if(isset($data['item']['fields']['location']['viewformat'])): ?>
-                                   data-viewformat="<?php echo $data['item']['fields']['location']['viewformat']; ?>"
-                                   <?php endif; ?>
-                                   <?php if($data['item']['fields']['location']['editable'] == false): ?>
-                                   data-disabled="true"
-                                   <?php endif; ?>
-                                   data-mode="inline"
-                                   title="<?php echo $data['item']['fields']['location']['label']; ?>">
-                                    <?php echo $data['item']['fields']['location']['value']; ?>
-                                </a>
+                                <?php echo $data['item']['fields']['location']['value']; ?>
                             </td>
                         </tr>
                     </tbody>
@@ -719,39 +425,6 @@ $(document).ready(function() {
                 "clearIncomplete": false,
                 'autoUnmask' : true
             });
-        }
-    });
-    
-    $('#acknowledger').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#acknowledged_on').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
-        datetimepicker: {
-            showMeridian: true
-        }
-    });
-    
-    $('#accepter').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#accepted_on').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
-        datetimepicker: {
-            showMeridian: true
-        }
-    });
-    
-    $('#rejector').editable({
-        params: <?php echo json_encode($data['parms']); ?>
-    });
-    
-    $('#rejected_on').editable({
-        params: <?php echo json_encode($data['parms']); ?>,
-        datetimepicker: {
-            showMeridian: true
         }
     });
     
@@ -838,7 +511,7 @@ $(document).ready(function() {
         }
     });
     
-    $('[data-toggle="tooltip"]').tooltip();
+//    $('[data-toggle="tooltip"]').tooltip();
 
 });
 </script>
