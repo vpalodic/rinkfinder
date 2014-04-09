@@ -123,7 +123,7 @@
                     }
                     
                     // We update the rejected on
-                    $(".rejector_id").fade();
+                    $(".rejector_id").hide();
                 },
                 error: function (response, newValue) {
                     _eventRequest.data.parms.action = null;

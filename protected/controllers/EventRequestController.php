@@ -316,7 +316,7 @@ class EventRequestController extends Controller
             // Always restrict to the currently logged in user!
             $uid = Yii::app()->user->id;
             
-            if((($name === null || $value === null) && $action == null) || $id === null ||
+            if((($name === null || $value === null) && $action === null) || $id === null ||
                     $eid === null || $aid === null || $pk === null || $pk != $id) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
                     throw new CHttpException(400, 'Invalid parameters');
@@ -374,9 +374,9 @@ class EventRequestController extends Controller
                     'output' => $outputFormat,
                     'action' => $action,
                     'rejected_reason' => $rejectedReason,
-                    'rejected' => $rejected,
-                    'acknowledged' => $acknowledged,
-                    'accepted' => $accepted,
+                    'rejected' => (boolean)$rejected,
+                    'acknowledged' => (boolean)$acknowledged,
+                    'accepted' => (boolean)$accepted,
                     'requester_name' => $requesterName,
                     'requester_email' => $requesterEmail,
                     'id' => $id,
