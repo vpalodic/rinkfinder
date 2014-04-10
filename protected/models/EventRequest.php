@@ -1310,7 +1310,8 @@ class EventRequest extends RinkfinderActiveRecord
         
         // Ok, we do two things
         $sql = "UPDATE event_request "
-                . "SET updated_on = NOW(), "
+                . "SET status_id = (SELECT s.id FROM event_request_status s WHERE s.name = 'ACKNOWLEDGED'), "
+                . "    updated_on = NOW(), "
                 . "    updated_by_id = :uid, "
                 . "    acknowledger_id = :uid, "
                 . "    acknowledged_on = NOW() "
@@ -1383,8 +1384,8 @@ class EventRequest extends RinkfinderActiveRecord
             // send the requester an e-mail letting them know of this
             $ret = EventRequest::sendEmail("Acknowledged", $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
             
-            if($ret == false) {
-                $transaction->rollback();
+            if($ret !== true) {
+                throw new CHttpException(500, $ret);
             } else {
                 $transaction->commit();
             }
@@ -1396,6 +1397,8 @@ class EventRequest extends RinkfinderActiveRecord
             }
 
             if($e instanceof CDbException) {
+                throw $e;
+            } elseif($e instanceof CHttpException) {
                 throw $e;
             }
 
@@ -1439,7 +1442,8 @@ class EventRequest extends RinkfinderActiveRecord
         // Ok, we do two things
         // Ok, we do two things
         $sql = "UPDATE event_request "
-                . "SET updated_on = NOW(), "
+                . "SET status_id = (SELECT s.id FROM event_request_status s WHERE s.name = 'ACCEPTED'), "
+                . "    updated_on = NOW(), "
                 . "    updated_by_id = :uid, ";
         
         if($acknowledged === false) {
@@ -1521,8 +1525,8 @@ class EventRequest extends RinkfinderActiveRecord
             // send the requester an e-mail letting them know of this
             $ret = EventRequest::sendEmail("Accepted", $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
             
-            if($ret == false) {
-                $transaction->rollback();
+            if($ret !== true) {
+                throw new CHttpException(500, $ret);
             } else {
                 $transaction->commit();
             }
@@ -1534,6 +1538,8 @@ class EventRequest extends RinkfinderActiveRecord
             }
 
             if($e instanceof CDbException) {
+                throw $e;
+            } elseif($e instanceof CHttpException) {
                 throw $e;
             }
 
@@ -1577,7 +1583,8 @@ class EventRequest extends RinkfinderActiveRecord
         
         // Ok, we do two things
         $sql = "UPDATE event_request "
-                . "SET updated_on = NOW(), "
+                . "SET status_id = (SELECT s.id FROM event_request_status s WHERE s.name = 'REJECTED'), "
+                . "    updated_on = NOW(), "
                 . "    updated_by_id = :uid, ";
         
         if($acknowledged === false) {
@@ -1662,8 +1669,8 @@ class EventRequest extends RinkfinderActiveRecord
             // send the requester an e-mail letting them know of this
             $ret = EventRequest::sendEmail(array("Rejected", $rejectedReason) , $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
             
-            if($ret == false) {
-                $transaction->rollback();
+            if($ret !== true) {
+                throw new CHttpException(500, $ret);
             } else {
                 $transaction->commit();
             }
@@ -1675,6 +1682,8 @@ class EventRequest extends RinkfinderActiveRecord
             }
 
             if($e instanceof CDbException) {
+                throw $e;
+            } elseif($e instanceof CHttpException) {
                 throw $e;
             }
 
