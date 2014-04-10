@@ -263,71 +263,6 @@ class EventRequest extends RinkfinderActiveRecord
     }
     
     /**
-     * Acknowledges a request by updating the record and by sending an e-mail to
-     * the requester that their request was acknowledged.
-     * @param boolean $activeOnly If true, then only active values will be returned
-     * @return boolean true if the request was successfully acknowleged
-     * @throws CDbException
-     */
-    public function acknowledgeRequest()
-    {
-        $sql = 'SELECT * FROM event_request_type';
-        
-        if($activeOnly == true) {
-            $sql .= ' WHERE active = 1';
-        }
-        
-        $command = Yii::app()->db->createCommand($sql);
-        return $command->queryAll(true);
-    }
-    
-    /**
-     * Accepts a request by updating the record, by sending an e-mail to
-     * the requester that their request was accepted, and it creates a
-     * reservation in the system on the requester's behalf for the event. All
-     * other requests will automatically be rejected with the reason that the
-     * event has already been reserved.
-     * @param boolean $activeOnly If true, then only active values will be returned
-     * @return boolean true if the request was successfully acknowleged
-     * @throws CDbException
-     */
-    public function acceptRequest()
-    {
-        $sql = 'SELECT * FROM event_request_type';
-        
-        if($activeOnly == true) {
-            $sql .= ' WHERE active = 1';
-        }
-        
-        $command = Yii::app()->db->createCommand($sql);
-        return $command->queryAll(true);
-    }
-    
-    /**
-     * Rejects a request by updating the record, by sending an e-mail to
-     * the requester that their request was not accepted, and it creates a
-     * reservation in the system on the requester's behalf for the event. All
-     * other requests will automatically be rejected with the reason that the
-     * event has already been reserved.
-     * @param boolean $activeOnly If true, then only active values will be returned
-     * @return boolean true if the request was successfully acknowleged
-     * @throws CDbException
-     */
-    public function rejectRequest()
-    {
-        $sql = 'SELECT * FROM event_request_type';
-        
-        if($activeOnly == true) {
-            $sql .= ' WHERE active = 1 ';
-        }
-        
-        $sql .= 'ORDER BY display_order ASC';
-        
-        $command = Yii::app()->db->createCommand($sql);
-        return $command->queryAll(true);
-    }
-    
-    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */
@@ -614,7 +549,7 @@ class EventRequest extends RinkfinderActiveRecord
             'rejected_reason' => array(
                 'name' => 'rejected_reason',
                 'label' => 'Rejection Reason',
-                'controlType' => 'text',
+                'controlType' => 'textarea',
                 'type' => 'alpha',
                 'editable' => false,
                 'hidden' => false,
@@ -630,16 +565,30 @@ class EventRequest extends RinkfinderActiveRecord
             'type_id' => array(
                 'name' => 'type_id',
                 'label' => 'Type',
-                'type' => 'alpha',
                 'controlType' => 'select',
-                'type' => 'alpha',
+                'type' => 'numeric',
                 'editable' => false,
                 'hidden' => false,
             ),
             'status_id' => array(
                 'name' => 'status_id',
                 'label' => 'Status',
-                'type' => 'alpha',
+                'controlType' => 'select',
+                'type' => 'numeric',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'event_type_id' => array(
+                'name' => 'event_type_id',
+                'label' => 'Event Type',
+                'controlType' => 'select',
+                'type' => 'numeric',
+                'editable' => false,
+                'hidden' => false,
+            ),
+            'event_status_id' => array(
+                'name' => 'event_status_id',
+                'label' => 'Event Status',
                 'controlType' => 'select',
                 'type' => 'alpha',
                 'editable' => false,
@@ -1035,6 +984,7 @@ class EventRequest extends RinkfinderActiveRecord
         
         $typeParms = array(
             'eventRequest/type',
+            'output' => 'json'
         );
         
         $statusParms = array(
@@ -1068,6 +1018,10 @@ class EventRequest extends RinkfinderActiveRecord
                 . "(SELECT t.display_name FROM event_request_type t WHERE t.id = er.type_id) AS type, "
                 . "er.status_id, "
                 . "(SELECT s.display_name FROM event_request_status s WHERE s.id = er.status_id) AS status, "
+                . "e.type_id AS event_type_id, "
+                . "(SELECT t.display_name FROM event_type t WHERE t.id = e.type_id) AS event_type, "
+                . "e.status_id AS event_status_id, "
+                . "(SELECT s.display_name FROM event_status s WHERE s.id = e.status_id) AS event_status, "
                 . "DATE_FORMAT(er.created_on, '%m/%d/%Y %h:%i %p') AS created_on "
                 . "FROM event_request er "
                 . "    INNER JOIN event e "
@@ -1172,6 +1126,12 @@ class EventRequest extends RinkfinderActiveRecord
                     $fieldData['source'] = CHtml::normalizeUrl($typeParms);
                 } elseif($field == 'status_id') {
                     $fieldData['value'] = $row['status'];
+                    $fieldData['source'] = CHtml::normalizeUrl($statusParms);
+                } elseif($field == 'event_type_id') {
+                    $fieldData['value'] = $row['event_type'];
+                    $fieldData['source'] = CHtml::normalizeUrl($typeParms);
+                } elseif($field == 'event_status_id') {
+                    $fieldData['value'] = $row['event_status'];
                     $fieldData['source'] = CHtml::normalizeUrl($statusParms);
                 } else {
                     $fieldData['value'] = $value;
@@ -1325,6 +1285,8 @@ class EventRequest extends RinkfinderActiveRecord
     
     /**
      * Returns True if the record was successfully acknowledged.
+     * @param string $requesterName The name of the requester
+     * @param string $requesterEmail The email of the requester
      * @param boolean $acknowledged Has this record already been acknowledged?
      * @param boolean $accepted Has this record already been accepted?
      * @param boolean $rejected Has this record already been rejected?
@@ -1336,7 +1298,7 @@ class EventRequest extends RinkfinderActiveRecord
      * @return boolean True if the record was successfully acknowledged.
      * @throws CDbException
      */
-    public static function acknowledgeAssignedRecord($acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
+    public static function acknowledgeAssignedRecord($requesterName, $requesterEmail, $acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
     {
         $ret = false;
         
@@ -1411,10 +1373,20 @@ class EventRequest extends RinkfinderActiveRecord
                 $ret = true;
             }
             
-            if($transaction->active == true && $ret == true) {
-                $transaction->commit();
-            } elseif($transaction->active == true && $ret == false) {
+            if($ret == false) {
                 $transaction->rollback();
+                
+                return $ret;
+            }
+            
+            // Ok, we have successfully acknowledged this request,
+            // send the requester an e-mail letting them know of this
+            $ret = EventRequest::sendEmail("Acknowledged", $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
+            
+            if($ret == false) {
+                $transaction->rollback();
+            } else {
+                $transaction->commit();
             }
         }
         catch(Exception $e)
@@ -1441,6 +1413,8 @@ class EventRequest extends RinkfinderActiveRecord
     
     /**
      * Returns True if the record was successfully accepted.
+     * @param string $requesterName The name of the requester
+     * @param string $requesterEmail The email of the requester
      * @param boolean $acknowledged Has this record already been acknowledged?
      * @param boolean $accepted Has this record already been accepted?
      * @param boolean $rejected Has this record already been rejected?
@@ -1452,7 +1426,7 @@ class EventRequest extends RinkfinderActiveRecord
      * @return boolean True if the record was successfully acknowledged.
      * @throws CDbException
      */
-    public static function acceptAssignedRecord($acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
+    public static function acceptAssignedRecord($requesterName, $requesterEmail, $acknowledged, $accepted, $rejected, $id, $uid, $eid, $aid, $lid = null)
     {
         $ret = false;
         
@@ -1463,15 +1437,25 @@ class EventRequest extends RinkfinderActiveRecord
         }
         
         // Ok, we do two things
+        // Ok, we do two things
         $sql = "UPDATE event_request "
                 . "SET updated_on = NOW(), "
-                . "    updated_by_id = :uid, "
-                . "    acknowledger_id = :uid "
-                . "    acknowledged_on = NOW() "
-                . " WHERE id = :id "
-                . " AND event_id = :eid "
-                . " AND acknowledger_id IS NULL "
-                . " AND accepter_id IS NULL "
+                . "    updated_by_id = :uid, ";
+        
+        if($acknowledged === false) {
+            $sql .= "    acknowledger_id = :uid, "
+                . "    acknowledged_on = NOW(), ";
+        }
+        
+        $sql .= "    accepter_id = :uid, "
+                . "    accepted_on = NOW() "
+                . " WHERE id = :id ";
+        
+        if($acknowledged === false) {
+            $sql .= " AND acknowledger_id IS NULL ";
+        }
+        
+       $sql .= " AND accepter_id IS NULL "
                 . " AND rejector_id IS NULL "
                 . " AND event_id IN (SELECT e.id "
                 . "    FROM event e "
@@ -1527,10 +1511,20 @@ class EventRequest extends RinkfinderActiveRecord
                 $ret = true;
             }
             
-            if($transaction->active == true && $ret == true) {
-                $transaction->commit();
-            } elseif($transaction->active == true && $ret == false) {
+            if($ret == false) {
                 $transaction->rollback();
+                
+                return $ret;
+            }
+            
+            // Ok, we have successfully accepted this request,
+            // send the requester an e-mail letting them know of this
+            $ret = EventRequest::sendEmail("Accepted", $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
+            
+            if($ret == false) {
+                $transaction->rollback();
+            } else {
+                $transaction->commit();
             }
         }
         catch(Exception $e)
@@ -1556,7 +1550,9 @@ class EventRequest extends RinkfinderActiveRecord
     }
     
     /**
-     * Returns True if the record was successfully acknowledged.
+     * Returns True if the record was successfully rejected!!
+     * @param string $requesterName The name of the requester
+     * @param string $requesterEmail The email of the requester
      * @param boolean $acknowledged Has this record already been acknowledged?
      * @param boolean $accepted Has this record already been accepted?
      * @param boolean $rejected Has this record already been rejected?
@@ -1569,7 +1565,7 @@ class EventRequest extends RinkfinderActiveRecord
      * @return boolean True if the record was successfully acknowledged.
      * @throws CDbException
      */
-    public static function rejectAssignedRecord($acknowledged, $accepted, $rejected, $rejectedReason, $id, $uid, $eid, $aid, $lid = null)
+    public static function rejectAssignedRecord($requesterName, $requesterEmail, $acknowledged, $accepted, $rejected, $rejectedReason, $id, $uid, $eid, $aid, $lid = null)
     {
         $ret = false;
         
@@ -1593,9 +1589,13 @@ class EventRequest extends RinkfinderActiveRecord
                 . " rejected_on = NOW(),"
                 . " rejected_reason = :reason "
                 . " WHERE id = :id "
-                . " AND event_id = :eid "
-                . " AND acknowledger_id IS NULL "
-                . " AND accepter_id IS NULL "
+                . " AND event_id = :eid ";
+        
+        if($acknowledged === false) {
+            $sql .= " AND acknowledger_id IS NULL ";
+        }
+        
+       $sql .= " AND accepter_id IS NULL "
                 . " AND rejector_id IS NULL "
                 . " AND event_id IN (SELECT e.id "
                 . "    FROM event e "
@@ -1652,10 +1652,20 @@ class EventRequest extends RinkfinderActiveRecord
                 $ret = true;
             }
             
-            if($transaction->active == true && $ret == true) {
-                $transaction->commit();
-            } elseif($transaction->active == true && $ret == false) {
+            if($ret == false) {
                 $transaction->rollback();
+                
+                return $ret;
+            }
+            
+            // Ok, we have successfully acknowledged this request,
+            // send the requester an e-mail letting them know of this
+            $ret = EventRequest::sendEmail(array("Rejected", $rejectedReason) , $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid);
+            
+            if($ret == false) {
+                $transaction->rollback();
+            } else {
+                $transaction->commit();
             }
         }
         catch(Exception $e)
@@ -1679,4 +1689,76 @@ class EventRequest extends RinkfinderActiveRecord
         
         return $ret;
     }
+    
+    /**
+     * Sends an evenr request acknowledgement e-mail to the requester
+     * @param mixed $status The status of the request.
+     * @param string $requesterName The name of the requester.
+     * @param string $requesterEmail The email of the requester.
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return boolean True if the email was successfully send.
+     */
+    public static function sendEmail($status, $requesterName, $requesterEmail, $id, $uid, $eid, $aid, $lid = null)
+    {
+        // We need to pull the full event and arena information!
+        if($lid != null) {
+            $event = Event::model()->with (
+                array(
+                    'arena' => array(
+                        'condition' => 'arena.id = :aid',
+                        'params' => array(':aid' => $aid)
+                    ),
+                    'arena.locations' => array(
+                        'condition' => 'locations.id = :lid',
+                        'params' => array(':lid' => $lid)
+                    ),
+                    'arena.contacts'
+                ))->findByPk($eid);
+        } else {
+            $event = Event::model()->with (
+                array(
+                    'arena' => array(
+                        'condition' => 'arena.id = :aid',
+                        'params' => array(':aid' => $aid)
+                    ),
+                    'arena.contacts'
+                ))->findByPk($eid);
+        }
+        $data = array();
+        $data['requestStatus'] = $status;
+        $data['requester']['name'] = $requesterName;
+        $data['requester']['email'] = $requesterEmail;
+        $data['event'] = $event;
+        $data['eventUrl'] = Yii::app()->createAbsoluteUrl(
+                'event/view',
+                array(
+                    'id' => $eid,
+                )
+        );
+        $data['arenaUrl'] = Yii::app()->createAbsoluteUrl(
+                'arena/view',
+                array(
+                    'id' => $aid,
+                )
+        );
+        
+        $to = array($requesterEmail => $requesterName);
+        $subject = CHtml::encode(Yii::app()->name) . ': Event Request Status Update';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'eventRequestUpdate'
+        );
+        
+        return $mailSent;
+    }
+    
 }

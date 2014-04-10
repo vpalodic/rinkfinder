@@ -43,24 +43,22 @@
         </h3>
     </div>
     <div class="panel-body">
+        <div id="alerts" class="row-fluid">
         <?php if($data['parms']['acknowledged'] == false) : ?>
-        <div class="row-fluid">
             <div class="alert alert-danger">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                 <span class="badge badge-important">Heads Up!</span>
                 This request has not been <strong>acknowledged</strong> yet.
             </div>
-        </div>
         <?php endif; ?>
         <?php if($data['parms']['accepted'] == false && $data['parms']['rejected'] == false) : ?>
-        <div class="row-fluid">
             <div class="alert">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                 <span class="badge badge-important">Heads Up!</span>
                 This request has not been <strong>accepted</strong> or <strong>rejected</strong> yet.
             </div>
-        </div>
         <?php endif; ?>
+        </div>
         <div class="row-fluid">
             <div class="span6">
                 <strong>Actions</strong><br />
@@ -72,6 +70,15 @@
                                 <i class="fa fa-lg fa-envelope"></i> <br />
                                 <span>Message</span>
                             </button>
+                            <a class="message_box btn-block text-center" style="display: none;" href="#"
+                                id="message"
+                                data-type="textarea" 
+                                data-pk="<?php echo $data['pk']['value']; ?>"
+                                data-disabled="false"
+                                data-mode="popup"
+                                title="Please enter your message">
+                                
+                            </a>
                         </div>
                         <?php if(isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
                                 $data['item']['fields']['acknowledger']['button']['enabled'] == true) : ?>
@@ -89,7 +96,7 @@
                         <div class="span3">
                             <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
                                     data-original-title="Accept this request"
-                                        id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
+                                    id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-check"></i> <br />
                                 <span>Accept</span>
                             </button>
@@ -98,30 +105,21 @@
                         <?php if(isset($data['item']['fields']['rejector']['button']['enabled']) && 
                                 $data['item']['fields']['rejector']['button']['enabled'] == true) : ?>
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-danger <?php echo $data['item']['fields']['rejector']['button']['name']; ?>"
-                                    type="button" data-toggle="tooltip" data-original-title="Reject this request">
+                            <button class="btn btn-block btn-large btn-danger"
+                                    type="button" data-toggle="tooltip" data-original-title="Reject this request"
+                                    id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-times"></i> <br />
                                 <span>Reject</span>
                             </button>
-                        <a class="rejector_id_reason btn-block text-center" style="display: none;" href="#"
-                            id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>"
-                            data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
-                            data-pk="<?php echo $data['pk']['value']; ?>"
-                            data-disabled="false"
-                            data-mode="popup"
-                            title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
-                            <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
-                        </a>
-                        <a class="rejector_id_reason" style="display: none;" href="#"
-                            id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>"
-                            data-type="<?php echo $data['item']['fields']['rejector']['controlType']; ?>" 
-                            data-pk="<?php echo $data['pk']['value']; ?>",
-                            data-disabled="false"
-                            data-value="<?php echo Yii::app()->user->id; ?>"
-                            data-mode="popup"
-                            title="<?php echo $data['item']['fields']['rejector']['label']; ?>">
-                            <?php echo Yii::app()->user->id; ?>
-                        </a>
+                            <a class="rejected_reason btn-block text-center" style="display: none;" href="#"
+                                id="<?php echo $data['item']['fields']['rejected_reason']['name']; ?>"
+                                data-type="<?php echo $data['item']['fields']['rejected_reason']['controlType']; ?>" 
+                                data-pk="<?php echo $data['pk']['value']; ?>"
+                                data-disabled="false"
+                                data-mode="popup"
+                                title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
+                                <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
+                            </a>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -224,7 +222,8 @@
                         </tr>
                         <?php if($data['item']['fields']['acknowledger']['hidden'] == true ||
                                 (isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
-                                $data['item']['fields']['acknowledger']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['acknowledger']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['acknowledger']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -238,7 +237,8 @@
                         </tr>
                         <?php if($data['item']['fields']['acknowledged_on']['hidden'] == true ||
                                 (isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
-                                $data['item']['fields']['acknowledger']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['acknowledger']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['acknowledger']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -252,7 +252,8 @@
                         </tr>
                         <?php if($data['item']['fields']['accepter']['hidden'] == true ||
                                 (isset($data['item']['fields']['accepter']['button']['enabled']) && 
-                                $data['item']['fields']['accepter']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['accepter']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['accepter']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -266,7 +267,8 @@
                         </tr>
                         <?php if($data['item']['fields']['accepted_on']['hidden'] == true ||
                                 (isset($data['item']['fields']['accepter']['button']['enabled']) && 
-                                $data['item']['fields']['accepter']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['accepter']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['accepter']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -279,7 +281,8 @@
                             </td>
                         <?php if($data['item']['fields']['rejector']['hidden'] == true ||
                                 (isset($data['item']['fields']['rejector']['button']['enabled']) && 
-                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['rejector']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['rejector']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -293,7 +296,8 @@
                         </tr>
                         <?php if($data['item']['fields']['rejected_on']['hidden'] == true ||
                                 (isset($data['item']['fields']['rejector']['button']['enabled']) && 
-                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['rejector']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['rejector']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>
@@ -334,6 +338,30 @@
                             </td>
                             <td>
                                 <?php echo $data['item']['fields']['event_id']['value']; ?>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['event_type_id']['hidden'] == true): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['event_type_id']['label']; ?>
+                            </td>
+                            <td>
+                                <?php echo $data['item']['fields']['event_type_id']['value']; ?>
+                            </td>
+                        </tr>
+                        <?php if($data['item']['fields']['event_status_id']['hidden'] == true): ?>
+                        <tr style="display: none;">
+                        <?php else: ?>
+                        <tr>
+                        <?php endif; ?>
+                            <td>
+                                <?php echo $data['item']['fields']['event_status_id']['label']; ?>
+                            </td>
+                            <td>
+                                <?php echo $data['item']['fields']['event_status_id']['value']; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['event_start']['hidden'] == true): ?>
@@ -404,6 +432,11 @@
 </div>
 <script type="text/javascript">
 $(document).ready(function() {
+    utilities.urls.login = "<?php echo $this->createUrl('site/login'); ?>";
+    utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
+    utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
+    utilities.urls.assets = "<?php echo $path; ?>";
+    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
     _eventRequest.data = <?php echo json_encode($data); ?>;
     _eventRequest.endpoints.updateRecord = "<?php echo $data['endpoint']['update']; ?>";
     _eventRequest.endpoints.acknowledgeRecord = "<?php echo $data['endpoint']['update']; ?>";

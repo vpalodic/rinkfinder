@@ -81,75 +81,472 @@
                 });
             }
         });
-
-        $(".rejector_id_reason").editable({
-            params: _eventRequest.data.parms
-        });
-    
-        $(".rejector_id").editable({
-            params: _eventRequest.data.parms
-        });
-    
-        $("#rejected_reason.rejector_id_reason").on('save', function (e, params) {
-            if (arguments.length != 2)
-            {
-                return;
-            }
         
-            var $element = $("#rejected_reason.rejector_id_reason");
-            var $id = $("#rejector_id.rejector_id_reason");
-            $element.hide();
-            $element.editable('setValue', params.newValue);
-            $id.editable('setValue', _eventRequest.userId , false)
-        
-            var newParms = _eventRequest.data.parms;
-            newParms.action = 'reject';
-            newParms.pk = _eventRequest.data.pk.value;
-            newParms.requester_name = _eventRequest.data.item.fields.requester_name.value;
-            newParms.requester_email = _eventRequest.data.item.fields.requester_email.value;
-            
-            // Ok, we will submit the data to the server
-            $(".rejector_id_reason").editable('submit', {
-                url: _eventRequest.endpoints.updateRecord,
-                data: newParms,
+        if(_eventRequest.data.parms.rejected == false) {
+            $(".rejected_reason").editable({
+                params: _eventRequest.data.parms,
                 success: function(response, newValue) {
+                    if (typeof response === "undefined")
+                    {
+                        return;
+                    }
                     
                     _eventRequest.data.parms.action = null;
-                     $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                    _eventRequest.data.parms.rejected = true;
+                    _eventRequest.data.parms.acknowledged = true;
+                    
+                    $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        
                     if (typeof response !== 'undefined' && response.length > 0)
                     {
                         return "Data not saved. Please refresh the page as it appears" +
                                 " the session has expired."
                     }
                     
-                    // We update the rejected on
-                    $(".rejector_id").hide();
+                    $("#message").prop('disabled', false);
+                
+                    utilities.loadingScreen.hide();
+                        
+                    $('.alert').remove();
+                    $("#acknowledger_id").remove();
+                    $("#accepter_id").remove();
+                    $("#rejector_id").remove();
+                    utilities.addAlert("alerts", "alert alert-success",
+                    "Request successfully rejected!",
+                    "The request has been rejected.<br />The requester has " +
+                            "been notified via e-mail that their request " +
+                            "has been rejected for the reason you " +
+                            "provided.<br />You may use the " +
+                            "Message button to contact the requester if " +
+                            "you need to.");
                 },
                 error: function (response, newValue) {
                     _eventRequest.data.parms.action = null;
                     $("#notes").editable('option', 'params', _eventRequest.data.parms);
-                    return response.responseText;
-                }
+                    utilities.loadingScreen.hide();
+                    var $element = $(".rejected_reason");
+                    $element.editable('setValue', response.responseText);
+                    
+                    utilities.addAlert("alerts", "alert alert-danger",
+                    "Failed to reject the request!",
+                    "The request has not been rejected.<br />The requester has " +
+                            "not been notified via e-mail that their request " +
+                            "has been rejected for the reason you " +
+                            "provided.<br />You may use the " +
+                            "Message button to contact the requester if " +
+                            "you need to. The error has been set to the " +
+                            "rejection text. Please close and re-open this " +
+                            "record before clicking the Reject " +
+                            "button to try again.");
+                    
+                    $("#acknowledger_id").prop('disabled', false);
+                    $("#accepter_id").prop('disabled', false);
+                    $("#rejector_id").prop('disabled', false);
+                    $("#message").prop('disabled', false);
+                
+                    var responseText = response.responseText;
+                    response = undefined;
+                    $element.editable('setValue', responseText);
+                    $element.editable('option', 'params', null);
+                    $element.editable('option', 'pk', null);
+                    $element.editable('option', 'url', null);
+                    return responseText;
+               }
+            });
+    
+            $(".rejected_reason").on('hidden', function (e, reason) {
+                var $element = $(".rejected_reason");
+                $element.hide();
             });
             
-        });
-    
-        $(".rejector_id").click(function (e) {
-            e.preventDefault();
+            $(".rejected_reason").on('save', function (e, params) {
+                if (arguments.length != 2)
+                {
+                    return;
+                }
+        
+                var $element = $(".rejected_reason");
+                $element.hide();
+                $element.editable('setValue', params.newValue);
 
-            e.stopPropagation();
-
-            // Show the editable
-            var $element = $("#rejected_reason.rejector_id_reason");
-
-            $element.show();
-            $element.editable('show');
-        });
+                var newParms = _eventRequest.data.parms;
+                newParms.action = 'reject';
+                newParms.pk = _eventRequest.data.pk.value;
+                newParms.requester_name = _eventRequest.data.item.fields.requester_name.value;
+                newParms.requester_email = _eventRequest.data.item.fields.requester_email.value;
+            
+                $("#acknowledger_id").prop('disabled', true);
+                $("#accepter_id").prop('disabled', true);
+                $("#rejector_id").prop('disabled', true);
+                $("#message").prop('disabled', true);
+                
+                // Ok, we will submit the data to the server
+                utilities.loadingScreen.parentId = "rejector_id";
+                utilities.loadingScreen.image.enabled = true;
+                utilities.loadingScreen.show();
+                
+                $(".rejected_reason").editable('option', 'params', newParms);
+                $(".rejected_reason").editable('option', 'pk', newParms.pk);
+                $(".rejected_reason").editable('option', 'url', _eventRequest.endpoints.updateRecord);
+                $(".rejected_reason").editable('submit');            
+            });
     
-        $('#rejected_reason').editable({
-            params: _eventRequest.data.parms
-        });
+            $("#rejector_id").click(function (e) {
+                e.preventDefault();
+
+                e.stopPropagation();
+
+                // Show the editable
+                var $element = $(".rejected_reason");
+
+                $element.show();
+                $element.editable('show');
+            });
+        }
+        
+        if(_eventRequest.data.parms.acknowledged == false) {
+            $("#acknowledger_id").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var newParms = _eventRequest.data.parms;
+                newParms.action = 'acknowledge';
+                newParms.pk = _eventRequest.data.pk.value;
+                newParms.requester_name = _eventRequest.data.item.fields.requester_name.value;
+                newParms.requester_email = _eventRequest.data.item.fields.requester_email.value;
+            
+                $("#acknowledger_id").prop('disabled', true);
+                $("#accepter_id").prop('disabled', true);
+                $("#rejector_id").prop('disabled', true);
+                $("#message").prop('disabled', true);
+                
+                // Ok, we will submit the data to the server
+                utilities.loadingScreen.parentId = "acknowledger_id";
+                utilities.loadingScreen.image.enabled = true;
+                utilities.loadingScreen.show();
+                
+                $.ajax({
+                    url: _eventRequest.endpoints.updateRecord,
+                    type: "POST",
+                    dataType: "html",
+                    data: newParms,
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            $("#acknowledger_id").prop('disabled', false);
+                            $("#accepter_id").prop('disabled', false);
+                            $("#rejector_id").prop('disabled', false);
+                            $("#message").prop('disabled', false);
+                            window.setTimeout(function () {
+                                utilities.ajaxError.show(
+                                    "Management Dashboard",
+                                    "Failed to acknowledge request",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                                );
+                            }, 1000);
+
+                            return;
+                        }
+                        _eventRequest.data.parms.action = null;
+                        _eventRequest.data.parms.acknowledged = true;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        
+                        $("#acknowledger_id").remove();
+                        $("#accepter_id").prop('disabled', false);
+                        $("#rejector_id").prop('disabled', false);
+                        $("#message").prop('disabled', false);
+                
+                        utilities.loadingScreen.hide();
+                        
+                        $('.alert.alert-danger').remove();
+                        
+                        utilities.addAlert("alerts", "alert alert-success",
+                        "Request successfully acknowledged!",
+                        "The request has been acknowledged.<br />The requester has " +
+                                "been notified via e-mail that their request " +
+                                "has been acknowledged.<br />You may use the " +
+                                "Message button to contact the requester if " +
+                                "you need to.<br />Please remember that the " +
+                                "request still needs to be either accepted " +
+                                "or rejected.");
+
+                    },
+                    error: function(xhr, status, errorThrown) {
+                        _eventRequest.data.parms.action = null;
+                        _eventRequest.data.parms.acknowledged = false;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        $("#acknowledger_id").prop('disabled', false);
+                        $("#accepter_id").prop('disabled', false);
+                        $("#rejector_id").prop('disabled', false);
+                        $("#message").prop('disabled', false);
+                        
+                        utilities.loadingScreen.hide();
+                        
+                        utilities.ajaxError.show(
+                            "Error",
+                            "Acknowledge Request",
+                            xhr,
+                            status,
+                            errorThrown
+                        );
+                    }
+                });
+            });
+        }
+        
+        if(_eventRequest.data.parms.accepted == false) {
+            $("#accepter_id").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var newParms = _eventRequest.data.parms;
+                newParms.action = 'accept';
+                newParms.pk = _eventRequest.data.pk.value;
+                newParms.requester_name = _eventRequest.data.item.fields.requester_name.value;
+                newParms.requester_email = _eventRequest.data.item.fields.requester_email.value;
+            
+                $("#acknowledger_id").prop('disabled', true);
+                $("#accepter_id").prop('disabled', true);
+                $("#rejector_id").prop('disabled', true);
+                $("#message").prop('disabled', true);
+                
+                // Ok, we will submit the data to the server
+                utilities.loadingScreen.parentId = "accepter_id";
+                utilities.loadingScreen.image.enabled = true;
+                utilities.loadingScreen.show();
+                
+                $.ajax({
+                    url: _eventRequest.endpoints.updateRecord,
+                    type: "POST",
+                    dataType: "html",
+                    data: newParms,
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            $("#acknowledger_id").prop('disabled', false);
+                            $("#accepter_id").prop('disabled', false);
+                            $("#rejector_id").prop('disabled', false);
+                            $("#message").prop('disabled', false);
+                            window.setTimeout(function () {
+                                utilities.ajaxError.show(
+                                    "Management Dashboard",
+                                    "Failed to accept the request",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                                );
+                            }, 1000);
+
+                            return;
+                        }
+                        _eventRequest.data.parms.action = null;
+                        _eventRequest.data.parms.acknowledged = true;
+                        _eventRequest.data.parms.accepted = true;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        
+                        $("#acknowledger_id").remove();
+                        $("#accepter_id").remove();
+                        $("#rejector_id").remove();
+                        $("#message").prop('disabled', false);
+                
+                        utilities.loadingScreen.hide();
+                        
+                        $('.alert').remove();
+                        
+                        utilities.addAlert("alerts", "alert alert-success",
+                        "Request successfully accepted!",
+                        "The request has been accepted.<br />The requester has " +
+                            "been notified via e-mail that their request " +
+                            "has been accepted.<br />Please be sure to respond " +
+                            "to any other pending requests.<br />To remove this " +
+                            "event from the search results, you may either create a " +
+                            "reservation for this event or update the status to closed." +
+                            "<br />You may use the " +
+                            "Message button to contact the requester if " +
+                            "you need to.<br />");
+
+                    },
+                    error: function(xhr, status, errorThrown) {
+                        _eventRequest.data.parms.action = null;
+                        _eventRequest.data.parms.accepted = false;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        $("#acknowledger_id").prop('disabled', false);
+                        $("#accepter_id").prop('disabled', false);
+                        $("#rejector_id").prop('disabled', false);
+                        $("#message").prop('disabled', false);
+                        
+                        utilities.loadingScreen.hide();
+                        
+                        utilities.ajaxError.show(
+                            "Error",
+                            "Accept Request",
+                            xhr,
+                            status,
+                            errorThrown
+                        );
+                    }
+                });
+            });
+        }
+        
+            $(".message_box").editable({
+                params: _eventRequest.data.parms
+            });
     
+            $(".message_box").on('hidden', function (e, reason) {
+                var $element = $(".message_box");
+                $element.hide();
+                
+                _eventRequest.data.parms.action = 'message';
+            });
+            
+            $(".message_box").on('save', function (e, params) {
+                if (arguments.length != 2)
+                {
+                    return;
+                }
+        
+                var $element = $(".message_box");
+                $element.hide();
+                $element.editable('setValue', params.newValue);
+
+                _eventRequest.data.parms.action = 'message';
+                
+                var newParms = _eventRequest.data.parms;
+                newParms.action = 'message';
+                newParms.pk = _eventRequest.data.pk.value;
+                newParms.requester_name = _eventRequest.data.item.fields.requester_name.value;
+                newParms.requester_email = _eventRequest.data.item.fields.requester_email.value;
+                newParms.message = params.newValue;
+            
+                $("#acknowledger_id").prop('disabled', true);
+                $("#accepter_id").prop('disabled', true);
+                $("#rejector_id").prop('disabled', true);
+                $("#message").prop('disabled', true);
+                
+                // Ok, we will submit the data to the server
+                utilities.loadingScreen.parentId = "message";
+                utilities.loadingScreen.image.enabled = true;
+                utilities.loadingScreen.show();
+                
+//                $(".message_box").editable('option', 'params', newParms);
+//                $(".message_box").editable('option', 'pk', newParms.pk);
+                $(".message_box").editable('option', 'url', _eventRequest.endpoints.updateRecord);
+                
+                $.ajax({
+                    url: _eventRequest.endpoints.updateRecord,
+                    type: "POST",
+                    dataType: "html",
+                    data: newParms,
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            $("#acknowledger_id").prop('disabled', false);
+                            $("#accepter_id").prop('disabled', false);
+                            $("#rejector_id").prop('disabled', false);
+                            $("#message").prop('disabled', false);
+                            window.setTimeout(function () {
+                                utilities.ajaxError.show(
+                                    "Management Dashboard",
+                                    "Failed to send message",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                                );
+                            }, 1000);
+
+                            return;
+                        }
+                        _eventRequest.data.parms.action = null;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+                        
+                        $("#acknowledger_id").prop('disabled', false);
+                        $("#accepter_id").prop('disabled', false);
+                        $("#rejector_id").prop('disabled', false);
+                        $("#message").prop('disabled', false);
+                
+                        utilities.loadingScreen.hide();
+                        
+                        utilities.addAlert("alerts", "alert alert-success",
+                        "Messsage successfully sent!",
+                        "The message has been sent as you requested.");
+
+                    },
+                    error: function(xhr, status, errorThrown) {
+                        _eventRequest.data.parms.action = null;
+                    
+                        $("#notes").editable('option', 'params', _eventRequest.data.parms);
+
+                        $("#acknowledger_id").prop('disabled', false);
+                        $("#accepter_id").prop('disabled', false);
+                        $("#rejector_id").prop('disabled', false);
+                        $("#message").prop('disabled', false);
+                        
+                        utilities.loadingScreen.hide();
+                        
+                        utilities.ajaxError.show(
+                            "Error",
+                            "Message Request",
+                            xhr,
+                            status,
+                            errorThrown
+                        );
+                    }
+                });
+            });
+    
+            $("#message").click(function (e) {
+                e.preventDefault();
+
+                e.stopPropagation();
+
+                // Show the editable
+                var $element = $(".message_box");
+
+                $element.show();
+                $element.editable('show');
+            });
+        
         $("#notes").editable({
             emptytext: "Add Note",
             params: _eventRequest.data.parms,
@@ -191,4 +588,5 @@
         $('button').height(maxHeight);
         //$('button').width(maxWidth);
     };
+    
 }( window._eventRequest = window._eventRequest || {}, jQuery ));

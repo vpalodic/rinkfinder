@@ -333,6 +333,8 @@ class ManagementController extends Controller
             Yii::app()->end();
         } else {
             // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
                         "_eventRequest",
@@ -340,12 +342,10 @@ class ManagementController extends Controller
                             'model' => new EventRequest(),
                             'data' => $data,
                             'ownView' => true,
-                            'newRecord' => false
+                            'newRecord' => false,
+                            'path' => $path
                         ));
             } else {
-                // Publish and register our jQuery plugin
-                $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
-
                 if(defined('YII_DEBUG')) {
                     Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
                     Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
@@ -388,7 +388,8 @@ class ManagementController extends Controller
                             'model' => new EventRequest(),
                             'data' => $data,
                             'ownView' => true,
-                            'newRecord' => false
+                            'newRecord' => false,
+                            'path' => $path,
                         ));
             }
         }

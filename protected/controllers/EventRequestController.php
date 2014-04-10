@@ -303,9 +303,13 @@ class EventRequestController extends Controller
             $requesterName = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
             $requesterEmail = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
             $acknowledged = isset($_POST['acknowledged']) ? $_POST['acknowledged'] : null;
+            $acknowledged = ($acknowledged == "false") ? false : true;
             $accepted = isset($_POST['accepted']) ? $_POST['accepted'] : null;
+            $accepted = ($accepted == "false") ? false : true;
             $rejected = isset($_POST['rejected']) ? $_POST['rejected'] : null;
+            $rejected = ($rejected == "false") ? false : true;
             $rejectedReason = isset($_POST['rejected_reason']) ? $_POST['rejected_reason'] : null;
+            $message = isset($_POST['message']) ? $_POST['message'] : null;
             $name = isset($_POST['name']) ? $_POST['name'] : null;
             $value = isset($_POST['value']) ? $_POST['value'] : null;
             $pk = isset($_POST['pk']) ? $_POST['pk'] : null;
@@ -315,6 +319,10 @@ class EventRequestController extends Controller
             $lid = isset($_POST['lid']) ? $_POST['lid'] : null;
             // Always restrict to the currently logged in user!
             $uid = Yii::app()->user->id;
+            
+            if($message && $action == 'message') {
+                $value = $message;
+            }
             
             if((($name === null || $value === null) && $action === null) || $id === null ||
                     $eid === null || $aid === null || $pk === null || $pk != $id) {
@@ -335,7 +343,8 @@ class EventRequestController extends Controller
             
             // Check for an action!!!
             if(isset($action) && !empty($action)) {
-                if($action == 'reject') {
+                if($action == 'reject' || $action == 'message') {
+                    $rejectedReason = $value;
                     // ensure that we have a reason!
                     if(!isset($rejectedReason)) {
                         if($outputFormat == "html" || $outputFormat == "xml") {
@@ -374,9 +383,9 @@ class EventRequestController extends Controller
                     'output' => $outputFormat,
                     'action' => $action,
                     'rejected_reason' => $rejectedReason,
-                    'rejected' => (boolean)$rejected,
-                    'acknowledged' => (boolean)$acknowledged,
-                    'accepted' => (boolean)$accepted,
+                    'rejected' => $rejected,
+                    'acknowledged' => $acknowledged,
+                    'accepted' => $accepted,
                     'requester_name' => $requesterName,
                     'requester_email' => $requesterEmail,
                     'id' => $id,
@@ -567,30 +576,100 @@ class EventRequestController extends Controller
         $bRet = false;
         // Ensure we have a valid action!
         // and delegate to the appropriate model handler!
-        switch($params['action']) {
-            case 'acknowledge':
-                $bRet = EventRequest::acknowledgeAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
-                break;
-            case 'accept':
-                $bRet = EventRequest::acceptAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
-                break;
-            case 'reject':
-                $bRet = EventRequest::rejectAssignedRecord($params['acknowledged'], $params['accepted'], $params['rejected'], $params['rejected_reason'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
-                break;
-            default:
+        try {
+            switch($params['action']) {
+                case 'acknowledge':
+                    $bRet = EventRequest::acknowledgeAssignedRecord($params['requester_name'], $params['requester_email'], $params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                    break;
+                case 'accept':
+                    $bRet = EventRequest::acceptAssignedRecord($params['requester_name'], $params['requester_email'], $params['acknowledged'], $params['accepted'], $params['rejected'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                    break;
+                case 'reject':
+                    $bRet = EventRequest::rejectAssignedRecord($params['requester_name'], $params['requester_email'], $params['acknowledged'], $params['accepted'], $params['rejected'], $params['rejected_reason'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                    break;
+                case 'message':
+                    $bRet = EventRequest::sendEmail(array("Message", $params['rejected_reason']), $params['requester_name'], $params['requester_email'], $params['id'], $params['uid'], $params['eid'], $params['aid'], $params['lid']);
+                    break;
+                default:
+                    if($params['output'] == "html" || $params['output'] == "xml") {
+                        throw new CHttpException(400, 'Invalid action');
+                    }
+
+                    $this->sendResponseHeaders(400, 'json');
+
+                    echo json_encode(
+                            array(
+                                'success' => false,
+                                'error' => 'Invalid action',
+                            )
+                    );
+                    Yii::app()->end();
+            }
+
+            if($bRet !== true) {
+                // we didn't perform the record action, let the user know this
+                $output = 'Failed to send the message or save record as the update was unauthorized, '
+                        . 'too many rows would be updated, or someone '
+                        . 'else has already updated the record.';
+
                 if($params['output'] == "html" || $params['output'] == "xml") {
-                    throw new CHttpException(400, 'Invalid action');
+                    throw new CHttpException(400, $output);
                 }
-                
+
                 $this->sendResponseHeaders(400, 'json');
 
                 echo json_encode(
                         array(
                             'success' => false,
-                            'error' => 'Invalid action',
+                            'error' => json_encode($output),
                         )
                 );
                 Yii::app()->end();
+            }
+            
+            // At this point, the request has either been acknowledged,
+            // rejected, or accepted. We simply need to send a single e-mail to the requester to
+            // let them know the status update of their request.
+            // Thanksfully, the EventRequest model handles all of this for us
+            // in a nice big transaction. If anything errors during the DB
+            // updates or when sending the e-mail, the transaction will be rolled back.
+            // so, we are all done here and can simply return as no output
+            // means all is well!!!
+            return;
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+                    
+            if($params['output'] == "html" || $params['output'] == "xml") {
+                throw new CHttpException(500, "Internal Server Error");
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorInfo = array(
+                    "sqlState" => $ex->errorInfo[0],
+                    "mysqlError" => $ex->errorInfo[1],
+                    "message" => $ex->errorInfo[2],
+                );
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+                    
+            Yii::app()->end();
         }
     }
 }

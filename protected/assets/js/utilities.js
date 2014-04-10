@@ -157,6 +157,15 @@
         }
     };
 
+    utilities.addAlert = function (parentId, classes, heading, message) {
+        var html = '<div class="' + classes + '">' +
+                '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<span class="badge badge-important">' + heading + '</span><br />' +
+                message + '</div>'
+        
+        $("#" + parentId).append(html);
+    };
+    
     utilities.loadingScreen = {
         $element: null,
         
@@ -203,7 +212,7 @@
             var htmlOutput = "";
             
             // Start with the text container
-            if (this.enabled === true)
+            if (this.text.enabled === true)
             {
                 htmlOutput += '<p class="loading-stuff">' + this.text + "</p>";
             }

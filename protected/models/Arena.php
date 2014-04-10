@@ -159,7 +159,7 @@ class Arena extends RinkfinderActiveRecord
                 'FileUpload',
                 'arena_id'
             ),
-            'locationss' => array(
+            'locations' => array(
                 self::HAS_MANY,
                 'Location',
                 'arena_id'
