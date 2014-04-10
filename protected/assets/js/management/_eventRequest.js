@@ -258,6 +258,7 @@
                         
                     $('.alert').remove();
                     
+                    $("#button").prop('disabled', false);
                     $("#acknowledger_id").off('click');
                     $("#acknowledger_id").remove();
                     $("#accepter_id").off('click');
@@ -267,8 +268,6 @@
                     $(".rejected_reason").remove();
                     $("#rejector_id").off('click');
                     $("#rejector_id").remove();
-                    $("#button").prop('disabled', false);
-                
                     
                     utilities.addAlert("alerts", "alert alert-success",
                         "Request successfully rejected!",
@@ -359,8 +358,9 @@
 
                     _eventRequest.data.parms.acknowledged = true;
                     
+                    $("#button").prop('disabled', false);
+                    $("#acknowledger_id").off('click');
                     $("#acknowledger_id").remove();
-                    $("button").prop('disabled', false);
                 
                     utilities.loadingScreen.hide();
 
@@ -461,7 +461,8 @@
                     utilities.loadingScreen.hide();
 
                     $('.alert').remove();
-                        
+
+                    $("button").prop('disabled', false);
                     $("#acknowledger_id").off('click');
                     $("#acknowledger_id").remove();
                     $("#accepter_id").off('click');
@@ -471,7 +472,6 @@
                     $(".rejected_reason").remove();
                     $("#rejector_id").off('click');
                     $("#rejector_id").remove();
-                    $("button").prop('disabled', false);
                     
                     _eventRequest.addReservationButton($parent);
                     
