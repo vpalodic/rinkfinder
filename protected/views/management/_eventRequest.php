@@ -101,6 +101,16 @@
                                 <span>Accept</span>
                             </button>
                         </div>
+                        <?php elseif(!isset($data['item']['fields']['rejector']['value']) ||
+                                empty($data['item']['fields']['rejector']['value'])) : ?>
+                        <div class="span3">
+                            <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
+                                    data-original-title="Create a reservation for this request"
+                                    id="createReservation">
+                                <i class="fa fa-lg fa-plus-square"></i> <br />
+                                <span>Reservation</span>
+                            </button>
+                        </div>
                         <?php endif; ?>
                         <?php if(isset($data['item']['fields']['rejector']['button']['enabled']) && 
                                 $data['item']['fields']['rejector']['button']['enabled'] == true) : ?>
@@ -117,7 +127,7 @@
                                 data-pk="<?php echo $data['pk']['value']; ?>"
                                 data-disabled="false"
                                 data-mode="popup"
-                                title="<?php echo $data['item']['fields']['rejected_reason']['label']; ?>">
+                                title="Please enter a reason for rejecting this request">
                                 <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
                             </a>
                         </div>
@@ -311,7 +321,8 @@
                         </tr>
                         <?php if($data['item']['fields']['rejected_reason']['hidden'] == true ||
                                 (isset($data['item']['fields']['rejector']['button']['enabled']) && 
-                                $data['item']['fields']['rejector']['button']['enabled'] == true)): ?>
+                                $data['item']['fields']['rejector']['button']['enabled'] == true) ||
+                                !isset($data['item']['fields']['rejector']['value'])): ?>
                         <tr style="display: none;">
                         <?php else: ?>
                         <tr>

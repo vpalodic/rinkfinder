@@ -465,6 +465,14 @@ class EventRequest extends RinkfinderActiveRecord
                 'editable' => false,
                 'hidden' => false,
             ),
+            'requester_id' => array(
+                'name' => 'requester_id',
+                'label' => 'Requested By',
+                'controlType' => 'select',
+                'type' => 'alpha',
+                'editable' => false,
+                'hidden' => true,
+            ),
             'requester_name' => array(
                 'name' => 'requester_name',
                 'label' => 'Requested By',
@@ -982,6 +990,10 @@ class EventRequest extends RinkfinderActiveRecord
             'eventRequest/update',
         );
         
+        $reservationParms = array(
+            'reservation/create',
+        );
+        
         $typeParms = array(
             'eventRequest/type',
             'output' => 'json'
@@ -1085,7 +1097,7 @@ class EventRequest extends RinkfinderActiveRecord
             
             if(is_array($fieldData)) {
                 if($field == 'acknowledger') {
-                    if(!isset($value)) {
+                    if(!isset($value) || empty($value)) {
                         $recordParms['acknowledged'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
@@ -1096,23 +1108,31 @@ class EventRequest extends RinkfinderActiveRecord
                 }
                 
                 if($field == 'accepter') {
-                    if(!isset($value) && !isset($row['rejector'])) {
+                    if((!isset($value) || empty($value)) && (!isset($row['rejector']) || empty($row['rejector']))) {
                         $recordParms['accepted'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
                     } else {
-                        $recordParms['accepted'] = true;
+                        if(isset($value) && !empty($value)) {
+                            $recordParms['accepted'] = true;
+                        } else {
+                            $recordParms['accepted'] = false;
+                        }
                         $fieldData['button']['enabled'] = false;
                     }
                 }
                 
                 if($field == 'rejector') {
-                    if(!isset($value) && !isset($row['accepter'])) {
+                    if((!isset($value) || empty($value)) && (!isset($row['accepter']) ||  empty($row['accepter']))) {
                         $recordParms['rejected'] = false;
                         $fieldData['button']['enabled'] = true;
                         $fieldData['button']['name'] = $field . '_id';
                     } else {
-                        $recordParms['rejected'] = true;
+                        if(isset($value) && !empty($value)) {
+                            $recordParms['rejected'] = true;
+                        } else {
+                            $recordParms['rejected'] = false;
+                        }
                         $fieldData['button']['enabled'] = false;
                     }
                 }
@@ -1145,6 +1165,7 @@ class EventRequest extends RinkfinderActiveRecord
         $ret['endpoint']['update'] = CHtml::normalizeUrl($updateParms);
         $ret['endpoint']['type'] = CHtml::normalizeUrl($typeParms);
         $ret['endpoint']['status'] = CHtml::normalizeUrl($statusParms);
+        $ret['endpoint']['addReservation'] = CHtml::normalizeUrl($reservationParms);
         $ret['pk']['name'] = 'id';
         $ret['pk']['value'] = isset($ret['item']['fields']['id']['value']) ? 
                 $ret['item']['fields']['id']['value'] : 0;

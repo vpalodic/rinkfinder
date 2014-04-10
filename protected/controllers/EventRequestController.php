@@ -322,6 +322,8 @@ class EventRequestController extends Controller
             
             if($message && $action == 'message') {
                 $value = $message;
+            } elseif($rejectedReason && $action == 'reject') {
+                $value = $rejectedReason;
             }
             
             if((($name === null || $value === null) && $action === null) || $id === null ||
@@ -606,7 +608,7 @@ class EventRequestController extends Controller
                     Yii::app()->end();
             }
 
-            if($bRet !== true) {
+            if($bRet !== true && !is_string($bRet)) {
                 // we didn't perform the record action, let the user know this
                 $output = 'Failed to send the message or save record as the update was unauthorized, '
                         . 'too many rows would be updated, or someone '
@@ -617,6 +619,23 @@ class EventRequestController extends Controller
                 }
 
                 $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            } elseif($bRet !== true && is_string($bRet)) {
+                // we didn't perform the record action, let the user know this
+                $output = $bRet;
+
+                if($params['output'] == "html" || $params['output'] == "xml") {
+                    throw new CHttpException(500, $output);
+                }
+
+                $this->sendResponseHeaders(500, 'json');
 
                 echo json_encode(
                         array(
