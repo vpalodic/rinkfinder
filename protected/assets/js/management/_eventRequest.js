@@ -138,6 +138,10 @@
             },
             validate: function(value) {
                 // Here we add our timestamp information to the note.
+                if($.trim(value) == '') {
+                   return 'This field is required';
+                }
+                
                 var oldNotes = $("#notesHistory").text();
                 oldNotes += moment().format("MM/DD/YYYY h:mm:ss A") + " by " + _eventRequest.userName + ":\r\n\r\n";
                 oldNotes += value + "\r\n\r\n";
@@ -187,7 +191,12 @@
             $element.show();
             
             $(".rejected_reason").editable({
-                placement: "top"
+                placement: "top",
+                validate: function(value) {
+                    if($.trim(value) == '') {
+                    return 'This field is required';
+                    }
+                }
             });
 
             $element.editable('show');
@@ -211,7 +220,8 @@
             $element.hide();
 
             // Disable the buttons!
-            $("button").prop('disabled', true);
+            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            $buttons.prop('disabled', true);
             
             var newParms = {
                 action: 'reject',
@@ -258,7 +268,7 @@
                     {
                         window.setTimeout(function () {
                             // Some type of error happened so enable the buttons.
-                            $("button").prop('disabled', false);
+                            $buttons.prop('disabled', false);
 
                             utilities.ajaxError.show(
                                     "Event Request",
@@ -275,7 +285,7 @@
                     _eventRequest.data.parms.rejected = true;
                     _eventRequest.data.parms.acknowledged = true;
                     
-                    $("#button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
                     
                     utilities.loadingScreen.hide();
                         
@@ -302,7 +312,7 @@
                 },
                 error: function(xhr, status, errorThrown) {
                     // Enable the buttons
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
 
                     utilities.loadingScreen.hide();
 
@@ -337,7 +347,9 @@
                 acknowledged: _eventRequest.data.parms.acknowledged
             };
             
-            $("button").prop('disabled', true);
+            // Disable the buttons!
+            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "acknowledger_id";
@@ -364,7 +376,7 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
-                            $("#button").prop('disabled', false);
+                            $buttons.prop('disabled', false);
                             utilities.ajaxError.show(
                                     "Event Request",
                                     "Failed to acknowledge request",
@@ -380,7 +392,7 @@
                     _eventRequest.data.parms.acknowledged = true;
                     
                     // Enable the buttons
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
                     
                     utilities.loadingScreen.hide();
 
@@ -401,7 +413,7 @@
                     );
                 },
                 error: function(xhr, status, errorThrown) {
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
 
                     utilities.loadingScreen.hide();
 
@@ -436,7 +448,9 @@
                 acknowledged: _eventRequest.data.parms.acknowledged
             };
             
-            $("button").prop('disabled', true);
+            // Disable the buttons!
+            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "accepter_id";
@@ -463,7 +477,7 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
-                            $("button").prop('disabled', false);
+                           $buttons.prop('disabled', false);
                             utilities.ajaxError.show(
                                     "Event Request",
                                     "Failed to accept the request",
@@ -482,7 +496,7 @@
                     var $parent = $("#accepter_id").parent();
                     
                     // Enable the buttons
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
                     
                     utilities.loadingScreen.hide();
 
@@ -515,7 +529,7 @@
 
                 },
                 error: function(xhr, status, errorThrown) {
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
 
                     utilities.loadingScreen.hide();
 
@@ -566,7 +580,8 @@
             $element.hide();
 
             // Disable the buttons!
-            $("button").prop('disabled', true);
+            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            $buttons.prop('disabled', true);
             
             var newParms = {
                 action: 'message',
@@ -613,7 +628,7 @@
                     {
                         window.setTimeout(function () {
                             // Some type of error happened so enable the buttons.
-                            $("button").prop('disabled', false);
+                            $buttons.prop('disabled', false);
 
                             utilities.ajaxError.show(
                                     "Event Request",
@@ -628,7 +643,7 @@
                     }
 
                     // Enable the buttons
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
 
                     utilities.loadingScreen.hide();
 
@@ -643,7 +658,7 @@
                 },
                 error: function(xhr, status, errorThrown) {
                     // Enable the buttons
-                    $("button").prop('disabled', false);
+                    $buttons.prop('disabled', false);
 
                     utilities.loadingScreen.hide();
 
