@@ -254,11 +254,12 @@
                     _eventRequest.data.parms.rejected = true;
                     _eventRequest.data.parms.acknowledged = true;
                     
+                    $("#button").prop('disabled', false);
+                    
                     utilities.loadingScreen.hide();
                         
                     $('.alert').remove();
                     
-                    $("#button").prop('disabled', false);
                     $("#acknowledger_id").off('click');
                     $("#acknowledger_id").remove();
                     $("#accepter_id").off('click');
@@ -358,14 +359,16 @@
 
                     _eventRequest.data.parms.acknowledged = true;
                     
-                    $("#button").prop('disabled', false);
-                    $("#acknowledger_id").off('click');
-                    $("#acknowledger_id").remove();
-                
+                    // Enable the buttons
+                    $("button").prop('disabled', false);
+                    
                     utilities.loadingScreen.hide();
 
                     $('.alert.alert-danger').remove();
 
+                    $("#acknowledger_id").off('click');
+                    $("#acknowledger_id").remove();
+                
                     utilities.addAlert("alerts", "alert alert-success",
                         "Request successfully acknowledged!",
                         "The request has been acknowledged.<br />The requester has " +
@@ -458,11 +461,13 @@
                     
                     var $parent = $("#accepter_id").parent();
                     
+                    // Enable the buttons
+                    $("button").prop('disabled', false);
+                    
                     utilities.loadingScreen.hide();
 
                     $('.alert').remove();
 
-                    $("button").prop('disabled', false);
                     $("#acknowledger_id").off('click');
                     $("#acknowledger_id").remove();
                     $("#accepter_id").off('click');
@@ -472,7 +477,7 @@
                     $(".rejected_reason").remove();
                     $("#rejector_id").off('click');
                     $("#rejector_id").remove();
-                    
+
                     _eventRequest.addReservationButton($parent);
                     
                     utilities.addAlert("alerts",
@@ -642,6 +647,8 @@
                 'Reservation</span></button>';
         
         $parent.append(button);
+        
+        _eventRequest.makeButtonsEqualHeight();
         
         _eventRequest.setupReservationButton();
     };
