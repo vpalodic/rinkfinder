@@ -254,9 +254,6 @@
                     _eventRequest.data.parms.rejected = true;
                     _eventRequest.data.parms.acknowledged = true;
                     
-                    // Enable the buttons
-                    $("#message").prop('disabled', false);
-                
                     utilities.loadingScreen.hide();
                         
                     $('.alert').remove();
@@ -270,6 +267,8 @@
                     $(".rejected_reason").remove();
                     $("#rejector_id").off('click');
                     $("#rejector_id").remove();
+                    $("#button").prop('disabled', false);
+                
                     
                     utilities.addAlert("alerts", "alert alert-success",
                         "Request successfully rejected!",
@@ -472,6 +471,7 @@
                     $(".rejected_reason").remove();
                     $("#rejector_id").off('click');
                     $("#rejector_id").remove();
+                    $("button").prop('disabled', false);
                     
                     _eventRequest.addReservationButton($parent);
                     
