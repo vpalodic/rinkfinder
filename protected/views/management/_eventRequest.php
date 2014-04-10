@@ -36,7 +36,7 @@
 
 <?php else: ?>
 
-<div class="panel panel-primary">
+<div id="eventRequestView" class="panel panel-primary">
     <div class="panel-heading">
         <h3 class="panel-title">
             Event <?php echo $data['item']['fields']['type_id']['value']; ?> Request: #<?php echo $data['item']['fields']['id']['value']; ?>

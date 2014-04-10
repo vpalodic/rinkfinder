@@ -31,7 +31,7 @@
             . 'management.editDialogBox = "managementEditDataModal";'
             . 'management.mainContainer = "managementContainer";'
             . 'management.getCounts();'
-            . '$(window).bind("load",function(){ '
+            . '$(window).on("load",function(){ '
             . 'if( $(this).width() < 767 ) '
             . '{'
             . '    $(".accordion-body.collapse").removeClass("in");'
@@ -61,13 +61,22 @@
         </div>
         <div class="well well-small" style="display: inline-block;
              overflow: auto; cursor: pointer">
-            <div id="reportrange">
-                <i class="fa fa-calendar fa-lg"></i>
+            <div id="reportrangeAll">
                 <span>
-                    <?php echo date("F j, Y", strtotime('-29 day')); ?> - 
-                    <?php echo date("F j, Y", strtotime('+29 day')); ?>
+                    <button id="reportrangeRefreshButton" class="btn btn-success">
+                        <i class="fa fa-refresh fa-lg"></i>
+                    </button>
                 </span>
-                <b class="caret"></b>
+                <span id="reportrange">
+                    <i class="fa fa-calendar fa-lg"></i>
+                    <span id="reportrangeDate">
+                        <?php echo date("F j, Y", strtotime('-29 day')); ?> - 
+                        <?php echo date("F j, Y", strtotime('+29 day')); ?>
+                    </span>
+                    <b class="caret"></b>                    
+                </span>
+            </div> 
+            <div id="reportrangeRefresh">
             </div> 
         </div>
         <div id="countsCollapse" class="accordion-body collapse in">
@@ -218,10 +227,23 @@ $('#reportrange').daterangepicker(
     function(start, end) {
         if (start && end) {
             $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            utilities.loadingScreen.parentId = "countsContainer";
+            utilities.loadingScreen.containerId = "countsAccordionHeader";
+            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
             management.fromDate = start;
             management.toDate = end;
-            management.getCounts(1);
+            management.getCounts(0);
         }
     }
 );
+
+$("#reportrangeRefreshButton").on('click', function (e) {
+    utilities.loadingScreen.parentId = "countsContainer";
+    utilities.loadingScreen.containerId = "countsAccordionHeader";
+    utilities.loadingScreen.image.enabled = true;
+    utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
+    management.getCounts(0);
+});
+
 </script>        

@@ -34,7 +34,27 @@
         {
             _eventRequest.enableEditable();
         }
-
+        
+        var $panel = $("#eventRequestView.panel.panel-primary");
+        
+        $.event.special.destroyed = {
+            remove: function (o) {
+                if (o.handler)
+                {
+                    o.handler();
+                }
+            }
+        };
+        
+        if ($panel.length > 0)
+        {
+            $panel.on('destroyed', function () {
+                // We have been closed, so clean everything up!!!
+                var $editables = $("#eventRequestView.panel.panel-primary .editable");
+                
+                $editables.editable('destroy');
+            })
+        }
     };
     
     _eventRequest.loadEditable = function () {
@@ -84,13 +104,14 @@
     _eventRequest.makeButtonsEqualHeight = function () {
         var maxHeight = 0;
         var maxWidth = 0;
-        $('button').each(function () {
+        var $buttons = $("#eventRequestView.panel.panel-primary button");
+        $buttons.each(function () {
             var $this = $(this);
             maxHeight = Math.max($this.height(), maxHeight);
             maxWidth = Math.max($this.width(), maxWidth);
         });
         
-        $('button').height(maxHeight);
+        $buttons.height(maxHeight);
         //$('button').width(maxWidth);
     };
     
