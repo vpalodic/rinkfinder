@@ -42,7 +42,8 @@
             . '    $(".accordion-body.collapse").removeClass("out");'
             . '    $(".accordion-body.collapse").addClass("in");'
             . '}'
-            . '});',
+            . '});'
+            . 'management.doReady()',
             CClientScript::POS_READY
     );
 ?>
@@ -75,8 +76,6 @@
                     </span>
                     <b class="caret"></b>                    
                 </span>
-            </div> 
-            <div id="reportrangeRefresh">
             </div> 
         </div>
         <div id="countsCollapse" class="accordion-body collapse in">
@@ -207,43 +206,5 @@
 </div>
 
 <script type="text/javascript">
-$('#reportrange').daterangepicker(
-    {
-      ranges: {
-         'Today': [moment(), moment()],
-         'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
-         'Tomorrow': [moment().add('days', 1), moment().add('days', 1)],
-         'Last 7 Days': [moment().subtract('days', 6), moment()],
-         'Last 30 Days': [moment().subtract('days', 29), moment()],
-         'Next 7 Days': [moment(), moment().add('days', 6)],
-         'Next 30 Days': [moment(), moment().add('days', 29)],
-         'This Month': [moment().startOf('month'), moment().endOf('month')],
-         'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')],
-         'Next Month': [moment().add('month', 1).startOf('month'), moment().add('month', 1).endOf('month')]
-      },
-      startDate: moment().subtract('days', 29),
-      endDate: moment().add('days', 29)
-    },
-    function(start, end) {
-        if (start && end) {
-            $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-            utilities.loadingScreen.parentId = "countsContainer";
-            utilities.loadingScreen.containerId = "countsAccordionHeader";
-            utilities.loadingScreen.image.enabled = true;
-            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
-            management.fromDate = start;
-            management.toDate = end;
-            management.getCounts(0);
-        }
-    }
-);
-
-$("#reportrangeRefreshButton").on('click', function (e) {
-    utilities.loadingScreen.parentId = "countsContainer";
-    utilities.loadingScreen.containerId = "countsAccordionHeader";
-    utilities.loadingScreen.image.enabled = true;
-    utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
-    management.getCounts(0);
-});
 
 </script>        

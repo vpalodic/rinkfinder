@@ -127,7 +127,7 @@
                                 data-pk="<?php echo $data['pk']['value']; ?>"
                                 data-disabled="false"
                                 data-mode="popup"
-                                title="Please enter a reason for rejecting this request">
+                                title="Please enter a rejection reason">
                                 <?php echo $data['item']['fields']['rejected_reason']['value']; ?>
                             </a>
                         </div>

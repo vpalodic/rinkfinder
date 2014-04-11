@@ -104,7 +104,7 @@
     _eventRequest.makeButtonsEqualHeight = function () {
         var maxHeight = 0;
         var maxWidth = 0;
-        var $buttons = $("#eventRequestView.panel.panel-primary button");
+        var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
         $buttons.each(function () {
             var $this = $(this);
             maxHeight = Math.max($this.height(), maxHeight);
@@ -119,6 +119,7 @@
         $("#notes").editable({
             emptytext: "Add Note",
             params: _eventRequest.data.parms,
+            showbuttons: 'bottom',
             success: function(response, newValue) {
                 if (typeof response !== 'undefined' && response.length > 0)
                 {
@@ -191,6 +192,7 @@
             $element.show();
             
             $(".rejected_reason").editable({
+                showbuttons: 'bottom',
                 placement: "top",
                 validate: function(value) {
                     if($.trim(value) == '') {
@@ -220,7 +222,7 @@
             $element.hide();
 
             // Disable the buttons!
-            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
             
             var newParms = {
@@ -244,7 +246,7 @@
             
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "rejector_id";
-            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.progress.enabled = true;
             utilities.loadingScreen.show();
 
             $.ajax({
@@ -348,12 +350,12 @@
             };
             
             // Disable the buttons!
-            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "acknowledger_id";
-            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.progress.enabled = true;
             utilities.loadingScreen.show();
 
             $.ajax({
@@ -449,12 +451,12 @@
             };
             
             // Disable the buttons!
-            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "accepter_id";
-            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.progress.enabled = true;
             utilities.loadingScreen.show();
 
             $.ajax({
@@ -555,8 +557,18 @@
 
             $element.show();
 
+            var width = $(window).width();
+            
+            var placement = 'right';
+            
+            if (width < 767)
+            {
+                placement = 'top';
+            }
+            
             $(".message_box").editable({
-                placement: "right"
+                showbuttons: 'bottom',
+                placement: placement
             });
 
             $element.editable('show');
@@ -580,7 +592,7 @@
             $element.hide();
 
             // Disable the buttons!
-            var $buttons = $("#eventRequestView.panel.panel-primary button");
+            var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
             
             var newParms = {
@@ -604,7 +616,7 @@
             
             // Ok, we will submit the data to the server
             utilities.loadingScreen.parentId = "message";
-            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.progress.enabled = true;
             utilities.loadingScreen.show();
 
             $.ajax({

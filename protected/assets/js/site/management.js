@@ -269,6 +269,18 @@
                 to: management.toDate.format('YYYY-MM-DD')
             },
             success: function(result, status, xhr) {
+                if (result.success === false)
+                {
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        'Login Required'
+                    );
+                    return;
+                }
+
                 that.processCounts(result, status, xhr);
                 
                 window.setTimeout(function () {
@@ -380,6 +392,45 @@
     
     management.processModalData = function (result, status, xhr) {
         return result;
+    };
+    
+    management.doReady = function () {
+        $('#reportrange').daterangepicker({
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                'Tomorrow': [moment().add('days', 1), moment().add('days', 1)],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')],
+                'Next Month': [moment().add('month', 1).startOf('month'), moment().add('month', 1).endOf('month')]
+            },
+            showDropdowns: true,
+            opens: 'right',
+//            parentEl: '#reportrangeAll',
+            startDate: moment().subtract('days', 29),
+            endDate: moment().add('days', 29)
+        },
+        function(start, end, label) {
+            if (start && end) {
+                $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+                utilities.loadingScreen.parentId = "countsContainer";
+                utilities.loadingScreen.containerId = "countsAccordionHeader";
+                utilities.loadingScreen.image.enabled = true;
+                utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
+                management.fromDate = start;
+                management.toDate = end;
+                management.getCounts(0);
+            }
+        }
+        );
+
+        $("#reportrangeRefreshButton").on('click', function (e) {
+            utilities.loadingScreen.parentId = "countsContainer";
+            utilities.loadingScreen.containerId = "countsAccordionHeader";
+            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
+            management.getCounts(0);
+        });
     };
     
 }( window.management = window.management || {}, jQuery ));
