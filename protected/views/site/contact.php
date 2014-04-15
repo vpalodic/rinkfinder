@@ -83,37 +83,22 @@ If you have business inquiries or other questions, please fill out the following
                     )
             );
         ?>
-        <?php
-            $widget = $this->widget(
-                    'yiiwheels.widgets.switch.WhSwitch',
-                    array(
-                        'model' => $model,
-                        'attribute' => 'copyMe',
-                        'onLabel' => 'Yes',
-                        'offLabel' => 'No',
-                        'size' => 'large',
-                        'offColor' => 'warning',
-                        'htmlOptions' => array(
-                        ),
-                    ),
-                    true
-            );
-            
-            echo '<div class="control-group">';
-            echo '<div class="controls">';
-            echo $widget;
-            echo $form->labelEx(
-                    $model,
-                    'copyMe',
-                    array(
-//                        'class' => 'control-label',
-                        )
-                    );
-            echo $form->error($model, 'copyMe');
-            echo '</div>';
-            echo '</div>';
-        ?>
-	<?php if(Yii::app()->doCaptcha('registration')): ?>
+        <div class="control-group">
+            <div class="controls">
+                <div class="make-switch switch-large" data-on-label="Yes" data-off-label="No" data-on="primary" data-off="warning" id="ContactForm_copyMe_switch">
+            <!--        <input id="ytContactForm_copyMe" type="hidden" value="0" name="ContactForm[copyMe]"> 
+                    <div class="switch-animate switch-off"> -->
+                        <input id="ContactForm_copyMe" name="ContactForm[copyMe]" value="1" checked type="checkbox">
+<!--                        <span class="switch-left switch-large switch-primary">Yes</span>
+                        <label class="switch-large" for="ContactForm_copyMe">&nbsp;</label>
+                        <span class="switch-right switch-large switch-warning">No</span>
+                    </div> -->
+                </div>
+                <label for="ContactForm_copyMe">Send me a copy?</label>
+                <p id="ContactForm_copyMe_em_" style="display:none" class="help-block"></p>
+            </div>
+        </div>
+	<?php if(Yii::app()->doCaptcha('contact')): ?>
             <div class="control-group">
                 <div class="controls">
                     <?php $this->widget('CCaptcha'); ?>
@@ -152,3 +137,125 @@ If you have business inquiries or other questions, please fill out the following
     <?php $this->endWidget(); ?>
 </div><!-- form -->
 <?php endif; ?>
+<script type="text/javascript">
+    var $switch = $("#ContactForm_copyMe_switch");
+    
+    if ($switch.hasClass('make-switch'))
+    {
+        if(typeof $('.make-switch')['bootstrapSwitch'] !== "undefined")
+        {
+            $('.make-switch')['bootstrapSwitch']();
+        }
+    }
+    
+    jQuery('body').popover({'selector':'a[rel=popover]'});
+    jQuery('body').tooltip({'selector':'a[rel=tooltip]'});
+
+        jQuery('#yw1').after("<a id=\"yw1_button\" href=\"\/rinkfinder\/site\/captcha?refresh=1\">Get a new code<\/a>");
+        
+        jQuery(document).on('click', '#yw1_button', function(){
+            jQuery.ajax({
+                url: "\/rinkfinder\/site\/captcha?refresh=1",
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                    jQuery('#yw1').attr('src', data['url']);
+                    jQuery('body').data('captcha.hash', [data['hash1'], data['hash2']]);
+                }
+            });
+            return false;
+        });
+
+        jQuery('#contact-form').yiiactiveform({
+            'validateOnSubmit':true,
+            'attributes':[
+                {
+                    'id':'ContactForm_name',
+                    'inputID':'ContactForm_name',
+                    'errorID':'ContactForm_name_em_',
+                    'model':'ContactForm',
+                    'name':'name',
+                    'enableAjaxValidation':false,
+                    'inputContainer':'div.control-group',
+                    'clientValidation':function(value, messages, attribute) {
+                        if(jQuery.trim(value) == '') {
+                            messages.push("Your Name cannot be blank.");
+                        }
+                    }
+                },
+                {
+                    'id':'ContactForm_email',
+                    'inputID':'ContactForm_email',
+                    'errorID':'ContactForm_email_em_',
+                    'model':'ContactForm',
+                    'name':'email',
+                    'enableAjaxValidation':false,
+                    'inputContainer':'div.control-group',
+                    'clientValidation':function(value, messages, attribute) {
+                        if(jQuery.trim(value) == '') {
+                            messages.push("Your E-mail Address cannot be blank.");
+                        }
+                        
+                        if(jQuery.trim(value) != '' && !value.match(/^[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/)) {
+                            messages.push("Your E-mail Address is not a valid email address.");
+                        }
+                    }
+                },
+                {
+                    'id':'ContactForm_subject',
+                    'inputID':'ContactForm_subject',
+                    'errorID':'ContactForm_subject_em_',
+                    'model':'ContactForm',
+                    'name':'subject',
+                    'enableAjaxValidation':false,
+                    'inputContainer':'div.control-group',
+                    'clientValidation':function(value, messages, attribute) {
+                        if(jQuery.trim(value) == '') {
+                            messages.push("Subject cannot be blank.");
+                        }
+                    }
+                },
+                {
+                    'id':'ContactForm_body',
+                    'inputID':'ContactForm_body',
+                    'errorID':'ContactForm_body_em_',
+                    'model':'ContactForm',
+                    'name':'body',
+                    'enableAjaxValidation':false,
+                    'inputContainer':'div.control-group',
+                    'clientValidation':function(value, messages, attribute) {
+                        if(jQuery.trim(value) == '') {
+                            messages.push("Message cannot be blank.");
+                        }
+                    }
+                },
+                {
+                    'id':'ContactForm_verifyCode',
+                    'inputID':'ContactForm_verifyCode',
+                    'errorID':'ContactForm_verifyCode_em_',
+                    'model':'ContactForm',
+                    'name':'verifyCode',
+                    'enableAjaxValidation':false,
+                    'inputContainer':'div.control-group',
+                    'clientValidation':function(value, messages, attribute) {
+                        var hash = jQuery('body').data('captcha.hash');
+                        
+                        if (hash == null)
+                            hash = 641;
+                        else
+                            hash = hash[1];
+                        
+                        for (var i = value.length - 1, h = 0; i >= 0; --i)
+                            h+=value.toLowerCase().charCodeAt(i);
+                        
+                        if (h != hash) {
+                            messages.push("The verification code is incorrect.");
+                        }
+                    }
+                }
+            ],
+            'summaryID':'contact-form_es_',
+            'errorCss':'error'
+        });
+
+</script>

@@ -82,9 +82,29 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        // renders the view file 'protected/views/site/index.php'
-        // using the default layout 'protected/views/layouts/main.php'
-        $this->render('index');
+        Yii::trace("In actionManagement.", "application.controllers.SiteController");
+        
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        
+        // Setup the endpoints for the webpage to be able to grab data!
+        $endpoints = array(
+        );
+        
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+
+        // display the management page
+        $this->render(
+                'index',
+                array(
+                    'endpoints' => $endpoints,
+                    'path' => $path,
+                    'types' => Event::getTypes(true),
+                    'searchUrl' => $this->createUrl('arena/mapMarkers', array('output' => 'json'))
+                )
+        );        
     }
 
     /**
@@ -93,7 +113,11 @@ class SiteController extends Controller
     public function actionError()
     {
         if($error = Yii::app()->errorHandler->error) {
-            if(Yii::app()->request->isAjaxRequest) {
+            $this->registerUserScripts();
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest && Yii::app()->request->isPostRequest) {
                 echo $error['message'];
             } else {
                 $this->render('error', $error);
@@ -131,6 +155,10 @@ class SiteController extends Controller
             $model->name = Yii::app()->user->fullName;
             $model->email = Yii::app()->user->email;
         }
+        
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
 
         $this->render(
                 'contact',
@@ -197,7 +225,10 @@ class SiteController extends Controller
             }
         }
         
-        // display the registration form
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+
         $this->render(
                 'register',
                 array(
@@ -583,7 +614,7 @@ class SiteController extends Controller
             Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);

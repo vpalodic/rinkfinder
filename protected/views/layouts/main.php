@@ -22,7 +22,7 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.css');
-            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
         } elseif ($this->includeCss) {
@@ -42,93 +42,120 @@
 
 <body>
 <?php if($this->navigation): ?>
-    <?php
-        Yii::app()->clientScript->registerScript(
-                    'fadeAndHideEffect',
-                    '$(".fade-message").animate({opacity: 1.0}, 30000).fadeOut("slow");'
-        );
-    ?>
-
-    <?php $this->widget('bootstrap.widgets.TbNavbar',array(
-                'collapse' => true,
-                'fluid' => true,
-                //'color' => TbHtml::NAVBAR_COLOR_INVERSE,
-                'items' => array(
-                    array(
-                        'class' => 'bootstrap.widgets.TbNav',
-                        'encodeLabel' => false,
-                        'items' => array(
-                            array(
-                                'label' => '<i class="icon-home"></i> Home',
-                                'url' => array('/site/index')
-                            ),
-                            array(
-                                'label' => '<i class="icon-briefcase"></i> Management',
-                                'url' => array('/site/management'),
-                                'visible' => Yii::app()->user->isRestrictedArenaManager()
-                            ),
-                            array(
-                                'label' => '<i class="icon-tasks"></i> Administration',
-                                'url' => array('/site/administration'),
-                                'visible' => Yii::app()->user->isApplicationAdministrator()
-                            ),
-                            array(
-                                'label' => '<i class="icon-envelope"></i> Contact',
-                                'url' => array('/site/contact')
-                            ),
-                            array(
-                                'label' => '<i class="icon-info-sign"></i> About',
-                                'url' => array('/site/page', 'view' => 'about')
-                            ),
-                        ),
-                    ),
-                    array(
-                        'class' => 'bootstrap.widgets.TbNav',
-                        'htmlOptions'=>array('class' => 'pull-right'),
-                        'encodeLabel' => false,
-                        'items' => array(
-                            array(
-                                'label'=> '<i class="icon-user"></i> Login',
-                                'url' => array('/site/login'),
-                                'visible'=> Yii::app()->user->isGuest
-                            ),
-                            array(
-                                'label'=> '<i class="icon-plus-sign"></i> Register',
-                                'url' => array('/site/register'),
-                                'visible'=> Yii::app()->user->isGuest
-                            ),
-                            array(
-                                'label'=> '<i class="icon-user"></i> ' . Yii::app()->user->fullName,
-                                'visible'=> !Yii::app()->user->isGuest,
-                                'items' => array(
-                                    array('label' => 'Profile'),
-                                    array(
-                                        'label' => '<i class="icon-list"></i> View Profile',
-                                        'url' => array('/profile/' . Yii::app()->user->id),
-                                        'visible'=> !Yii::app()->user->isGuest,
-                                    ),
-                                    array(
-                                        'label' => '<i class="icon-wrench"></i> Edit Profile',
-                                        'url' => array('/profile/update/' . Yii::app()->user->id),
-                                        'visible'=> !Yii::app()->user->isGuest,
-                                    ),
-                                    array(
-                                        'label' => '<i class="icon-edit"></i> Change Password',
-                                        'url' => array('/user/changePassword/' . Yii::app()->user->id),
-                                        'visible'=> !Yii::app()->user->isGuest,
-                                    ),
-                                    TbHtml::menuDivider(),
-                                    array(
-                                        'label' => '<i class="icon-off"></i> Logout',
-                                        'url' => array('/site/logout'),
-                                        'visible'=> !Yii::app()->user->isGuest,
-                                    ),
-                                )
-                            ),
-                        ),
-                    ),
-                ),
-    )); ?>
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="no-ajaxy btn btn-navbar" data-toggle="collapse" data-target="#navCollapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand" href="<?php echo Yii::app()->request->baseUrl . '/'; ?>">
+                    <?php echo Yii::app()->name; ?>
+                </a>
+                <ul id="navOuter" class="nav hidden-desktop" role="menu">
+                    <li role="menuitem">
+                        <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
+                            <i class="fa fa-search fa-lg"></i> Facilities
+                        </a>
+                    </li>
+                    <li role="menuitem">
+                        <a tabindex="-1" href="<?php echo $this->createUrl('/arena/eventSearch'); ?>">
+                            <i class="fa fa-search fa-lg"></i> Events
+                        </a>
+                    </li>
+                </ul>
+                <div class="nav-collapse collapse" id="navCollapse">
+                    <ul id="navInner1" class="nav" role="menu">
+                        <li role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/index'); ?>">
+                                <i class="fa fa-lg fa-home fa-fw"></i> Home
+                            </a>
+                        </li>
+                        <li role="menuitem" class="hidden-phone  hidden-tablet">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
+                                <i class="fa fa-search fa-lg fa-fw"></i> Facilities
+                            </a>
+                        </li>
+                        <li role="menuitem" class="hidden-phone  hidden-tablet">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/arena/eventSearch'); ?>">
+                                <i class="fa fa-search fa-lg fa-fw"></i> Events
+                            </a>
+                        </li>
+                        <?php if(Yii::app()->user->isRestrictedArenaManager()) : ?>
+                        <li role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/management'); ?>">
+                                <i class="fa fa-lg fa-briefcase fa-fw"></i> Management
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if(Yii::app()->user->isApplicationAdministrator()) : ?>
+                        <li role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/administration'); ?>">
+                                <i class="fa fa-lg fa-tasks fa-fw"></i> Administration
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        <li role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/contact'); ?>">
+                                <i class="fa fa-lg fa-envelope fa-fw"></i> Contact
+                            </a>
+                        </li>
+                        <li role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/page?view=about'); ?>">
+                                <i class="fa fa-lg fa-info fa-fw"></i> About</a>
+                        </li>
+                    </ul>
+                    <?php if(Yii::app()->user->isGuest) : ?>
+                    <ul class="pull-right nav" id="navInner2" role="menu">
+                        <li visible="1" role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/login'); ?>">
+                                <i class="fa fa-lg fa-user fa-fw"></i> Login
+                            </a>
+                        </li>
+                        <li visible="1" role="menuitem">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/register'); ?>">
+                                <i class="fa fa-lg fa-users fa-fw"></i> Register
+                            </a>
+                        </li>
+                    </ul>
+                    <?php else : ?>
+                    <ul class="pull-right nav" id="navInner3" role="menu">
+                        <li visible="1" role="menuitem" class="dropdown">
+                            <a class="no-ajaxy dropdown-toggle" data-toggle="dropdown" href="">
+                                <i class="fa fa-lg fa-user fa-fw"></i> <?php echo Yii::app()->user->fullName; ?>
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu" id="dropdownUser" aria-labelledby="dropdownUser" role="menu">
+                                <li class="nav-header">Profile</li>
+                                <li visible="1" role="menuitem">
+                                    <a tabindex="-1" href="<?php echo $this->createUrl('/profile/view', array('id' => Yii::app()->user->id)); ?>">
+                                        <i class="fa fa-lg fa-list-ul fa-fw"></i> View Profile
+                                    </a>
+                                </li>
+                                <li visible="1" role="menuitem">
+                                    <a tabindex="-1" href="<?php echo $this->createUrl('/profile/update', array('id' => Yii::app()->user->id)); ?>">
+                                        <i class="fa fa-lg fa-pencil fa-fw"></i> Edit Profile</a>
+                                </li>
+                                <li visible="1" role="menuitem">
+                                    <a tabindex="-1" href="<?php echo $this->createUrl('/user/changePassword', array('id' => Yii::app()->user->id)); ?>">
+                                        <i class="fa fa-lg fa-edit fa-fw"></i> Change Password
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                                <li visible="1" role="menuitem">
+                                    <a class="no-ajaxy" tabindex="-1" href="<?php echo $this->createUrl('/site/logout'); ?>">
+                                        <i class="fa fa-lg fa-power-off fa-fw"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <?php
     preg_match('/MSIE (.*?);/', $_SERVER['HTTP_USER_AGENT'], $matches);
@@ -155,9 +182,9 @@
     <?php endif; ?>
 
     <div class="container-fluid" id="page">
-        <div class="row-fluid">
-            <div class="span12">
-                <?php if(isset($this->breadcrumbs)):?>
+        <?php if(isset($this->breadcrumbs) && !empty($this->breakcrumbs)):?>
+            <div class="row-fluid">
+                <div class="span12">
                     <?php 
                         $this->widget(
                                 'bootstrap.widgets.TbBreadcrumb',
@@ -166,10 +193,9 @@
                                 )
                         );
                     ?><!-- breadcrumbs -->
-                <?php endif?>
+                </div>
             </div>
-        </div>
-        
+        <?php endif?>
         <?php echo $content; ?>
         
         <div class="clear"></div>
@@ -205,6 +231,6 @@
         </div>
     </div><!-- page -->
     
-<?php endif; ?><!-- if $printing -->
+<?php endif; ?><!-- if $hits->navigation -->
 </body>
 </html>

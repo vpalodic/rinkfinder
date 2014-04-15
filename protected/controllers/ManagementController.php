@@ -93,11 +93,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -287,11 +303,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -502,11 +534,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -598,11 +646,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -709,11 +773,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -820,11 +900,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -926,11 +1022,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -1027,11 +1139,27 @@ class ManagementController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');

@@ -245,7 +245,7 @@
         }
     };
     
-    management.getCounts = function (noLoading) {
+    management.getCounts = function () {
         if (this.isLoading)
         {
             return;
@@ -253,11 +253,9 @@
         
         this.isLoading = true;
         var that = this;
-        var thatNoLoading = noLoading;
         
-        if (!noLoading) {
-            utilities.loadingScreen.show();
-        }
+        var $spinner = $("#reportrangeRefreshButton i");
+        $spinner.toggleClass('fa-spin');
 
         $.ajax({                        
             url: that.endpoints.counts,
@@ -271,6 +269,7 @@
             success: function(result, status, xhr) {
                 if (result.success === false)
                 {
+                    $spinner.toggleClass('fa-spin');
                     utilities.ajaxError.show(
                         "Management Dashboard",
                         "Failed to retrieve dashboard counts",
@@ -284,12 +283,10 @@
                 that.processCounts(result, status, xhr);
                 
                 window.setTimeout(function () {
-                    if (!thatNoLoading) {
-                        utilities.loadingScreen.hide();
-                    }
+                    $spinner.toggleClass('fa-spin');
                     that.isLoading = false;
                 },
-                100
+                1000
                 );
         
             },
@@ -301,9 +298,7 @@
                         status,
                         errorThrown
                         );
-                if (!thatNoLoading) {
-                    utilities.loadingScreen.hide();
-                }
+                $spinner.toggleClass('fa-spin');
                 that.isLoading = false;
             }
         });
@@ -419,7 +414,7 @@
                 utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
                 management.fromDate = start;
                 management.toDate = end;
-                management.getCounts(0);
+                management.getCounts();
             }
         }
         );
@@ -429,7 +424,7 @@
             utilities.loadingScreen.containerId = "countsAccordionHeader";
             utilities.loadingScreen.image.enabled = true;
             utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
-            management.getCounts(0);
+            management.getCounts();
         });
     };
     

@@ -14,7 +14,7 @@
                     
                     <br />It was rejected for the following reason: <?php echo nl2br(CHtml::encode($requestStatus[1])); ?> <br /><br />
                 <?php elseif(is_array($requestStatus) && $requestStatus[0] == "Message") : ?>
-                    An arena manager has sent you the following message regarding your request:<br />
+                    A facility manager has sent you the following message regarding your request:<br />
                     
                     <br /><?php echo nl2br(CHtml::encode($requestStatus[1])); ?> <br /><br />
                 <?php else: ?>
@@ -25,7 +25,7 @@
                 <h3>Event Details:</h3>
                     <ul>
                         <li>
-                            Arena: <b><?php echo $event->arena->name; ?></b>
+                            Facility: <b><?php echo $event->arena->name; ?></b>
                         </li>
                         <?php if(isset($event->arena->address_line2) && !empty($event->arena->address_line2)) : ?>
                         <li>
@@ -51,7 +51,7 @@
                             Event Link: <b><a href="<?php echo $eventUrl; ?>"><?php echo $eventUrl; ?></a></b>
                         </li>
                         <li>
-                            Arena Link: <b><a href="<?php echo $arenaUrl; ?>"><?php echo $arenaUrl; ?></a></b>
+                            Facility Link: <b><a href="<?php echo $arenaUrl; ?>"><?php echo $event->arena->name; ?></a></b>
                         </li>
                     </ul>
                 </p>

@@ -365,7 +365,16 @@
             });
         }
         
-        $("#mappingTable").footable();
+        var footable = $('#mappingTable').data('footable');
+        
+        if (typeof footable === "object")
+        {
+            footable.redraw();
+        }
+        else
+        {
+            $("#mappingTable").footable();
+        }
         
         this.checkStep3Button();
     };

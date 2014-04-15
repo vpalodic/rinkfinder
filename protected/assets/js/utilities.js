@@ -301,6 +301,21 @@
         
     };
     
+    // Read a page's GET URL variables and return them as an associative array.
+    utilities.getUrlVars = function ()
+    {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        
+        for(var i = 0; i < hashes.length; i++)
+        {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    };
+    
     utilities.arrayHasOwnIndex = function (array, prop) {
         return array.hasOwnProperty(prop) && /^0$|^[1-9]\d*$/.test(prop) && prop <= 4294967294; // 2^32 - 2
     };
@@ -309,4 +324,15 @@
         return this.charAt(0).toUpperCase() + this.slice(1);
     };
     
+    $(".fade-message").animate({opacity: 1.0}, 30000).fadeOut("slow");
+    
+    $.event.special.destroyed = {
+        remove: function (o) {
+            if (o.handler)
+            {
+                o.handler();
+            }
+        }
+    };
+
 }( window.utilities = window.utilities || {}, jQuery ));

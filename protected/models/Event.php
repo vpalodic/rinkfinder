@@ -186,24 +186,40 @@ class Event extends RinkfinderActiveRecord
         
     /**
      * Returns an array of event types
+     * @param boolean $activeOnly If true, then only active values will be returned
      * @return array[] the array of event types
      * @throws CDbException
      */
-    public static function getTypes()
+    public static function getTypes($activeOnly = false)
     {
-        $sql = 'SELECT * FROM event_type';
+        $sql = 'SELECT * FROM event_type ';
+
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1 ';
+        }
+        
+        $sql .= ' ORDER BY display_order ASC ';
+        
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
     }
     
     /**
      * Returns an array of event statuses
+     * @param boolean $activeOnly If true, then only active values will be returned
      * @return array[] the array of event statuses
      * @throws CDbException
      */
-    public static function getStatuses()
+    public static function getStatuses($activeOnly = false)
     {
-        $sql = 'SELECT * FROM event_status';
+        $sql = 'SELECT * FROM event_status ';
+        
+        if($activeOnly == true) {
+            $sql .= ' WHERE active = 1 ';
+        }
+        
+        $sql .= ' ORDER BY display_order ASC ';
+        
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
     }

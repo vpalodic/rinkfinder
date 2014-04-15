@@ -15,6 +15,7 @@ class EventRequestController extends Controller
 	{
 		return array(
 			'accessControl', // perform access control for CRUD operations
+                        'ajaxOnly + type status',
 			'postOnly + delete', // we only allow deletion via POST request
 		);
 	}
@@ -28,16 +29,16 @@ class EventRequestController extends Controller
 	{
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('index','view'),
+				'actions'=>array('index','view', 'type', 'status'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update', 'type', 'status'),
+				'actions'=>array('create','update'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
 				'actions'=>array('admin','delete'),
-				'users'=>array('admin'),
+				'users'=>array('@'),
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -94,20 +95,6 @@ class EventRequestController extends Controller
             $outputFormat = $_GET['output'];
         }
         
-        if(!Yii::app()->user->isSiteUser()) {
-            if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
-            }
-            
-            $this->sendResponseHeaders(403, 'json');
-            echo json_encode(array(
-                    'success' => false,
-                    'error' => 'Permission denied. You are not authorized to perform this action.'
-                )
-            );
-            Yii::app()->end();
-        }
-
         // Try and get the data!
         try {
             $dataTemp = EventRequest::getTypes(true);
@@ -127,11 +114,27 @@ class EventRequestController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -161,7 +164,7 @@ class EventRequestController extends Controller
         } elseif($outputFormat == 'xml') {
             $this->sendResponseHeaders(200, 'xml');
             
-            $xml = Controller::generate_valid_xml_from_array($data, "details", "eventrequest");
+            $xml = Controller::generate_valid_xml_from_array($data, "eventRequestTypes", "eventRequestType");
             echo $xml;
             
             Yii::app()->end();
@@ -174,7 +177,7 @@ class EventRequestController extends Controller
      */
     public function actionStatus()
     {
-        Yii::trace("In actionType.", "application.controllers.EventRequestController");
+        Yii::trace("In actionStatus.", "application.controllers.EventRequestController");
         
         // Default to XML output!
         $outputFormat = "json";
@@ -184,20 +187,6 @@ class EventRequestController extends Controller
             $outputFormat = $_GET['output'];
         }
         
-        if(!Yii::app()->user->isSiteUser()) {
-            if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
-            }
-            
-            $this->sendResponseHeaders(403, 'json');
-            echo json_encode(array(
-                    'success' => false,
-                    'error' => 'Permission denied. You are not authorized to perform this action.'
-                )
-            );
-            Yii::app()->end();
-        }
-
         // Try and get the data!
         try {
             $dataTemp = EventRequest::getStatuses(true);
@@ -217,11 +206,27 @@ class EventRequestController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500, 'json');
@@ -251,7 +256,7 @@ class EventRequestController extends Controller
         } elseif($outputFormat == 'xml') {
             $this->sendResponseHeaders(200, 'xml');
             
-            $xml = Controller::generate_valid_xml_from_array($data, "details", "eventrequest");
+            $xml = Controller::generate_valid_xml_from_array($data, "eventRequestStatuses", "eventRequestStatus");
             echo $xml;
             
             Yii::app()->end();
@@ -471,11 +476,27 @@ class EventRequestController extends Controller
                     $errorInfo = null;
                     
                     if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                        $errorInfo = array(
-                            "sqlState" => $ex->errorInfo[0],
-                            "mysqlError" => $ex->errorInfo[1],
-                            "message" => $ex->errorInfo[2],
-                        );
+                        $errorParms = array();
+
+                        if(isset($ex->errorInfo[0])) {
+                            $errorParms['sqlState'] = $ex->errorInfo[0];
+                        } else {
+                            $errorParms['sqlState'] = "Unknown";
+                        }
+
+                        if(isset($ex->errorInfo[1])) {
+                            $errorParms['mysqlError'] = $ex->errorInfo[1];
+                        } else {
+                            $errorParms['mysqlError'] = "Unknown";
+                        }
+
+                        if(isset($ex->errorInfo[2])) {
+                            $errorParms['message'] = $ex->errorInfo[2];
+                        } else {
+                            $errorParms['message'] = "Unknown";
+                        }
+
+                        $errorInfo = array($errorParms);
                     }
                     
                     $this->sendResponseHeaders(500, 'json');
@@ -667,11 +688,27 @@ class EventRequestController extends Controller
             $errorInfo = null;
 
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
             }
 
             $this->sendResponseHeaders(500, 'json');

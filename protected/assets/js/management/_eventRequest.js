@@ -13,7 +13,7 @@
         addReservation: "/server/endpoint",
         acknowledgeRecord: "/server/endpoint",
         acceptRecord: "/server/endpoint",
-        rejectRecord: "/server/endpoint",
+        rejectRecord: "/server/endpoint"
     };
     
     _eventRequest.data = {};
@@ -36,15 +36,6 @@
         }
         
         var $panel = $("#eventRequestView.panel.panel-primary");
-        
-        $.event.special.destroyed = {
-            remove: function (o) {
-                if (o.handler)
-                {
-                    o.handler();
-                }
-            }
-        };
         
         if ($panel.length > 0)
         {
@@ -245,9 +236,7 @@
             $(".rejected_reason").editable('destroy');
             
             // Ok, we will submit the data to the server
-            utilities.loadingScreen.parentId = "rejector_id";
-            utilities.loadingScreen.progress.enabled = true;
-            utilities.loadingScreen.show();
+            $("#rejector_id").toggleClass('active');
 
             $.ajax({
                 url: _eventRequest.endpoints.updateRecord,
@@ -269,9 +258,8 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
-                            // Some type of error happened so enable the buttons.
+                            $("#rejector_id").toggleClass('active');
                             $buttons.prop('disabled', false);
-
                             utilities.ajaxError.show(
                                     "Event Request",
                                     "Failed to reject request",
@@ -289,7 +277,7 @@
                     
                     $buttons.prop('disabled', false);
                     
-                    utilities.loadingScreen.hide();
+                    $("#rejector_id").toggleClass('active');
                         
                     $('.alert').remove();
                     
@@ -316,7 +304,7 @@
                     // Enable the buttons
                     $buttons.prop('disabled', false);
 
-                    utilities.loadingScreen.hide();
+                    $("#rejector_id").toggleClass('active');
 
                     utilities.ajaxError.show(
                             "Error",
@@ -354,9 +342,7 @@
             $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
-            utilities.loadingScreen.parentId = "acknowledger_id";
-            utilities.loadingScreen.progress.enabled = true;
-            utilities.loadingScreen.show();
+            $("#acknowledger_id").toggleClass('active');
 
             $.ajax({
                 url: _eventRequest.endpoints.updateRecord,
@@ -378,6 +364,7 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
+                            $("#acknowledger_id").toggleClass('active');
                             $buttons.prop('disabled', false);
                             utilities.ajaxError.show(
                                     "Event Request",
@@ -396,8 +383,8 @@
                     // Enable the buttons
                     $buttons.prop('disabled', false);
                     
-                    utilities.loadingScreen.hide();
-
+                    $("#acknowledger_id").toggleClass('active');
+                    
                     $('.alert.alert-danger').remove();
 
                     $("#acknowledger_id").off('click');
@@ -417,7 +404,8 @@
                 error: function(xhr, status, errorThrown) {
                     $buttons.prop('disabled', false);
 
-                    utilities.loadingScreen.hide();
+                    $("#acknowledger_id").toggleClass('active');
+                    //utilities.loadingScreen.hide();
 
                     utilities.ajaxError.show(
                             "Error",
@@ -455,9 +443,7 @@
             $buttons.prop('disabled', true);
 
             // Ok, we will submit the data to the server
-            utilities.loadingScreen.parentId = "accepter_id";
-            utilities.loadingScreen.progress.enabled = true;
-            utilities.loadingScreen.show();
+            $("#accepter_id").toggleClass('active');
 
             $.ajax({
                 url: _eventRequest.endpoints.updateRecord,
@@ -479,7 +465,8 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
-                           $buttons.prop('disabled', false);
+                            $("#accepter_id").toggleClass('active');
+                            $buttons.prop('disabled', false);
                             utilities.ajaxError.show(
                                     "Event Request",
                                     "Failed to accept the request",
@@ -500,7 +487,7 @@
                     // Enable the buttons
                     $buttons.prop('disabled', false);
                     
-                    utilities.loadingScreen.hide();
+                    $("#accepter_id").toggleClass('active');
 
                     $('.alert').remove();
 
@@ -533,7 +520,7 @@
                 error: function(xhr, status, errorThrown) {
                     $buttons.prop('disabled', false);
 
-                    utilities.loadingScreen.hide();
+                    $("#accepter_id").toggleClass('active');
 
                     utilities.ajaxError.show(
                             "Error",
@@ -615,9 +602,7 @@
             $(".message_box").editable('destroy');
             
             // Ok, we will submit the data to the server
-            utilities.loadingScreen.parentId = "message";
-            utilities.loadingScreen.progress.enabled = true;
-            utilities.loadingScreen.show();
+            $("#message").toggleClass('active');
 
             $.ajax({
                 url: _eventRequest.endpoints.updateRecord,
@@ -639,9 +624,8 @@
                     if (myjsonObj !== false)
                     {
                         window.setTimeout(function () {
-                            // Some type of error happened so enable the buttons.
+                            $("#message").toggleClass('active');
                             $buttons.prop('disabled', false);
-
                             utilities.ajaxError.show(
                                     "Event Request",
                                     "Failed to send message",
@@ -657,7 +641,7 @@
                     // Enable the buttons
                     $buttons.prop('disabled', false);
 
-                    utilities.loadingScreen.hide();
+                    $("#message").toggleClass('active');
 
                     // Add a new alert to notify the user the message was
                     // sent
@@ -672,7 +656,7 @@
                     // Enable the buttons
                     $buttons.prop('disabled', false);
 
-                    utilities.loadingScreen.hide();
+                    $("#message").toggleClass('active');
 
                     utilities.ajaxError.show(
                             "Error",

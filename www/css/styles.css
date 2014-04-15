@@ -54,7 +54,7 @@
 
 #content
 {
-    padding: 20px;
+    padding: 0px;
 }
 
 #sidebar
@@ -390,21 +390,21 @@
 }
 
 //CSS from v3 snipp
-.user-row {
+.info-row {
     margin-bottom: 14px;
 }
 
-.user-row:last-child {
+.info-row:last-child {
     margin-bottom: 0;
 }
 
-.dropdown-user {
+.dropdown-info {
     margin: 13px 0;
     padding: 5px;
     height: 100%;
 }
 
-.dropdown-user:hover {
+.dropdown-info:hover {
     cursor: pointer;
 }
 
@@ -420,3 +420,67 @@
 .table-information > tbody > tr > td {
     border-top: 0;
 }
+
+.spinner {
+  display: inline-block;
+  opacity: 0;
+  max-width: 0;
+
+  -webkit-transition: opacity 0.25s, max-width 0.45s; 
+  -moz-transition: opacity 0.25s, max-width 0.45s;
+  -o-transition: opacity 0.25s, max-width 0.45s;
+  transition: opacity 0.25s, max-width 0.45s; /* Duration fixed since we animate additional hidden width */
+}
+
+.has-spinner.active {
+  cursor:progress;
+}
+
+.has-spinner.active .spinner {
+  opacity: 1;
+  max-width: 50px; /* More than it will ever come, notice that this affects on animation duration */
+}
+
+#searchResults ul {
+  list-style-type: none;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  margin: 0;
+  overflow: auto;
+}
+ 
+#searchResults ul.my-search-results h3 {
+  font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+}
+ 
+#searchResults ul.my-search-results > li img {
+  float: left;
+  margin: 0 20px 0 0;
+}
+ 
+#searchResults ul.my-search-results > li p {
+  font: 200 12px/1.5 Georgia, Times New Roman, serif;
+}
+ 
+#searchResults ul.my-search-results > li {
+  padding: 5px;
+  max-height: 95;
+  overflow: auto;
+}
+ 
+#searchResults ul.my-search-results > li:hover {
+  background: #eee;
+  cursor: pointer;
+}
+
+.google-map-canvas img {
+    max-width: none;
+    max-height: none;
+}
+
+.google-map-canvas label {
+    width: auto;
+    display: inline;
+}
+

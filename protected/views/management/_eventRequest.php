@@ -65,9 +65,10 @@
                 <div class="well">
                     <div class="row-fluid">
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-primary " type="button" data-toggle="tooltip"
+                            <button class="btn btn-block btn-large btn-primary has-spinner" type="button" data-toggle="tooltip"
                                     accesskey=""data-original-title="Send message to requester" id="message">
                                 <i class="fa fa-lg fa-envelope"></i> <br />
+                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Message</span>
                             </button>
                             <a class="message_box btn-block text-center" style="display: none;" href="#"
@@ -77,16 +78,16 @@
                                 data-disabled="false"
                                 data-mode="popup"
                                 title="Please enter your message">
-                                
                             </a>
                         </div>
                         <?php if(isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
                                 $data['item']['fields']['acknowledger']['button']['enabled'] == true) : ?>
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-warning" type="button" data-toggle="tooltip"
+                            <button class="btn btn-block btn-large btn-warning has-spinner" type="button" data-toggle="tooltip"
                                         data-original-title="Acknowledge this request"
                                         id="<?php echo $data['item']['fields']['acknowledger']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-square"></i> <br />
+                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Acknowledge</span>
                             </button>
                         </div>
@@ -94,20 +95,22 @@
                         <?php if(isset($data['item']['fields']['accepter']['button']['enabled']) && 
                                 $data['item']['fields']['accepter']['button']['enabled'] == true) : ?>
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
+                            <button class="btn btn-block btn-large btn-success has-spinner" type="button" data-toggle="tooltip"
                                     data-original-title="Accept this request"
                                     id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-check"></i> <br />
+                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Accept</span>
                             </button>
                         </div>
                         <?php elseif(!isset($data['item']['fields']['rejector']['value']) ||
                                 empty($data['item']['fields']['rejector']['value'])) : ?>
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-success" type="button" data-toggle="tooltip"
+                            <button class="btn btn-block btn-large btn-success has-spinner" type="button" data-toggle="tooltip"
                                     data-original-title="Create a reservation for this request"
                                     id="createReservation">
                                 <i class="fa fa-lg fa-plus-square"></i> <br />
+                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Reservation</span>
                             </button>
                         </div>
@@ -115,10 +118,11 @@
                         <?php if(isset($data['item']['fields']['rejector']['button']['enabled']) && 
                                 $data['item']['fields']['rejector']['button']['enabled'] == true) : ?>
                         <div class="span3">
-                            <button class="btn btn-block btn-large btn-danger"
+                            <button class="btn btn-block btn-large btn-danger has-spinner"
                                     type="button" data-toggle="tooltip" data-original-title="Reject this request"
                                     id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-times"></i> <br />
+                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Reject</span>
                             </button>
                             <a class="rejected_reason btn-block text-center" style="display: none;" href="#"

@@ -23,7 +23,7 @@ class EventController extends Controller
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
             'arenaContext + index create admin uploadEvents', // check to ensure proper arena context
-            'ajaxOnly + uploadEventsFileDelete uploadEventsProcessCSV', // we only delete and process files via ajax!
+            'ajaxOnly + uploadEventsFileDelete uploadEventsProcessCSV type status', // we only delete and process files via ajax!
         );
     }
 
@@ -39,7 +39,9 @@ class EventController extends Controller
                 'allow',  // allow all users to perform 'index' and 'view' actions
                 'actions' => array(
                     'index',
-                    'view'
+                    'view',
+                    'type',
+                    'status',
                 ),
                 'users' => array(
                     '*'
@@ -114,6 +116,190 @@ class EventController extends Controller
 			'model'=>$model,
 		));
 	}
+
+    /**
+     * Gets a list of available types for the event request
+     */
+    public function actionType()
+    {
+        Yii::trace("In actionType.", "application.controllers.EventController");
+        
+        // Default to XML output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        // Try and get the data!
+        try {
+            $dataTemp = Event::getTypes(true);
+            
+            foreach($dataTemp as $record) {
+                $data[] = array(
+                    'value' => $record['id'],
+                    'text' => $record['display_name']
+                );
+            }
+            
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode($data);
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "eventTypes", "eventType");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
+
+    /**
+     * Gets a list of available status values for the event request
+     */
+    public function actionStatus()
+    {
+        Yii::trace("In actionStatus.", "application.controllers.EventController");
+        
+        // Default to XML output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        // Try and get the data!
+        try {
+            $dataTemp = Event::getStatuses(true);
+            
+            foreach($dataTemp as $record) {
+                $data[] = array(
+                    'value' => $record['id'],
+                    'text' => $record['display_name']
+                );
+            }
+            
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode($data);
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "eventStatuses", "eventStatus");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
 
 	/**
 	 * Updates a particular model.
@@ -362,11 +548,27 @@ class EventController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500);
@@ -732,11 +934,27 @@ class EventController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500);

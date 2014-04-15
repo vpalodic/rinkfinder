@@ -32,7 +32,9 @@ class ArenaController extends Controller
                 'allow',  // allow all users to perform 'index' and 'view' actions
                 'actions' => array(
                     'index',
-                    'view'
+                    'view',
+                    'mapMarkers',
+                    'locationSearch',
                 ),
                 'users' => array(
                     '*'
@@ -152,16 +154,59 @@ class ArenaController extends Controller
 		}
 	}
 
-	/**
-	 * Lists all models.
-	 */
-	public function actionIndex()
-	{
-		$dataProvider=new CActiveDataProvider('Arena');
-		$this->render('index',array(
-			'dataProvider'=>$dataProvider,
-		));
-	}
+    /**
+     * Lists all models.
+     */
+    public function actionIndex()
+    {
+        $dataProvider = new CActiveDataProvider('Arena');
+
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+
+        $this->render(
+                'index',
+                array(
+                    'dataProvider' => $dataProvider,
+                )
+        );
+    }
+
+    /**
+     * Lists all models.
+     */
+    public function actionLocationSearch()
+    {
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/locationSearch.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/locationSearch.min.js', CClientScript::POS_END);
+            
+        }
+        
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+        $doReady = true;
+        
+        if(Yii::app()->request->isAjaxRequest) {
+            $doReady = false;
+        }
+        
+        $this->render(
+                '/arena/locationSearch',
+                array(
+                    'path' => $path,
+                    'types' => Event::getTypes(true),
+                    'searchUrl' => $this->createUrl('arena/mapMarkers', array('output' => 'json')),
+                    'doReady' => $doReady,
+                )
+        );
+    }
 
 	/**
 	 * Manages all models.
@@ -326,11 +371,27 @@ class ArenaController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500);
@@ -688,11 +749,27 @@ class ArenaController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             $this->sendResponseHeaders(500);
@@ -745,11 +822,27 @@ class ArenaController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             Yii::log(
@@ -782,11 +875,27 @@ class ArenaController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             // Just log the error for now!
@@ -824,11 +933,27 @@ class ArenaController extends Controller
             $errorInfo = null;
             
             if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
-                $errorInfo = array(
-                    "sqlState" => $ex->errorInfo[0],
-                    "mysqlError" => $ex->errorInfo[1],
-                    "message" => $ex->errorInfo[2],
-                );
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
             }
             
             Yii::log(
@@ -854,5 +979,128 @@ class ArenaController extends Controller
         echo json_encode($response);
         
         Yii::app()->end();
+    }
+    
+    /**
+     * Returns a list of facilities based on the provided coordinates.
+     * Can be further restricted by providing a radius, limit, and if only
+     * open arenas should be included. Additionally, output is restricted to XML
+     * or JSON formats only!
+     */
+    public function actionMapMarkers()
+    {
+        Yii::trace("In actionMapMarkers.", "application.controllers.ArenaController");
+        
+        // Default to XML output!
+        $output = "xml";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'json')) {
+            $output = $_GET['output'];
+        }
+        
+        // There are two required parameters: lat and lng.
+        // Defaults will be used for the others if not provided
+        $lat = isset($_GET['lat']) ? $_GET['lat'] : null;
+        $lng = isset($_GET['lng']) ? $_GET['lng'] : null;
+        $radius = isset($_GET['radius']) ? $_GET['radius'] : 15;
+        $open = isset($_GET['open']) &&  isset($_GET['open']) == 'false' ? false : true;
+        $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
+        $limit = isset($_GET['limit']) ? $_GET['limit'] : 20;
+        $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : null;
+        $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : null;
+        $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
+        $end_time = isset($_GET['end_time']) ? $_GET['end_time'] : null;
+        $types = isset($_GET['types']) ? $_GET['types'] : array();
+        
+        if(is_null($lat) || !is_numeric($lat) || is_null($lng) || !is_numeric($lng)) {
+            if($output == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Our parameters are set so lets get us some data!
+        try {
+//            $markers = Arena::getAddressWithEventsMarkers($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
+            $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
+            if($output == "xml") {
+                $this->sendResponseHeaders(200, 'xml');
+            
+                $xml = Controller::generate_valid_xml_from_array($markers, "markers", "marker");
+                echo $xml;
+            
+                Yii::app()->end();
+            }
+
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $markers,
+                    )
+            );
+            
+            Yii::app()->end();
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            
+            if($output == "xml") {
+                throw new CHttpException(500, "Internal Server Error");
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+                
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+                
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+                
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
     }
 }
