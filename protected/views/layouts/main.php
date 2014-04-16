@@ -17,7 +17,7 @@
     <?php Yii::app()->bootstrap->register(); ?>
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
         if(defined('YII_DEBUG') && $this->includeCss) {
-            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.css');
+            Yii::app()->clientScript->registerCssFile($path . '/font-awesome-4.0.3/css/font-awesome.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.css');
