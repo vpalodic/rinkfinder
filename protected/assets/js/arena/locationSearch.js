@@ -798,12 +798,12 @@
         
         $('#searchDate').datetimepicker({
             pickDate: true,
-            pickTime: false,
+            pickTime: false
         });
 
         var $picker = $('#searchDateEnd').datetimepicker({
             pickDate: true,
-            pickTime: false,
+            pickTime: false
         });
         
         $('#searchTime').datetimepicker({
