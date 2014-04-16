@@ -864,14 +864,25 @@
     locationSearch.hideButtons = function ()
     {
         var $bDiv = $("#searchButtons > button");
+        var $sDiv = $("#searchButtons");
         
+        var spinner = '<div id="loading" class="loading-spinner" ' +
+                    'style="width: 200px;margin-left: -100px;"><div class="' +
+                    'active"><div style="width: 100%;"><img src="' + 
+                    utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div></div></div>';
+       
+        $sDiv.append(spinner);
         $bDiv.filter(":visible").hide();        
     };
     
     locationSearch.showButtons = function ()
     {
         var $bDiv = $("#searchButtons > button");
+        var $spinner = $("#searchButtons > #loading");
         
         $bDiv.filter(":hidden").show();
+        $spinner.remove();
     };
+    
 }( window.locationSearch = window.locationSearch || {}, jQuery ));
