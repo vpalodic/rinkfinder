@@ -867,7 +867,7 @@
         var $sDiv = $("#searchButtons");
         
         var spinner = '<div id="loading"' +
-                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif" ' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
                     'alt="Loading..." /></div>';
        
         $sDiv.append(spinner);
