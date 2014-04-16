@@ -33,6 +33,10 @@ class Controller extends CController
      */
     public $navigation = true;
 
+    public function registerUserScripts()
+    {
+        
+    }
     public function registerManagementScripts()
     {
         // Publish and register our jQuery plugin
