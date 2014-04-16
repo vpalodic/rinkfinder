@@ -75,11 +75,11 @@
                     <div class="controls controls-row">
                         <label for="searchDate">Available On</label>
                         <div class="span3">
-                            <div id="searchDate" class="input-append date">
+                            <div id="searchDate" class="mydate input-append date">
                                 <?php if(isset($_GET['start_date']) && !empty($_GET['start_date'])) : ?>
-                                <input name="start_date" value="<?php echo $_GET['start_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startDate" />
+                                <input class="uneditable-input" name="start_date" value="<?php echo $_GET['start_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startDate" />
                                 <?php else: ?>
-                                <input name="start_date" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startDate" />
+                                <input class="uneditable-input" name="start_date" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startDate" />
                                 <?php endif; ?>
                                 <span class="add-on">
                                     <i data-time-icon="icon-time" data-date-icon="icon-calendar">
@@ -91,11 +91,11 @@
                     <div class="controls controls-row">
                         <label for="searchDateEnd">Available To</label>
                         <div class="span3">
-                            <div id="searchDateEnd" class="input-append date">
+                            <div id="searchDateEnd" class="mydate input-append date">
                                 <?php if(isset($_GET['end_date']) && !empty($_GET['end_date'])) : ?>
-                                <input name="end_date" value="<?php echo $_GET['end_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endDate" />
+                                <input class="uneditable-input" name="end_date" value="<?php echo $_GET['end_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endDate" />
                                 <?php else: ?>
-                                <input name="end_date" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endDate" />
+                                <input class="uneditable-input" name="end_date" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endDate" />
                                 <?php endif; ?>
                                 <span class="add-on">
                                     <i data-time-icon="icon-time" data-date-icon="icon-calendar">
@@ -107,11 +107,11 @@
                     <div class="controls controls-row">
                         <label for="searchTime">Starts No Earlier Than</label>
                         <div class="span3">
-                            <div id="searchTime" class="input-append date">
+                            <div id="searchTime" class="mytime input-append date">
                                 <?php if(isset($_GET['start_time']) && !empty($_GET['start_time'])) : ?>
-                                <input name="start_time" value="<?php echo $_GET['start_time']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startTime" />
+                                <input name="start_time" value="<?php echo $_GET['start_time']; ?>" style="margin-bottom: 15px;" data-format="HH:mm:ss PP" type="text" id="startTime" />
                                 <?php else: ?>
-                                <input name="start_time" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startTime" />
+                                <input name="start_time" style="margin-bottom: 15px;" data-format="HH:mm:ss PP" type="text" id="startTime" />
                                 <?php endif; ?>
                                 <span class="add-on">
                                     <i data-time-icon="icon-time" data-date-icon="icon-calendar">
@@ -123,11 +123,11 @@
                     <div class="controls controls-row">
                         <label for="searchTimeEnd">Starts No Later Than</label>
                         <div class="span3">
-                            <div id="searchTimeEnd" class="input-append date">
+                            <div id="searchTimeEnd" class="mytime input-append date">
                                 <?php if(isset($_GET['end_time']) && !empty($_GET['end_time'])) : ?>
-                                <input name="end_time" value="<?php echo $_GET['end_time']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endTime" />
+                                <input name="end_time" value="<?php echo $_GET['end_time']; ?>" style="margin-bottom: 15px;" data-format="HH:mm:ss PP" type="text" id="endTime" />
                                 <?php else: ?>
-                                <input name="end_time" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endTime" />
+                                <input name="end_time" style="margin-bottom: 15px;" data-format="HH:mm:ss PP" type="text" id="endTime" />
                                 <?php endif; ?>
                                 <span class="add-on">
                                     <i data-time-icon="icon-time" data-date-icon="icon-calendar">

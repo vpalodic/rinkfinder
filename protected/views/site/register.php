@@ -257,35 +257,24 @@
                 </div>
             </div>
         <?php endif; ?>
-            <?php
-                $widget = $this->widget(
-                        'yiiwheels.widgets.switch.WhSwitch',
-                        array(
-                            'model' => $model,
-                            'attribute' => 'acceptTerms',
-                            'onLabel' => 'Yes',
-                            'offLabel' => 'No',
-                            'size' => 'large',
-                            'offColor' => 'warning',
-                            'htmlOptions' => array(
-                            ),
-                        ),
-                        true
-                );
-            
-                echo '<div class="control-group">';
-                echo '<div class="controls">';
-                echo $form->labelEx(
-                        $model,
-                        'acceptTerms',
-                        array(
-                            )
-                    );
-                echo $widget;
-                echo $form->error($model, 'acceptTerms');
-                echo '</div>';
-                echo '</div>';
-            ?>
+        <div class="control-group">
+            <div class="controls">
+                <label for="User_acceptTerms" class="required">
+                     <span class="required">*</span> I have read and agree to the
+                     <a class="no-ajaxy" href="#termsOfUseModal" role="button" data-toggle="modal">
+                         Terms of Use
+                     </a> of this site, the
+                     <a class="no-ajaxy" href="#privacyPolicyModal">
+                         Privacy Policy
+                     </a> of this site, and that I am thirteen (13) years of age or older.
+                </label>
+                <div class="make-switch switch-large" data-on-label="Yes" data-off-label="No" data-on="primary" data-off="warning" id="User_acceptTerms_switch">
+                    <input id="User_acceptTerms" type="checkbox" value="0" name="User[acceptTerms]">
+                </div>
+                <p id="User_acceptTerms_em_" style="display:none" class="help-block">
+                </p>
+            </div>
+        </div>
     </fieldset>
     <?php
         echo TbHtml::formActions(
@@ -300,19 +289,57 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
-<div id="terms-of-use" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
-  <?php $this->renderPartial('pages/terms_of_use', array('noTitle' => true)); ?>
-</div>
-<div id="privacy-policy" class="mfp-hide" style="position: relative;background: #FFF;padding: 20px;width: auto;max-width: 70%;margin: 20px auto;">
-  <?php $this->renderPartial('pages/privacy_policy', array('noTitle' => true)); ?>
-</div>
-<?php
-    $this->widget(
-            'ext.magnific-popup.EMagnificPopup',
-            array(
-                'target' => '.open-popup-link',
-                'type' => 'inline',
-            )
-    );
-?>
+<!-- Terms of use Instructions Modal Dialog -->
+<div id="termsOfUseModal" class="modal hide fade container" tabindex="-1" 
+     role="dialog" aria-labelledby="termsOfUseModalLabel" 
+     aria-hidden="true" data-backdrop="static" data-max-height="500" >
+  <div id="termsOfUseModalHeader" class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="termsOfUseModalLabel">Terms of Use</h3>
+  </div>
+  <div id="termsOfUseModalBody" class="modal-body">
+      <?php $this->renderPartial('pages/terms_of_use', array('noTitle' => true)); ?>
+  </div>
+  <div id="termsOfUseModalFooter" class="modal-footer">
+    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
+        <i class="icon-remove-sign"></i> Close
+    </button>
+  </div>
+</div><!-- Mapping Instructions Modal Dialog -->
+<!-- Settings Instructions Modal Dialog -->
+<div id="privacyPolicyModal" class="modal hide fade container" tabindex="-1" 
+     role="dialog" aria-labelledby="privacyPolicyModalLabel" 
+     aria-hidden="true" data-backdrop="static" data-max-height="500" >
+  <div id="privacyPolicyModalHeader" class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="privacyPolicyModalLabel">Privacy Policy</h3>
+  </div>
+  <div id="privacyPolicyModalBody" class="modal-body">
+      <?php $this->renderPartial('pages/privacy_policy', array('noTitle' => true)); ?>
+  </div>
+  <div id="privacyPolicyModalFooter" class="modal-footer">
+    <button class="btn btn-large" data-dismiss="modal" type="button" aria-hidden="true">
+        <i class="icon-remove-sign"></i> Close
+    </button>
+  </div>
+</div><!-- Settings Instructions Modal Dialog -->
 <?php endif; ?>
+<script type="text/javascript">
+        $('#User_acceptTerms').on('destroyed', function () {
+            // We have been closed, so clean everything up!!!
+            console.log("Registration Destroyed!");
+            $(".bootstrap-datetimepicker-widget").each(function () {
+                $(this).remove();
+            });
+        });
+        
+    var $switch = $("#User_acceptTerms_switch");
+    
+    if ($switch.hasClass('make-switch'))
+    {
+        if(typeof $('.make-switch')['bootstrapSwitch'] !== "undefined")
+        {
+            $('.make-switch')['bootstrapSwitch']();
+        }
+    }
+</script>

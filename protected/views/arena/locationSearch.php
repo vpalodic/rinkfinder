@@ -13,8 +13,6 @@
 <?php
 ?>
 
-<h2 class="sectionHeader">Facility Search</h2>
-
 <?php
     $this->renderPartial('/arena/_locationSearch', array(
         'types' => $types,

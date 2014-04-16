@@ -265,8 +265,10 @@
     locationSearch.createMarker = function (latlng, marker, index) {
         var html = this.createInfoWindow(marker);        
         var that = this;
-        this.addLocationListItem(marker, index);
+        this.addLocationListItem(marker, index, html);
         this.addLocationSelectItem(marker, index);
+        
+        html = "<div class='infowindow'>" + html + "</div>";
         
         var mapMarker = new google.maps.Marker({
             map: that.map,
@@ -283,7 +285,17 @@
     
     locationSearch.createInfoWindow = function (marker) {
         // Start with the general arena info
-        var output = "<div class='infowindow'><h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
+        var output = '<div class="accordion" id="accordionInfoWindow">';
+        
+        output += '<div class="accordion-group"><div class="accordion-heading">' +
+                '<a class="accordion-toggle" data-toggle="collapse" ' +
+                'data-parent="#accordionInfoWindow" href="#collapseInfoWindowOne">' +
+                'Facility Details</a></div>';
+        
+        output += '<div id="collapseInfoWindowOne" class="accordion-body collapse in">' +
+                '<div class="accordion-inner">';
+
+        output += "<h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><br />";
 
         if(this.geocodedAddr === '')
@@ -341,31 +353,19 @@
             output += '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' + marker.home_url + '">' + marker.home_url + '</a><br />';
         }
         
-        output += "</address>";
-        
-        // Now do the events!
-        if (typeof marker.events !== 'undefined' && marker.events !== null && marker.events.length > 0)
-        {
-            output += "<h5><a href='" + marker.events_url + "'>Event Information</a></h5>";
-            
-            for (var i = 0; i < marker.events.length; i++)
-            {
-                output += "<address><strong><a href='" + marker.events[i].event_view_url + "'>" + marker.events[i].event_type_name + "</a></strong><br />";
-                
-                output += "Available: " + marker.events[i].start_date_time + "<br />";
-                output += "Total: " + marker.events[i].event_count + "<br /></address>";
-            }
-        }
-        else if (typeof marker.events_url !== 'undefined' && marker.events_url !== null && marker.events_url.length > 0)
-        {
-            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
-        }
+        output += '</address></div></div></div>';
         
         // Now do the contacts!
         if (typeof marker.contacts !== 'undefined' && marker.contacts !== null && marker.contacts.length > 0)
         {
-            output += "<h5>Contacts</h5>";
-            
+            output += '<div class="accordion-group"><div class="accordion-heading">' +
+                    '<a class="accordion-toggle" data-toggle="collapse" ' +
+                    'data-parent="#accordionInfoWindow" href="#collapseInfoWindowTwo">' +
+                    'Facility Contacts</a></div>';
+
+            output += '<div id="collapseInfoWindowTwo" class="accordion-body collapse">' +
+                    '<div class="accordion-inner">';
+
             for (var i = 0; i < marker.contacts.length; i++)
             {
                 if (marker.contacts[i].contact_type === "Primary")
@@ -412,15 +412,50 @@
                 
                 output += "</address>";
             }
+            output += '</div></div></div>';
         }
 
-        output += '</div>';
+        // Now do the events!
+        if (typeof marker.events !== 'undefined' && marker.events !== null && marker.events.length > 0)
+        {
+            output += '<div class="accordion-group"><div class="accordion-heading">' +
+                    '<a class="accordion-toggle" data-toggle="collapse" ' +
+                    'data-parent="#accordionInfoWindow" href="#collapseInfoWindowThree">' +
+                    'Facility Events</a></div>';
+
+            output += '<div id="collapseInfoWindowThree" class="accordion-body collapse">' +
+                    '<div class="accordion-inner">';
+
+            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
+            
+            for (var i = 0; i < marker.events.length; i++)
+            {
+                output += "<address><strong><a href='" + marker.events[i].event_view_url + "'>" + marker.events[i].event_type_name + "</a></strong><br />";
+                
+                output += "Found: " + marker.events[i].event_count + "<br />";
+                output += "Earliest: " + marker.events[i].start_date_time + "</address>";
+            }
+            output += '</div></div></div>';
+        }
+        else if (typeof marker.events_url !== 'undefined' && marker.events_url !== null && marker.events_url.length > 0)
+        {
+            output += "</div><h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
+        }
+        
+//        output += '</div>';
         return output;
     };
     
-    locationSearch.addLocationListItem = function (marker, index) {
+    locationSearch.addLocationListItem = function (marker, index, html) {
         // Start with the general arena info
         var $list = $("#locationList");
+        
+//        if (typeof html === "string")
+//        {
+//            $list.append("<li data-marker-index='" + index + "'>" + html + "</li>");
+//            
+//            return;
+//        }
         
         var output = "<li data-marker-index='" + index + "'><h3><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h3><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><p>";
@@ -564,7 +599,7 @@
         var $list = $("#locationSelect");
         
         var output = "<option value='" + index +"'>" + marker.arena_name + " (" + 
-                parseFloat(marker.distance).toFixed(1) + " mi)</option>";
+                parseFloat(marker.distance).toFixed(2) + " mi)</option>";
         
         $list.append(output);
     };
@@ -629,31 +664,141 @@
 
     locationSearch.onReady = function () {
         var that = this;
+        var $swell = $('#searchResultsWell');
+        var $body = $('body');
+        var $sresults = $('#searchResults');
+        var $mapc = $('#map-canvas');
         
-        $('#searchResults').height($(window).height() * .90);
-        $('#locationList').parent().height($(window).height() * .85);
-        $('#map-canvas').parent().height($(window).height() * .85);
+        $sresults.height($(window).height() * .90);
+//        $('#locationList').parent().height($(window).height() * .85);
+        $mapc.parent().height($(window).height() * .85);
         
+            if ($(window).width() <= 767)
+            {
+                if($swell.css('padding-top') !== '0px')
+                {
+                    $swell.css('padding-top', '0px');
+                    $swell.css('padding-right', '0px');
+                    $swell.css('padding-bottom', '0px');
+                    $swell.css('padding-left', '0px');
+                }
+                
+                if($body.css('padding-right') !== '0px')
+                {
+                    $body.css('padding-left', '0px');
+                    $body.css('padding-right', '0px');
+                    $('.navbar-fixed-top').css('margin-left', '0px');
+                    $('.navbar-fixed-top').css('margin-right', '0px');
+                }
+                
+                if($swell.css('magin-bottom') !== '0px')
+                {
+                    $swell.css('margin-bottom', '0px');
+                }
+                
+                $sresults.height($(window).height());
+            
+                $mapc.parent().height($sresults.height() - 52);
+            }
+            else
+            {
+                if($swell.css('padding-top') == '0px')
+                {
+                    $swell.css('padding-top', '9px');
+                    $swell.css('padding-right', '9px');
+                    $swell.css('padding-bottom', '9px');
+                    $swell.css('padding-left', '9px');
+                }
+                
+                if($body.css('padding-right') == '0px')
+                {
+                    $body.css('padding-left', '20px');
+                    $body.css('padding-right', '20px');
+                }
+                
+                if($swell.css('magin-bottom') == '0px')
+                {
+                    $swell.css('margin-bottom', '20px');
+                }
+                
+                $sresults.height($(window).height() * .90);
+                $('#locationList').parent().height($(window).height() * .85);
+                $mapc.parent().height($(window).height() - 60);
+            }
+            
         $(window).on('resize', function (e) {
-            $('#searchResults').height($(window).height() * .90);
-            $('#locationList').parent().height($(window).height() * .85);
-            $('#map-canvas').parent().height($(window).height() * .85);
+            if ($(window).width() <= 767)
+            {
+                if($swell.css('padding-top') !== '0px')
+                {
+                    $swell.css('padding-top', '0px');
+                    $swell.css('padding-right', '0px');
+                    $swell.css('padding-bottom', '0px');
+                    $swell.css('padding-left', '0px');
+                }
+                
+                if($body.css('padding-right') !== '0px')
+                {
+                    $body.css('padding-left', '0px');
+                    $body.css('padding-right', '0px');
+                    $('.navbar-fixed-top').css('margin-left', '0px');
+                    $('.navbar-fixed-top').css('margin-right', '0px');
+                }
+                
+                if($swell.css('magin-bottom') !== '0px')
+                {
+                    $swell.css('margin-bottom', '0px');
+                }
+                
+                $sresults.height($(window).height());
+            
+                $mapc.parent().height($sresults.height() - 52);
+            }
+            else
+            {
+                if($swell.css('padding-top') == '0px')
+                {
+                    $swell.css('padding-top', '9px');
+                    $swell.css('padding-right', '9px');
+                    $swell.css('padding-bottom', '9px');
+                    $swell.css('padding-left', '9px');
+                }
+                
+                if($body.css('padding-right') == '0px')
+                {
+                    $body.css('padding-left', '20px');
+                    $body.css('padding-right', '20px');
+                }
+                
+                if($swell.css('magin-bottom') == '0px')
+                {
+                    $swell.css('margin-bottom', '20px');
+                }
+                
+                $sresults.height($(window).height() * .90);
+                $('#locationList').parent().height($(window).height() * .85);
+                $mapc.parent().height($(window).height() - 60);
+            }
         });
+        
+        $.fn.datetimepicker.defaults = {
+            maskInput: true,           // disables the text input mask
+            pick12HourFormat: true,   // enables the 12-hour format time picker
+            pickSeconds: false,         // disables seconds in the time picker
+            startDate: moment().startOf('day').toDate(),      // set a minimum date
+            endDate: moment().add('days', 365).endOf('day').toDate()  // set a maximum date
+        };
         
         $('#searchDate').datetimepicker({
+            pickDate: true,
             pickTime: false,
-            maskInput: true,
-            startDate: moment().format('MM/DD/YYYY'),
-            endDate: moment().add('days', 365).format('MM/DD/YYYY')
         });
 
-        $('#searchDateEnd').datetimepicker({
+        var $picker = $('#searchDateEnd').datetimepicker({
+            pickDate: true,
             pickTime: false,
-            maskInput: true,
-            startDate: moment().format('MM/DD/YYYY'),
-            endDate: moment().add('days', 365).format('MM/DD/YYYY')
         });
-
+        
         $('#searchTime').datetimepicker({
             pickDate: false,
             pickTime: true,
@@ -674,7 +819,6 @@
         
         $('#map-canvas').on('destroyed', function () {
             // We have been closed, so clean everything up!!!
-            console.log("map destroyed!");
             locationSearch.clearLocations();
             locationSearch.map = null;
             locationSearch.infoWindow = null;

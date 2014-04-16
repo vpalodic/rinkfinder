@@ -1035,7 +1035,7 @@ class Arena extends RinkfinderActiveRecord
                 . "et.id AS event_type_id, "
                 . "et.display_name AS event_type_name, "
                 . "ec.count AS event_count, "
-                . "DATE_FORMAT(ec.start_date_time, '%m/%d/%Y %h:%i %p') AS start_date_time "
+                . "DATE_FORMAT(ec.start_date_time, '%c/%e/%Y %l:%i %p') AS start_date_time "
                 . "FROM arena a "
                 . "    LEFT OUTER JOIN arena_contact_assignment aca "
                 . "    ON a.id = aca.arena_id"

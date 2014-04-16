@@ -86,13 +86,7 @@ If you have business inquiries or other questions, please fill out the following
         <div class="control-group">
             <div class="controls">
                 <div class="make-switch switch-large" data-on-label="Yes" data-off-label="No" data-on="primary" data-off="warning" id="ContactForm_copyMe_switch">
-            <!--        <input id="ytContactForm_copyMe" type="hidden" value="0" name="ContactForm[copyMe]"> 
-                    <div class="switch-animate switch-off"> -->
-                        <input id="ContactForm_copyMe" name="ContactForm[copyMe]" value="1" checked type="checkbox">
-<!--                        <span class="switch-left switch-large switch-primary">Yes</span>
-                        <label class="switch-large" for="ContactForm_copyMe">&nbsp;</label>
-                        <span class="switch-right switch-large switch-warning">No</span>
-                    </div> -->
+                    <input id="ContactForm_copyMe" name="ContactForm[copyMe]" value="1" checked type="checkbox">
                 </div>
                 <label for="ContactForm_copyMe">Send me a copy?</label>
                 <p id="ContactForm_copyMe_em_" style="display:none" class="help-block"></p>

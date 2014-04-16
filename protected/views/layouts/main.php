@@ -16,7 +16,6 @@
     <title><?php echo CHtml::encode($this->pageTitle); ?></title>
     <?php Yii::app()->bootstrap->register(); ?>
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
-        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         if(defined('YII_DEBUG') && $this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
@@ -33,6 +32,48 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
+        }
+        
+        // Register Google Apps Maps API
+        Yii::app()->clientScript->registerScriptFile("//maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&" . 
+                "key=" . Yii::app()->params['googleApi']['key'], CClientScript::POS_HEAD);
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.js', CClientScript::POS_HEAD);
+            Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
+            Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.min.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.min.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
         }
     ?>
     <link rel="shortcut icon" href="<?php echo Yii::app()->request->baseUrl; ?>/images/favicon.ico">
