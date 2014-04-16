@@ -866,10 +866,9 @@
         var $bDiv = $("#searchButtons > button");
         var $sDiv = $("#searchButtons");
         
-        var spinner = '<div id="loading" class="loading-spinner" ' +
-                    '><div style="width: 100%;"><img src="' + 
-                    utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
-                    'alt="Loading..." /></div></div>';
+        var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif" ' +
+                    'alt="Loading..." /></div>';
        
         $sDiv.append(spinner);
         $bDiv.filter(":visible").hide();        
