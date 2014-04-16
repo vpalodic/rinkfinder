@@ -91,19 +91,9 @@ class SiteController extends Controller
         $endpoints = array(
         );
         
-        $this->registerUserScripts();
-        $this->includeCss = true;
-        $this->navigation = true;
-
         // display the management page
         $this->render(
-                'index',
-                array(
-                    'endpoints' => $endpoints,
-                    'path' => $path,
-                    'types' => Event::getTypes(true),
-                    'searchUrl' => $this->createUrl('arena/mapMarkers', array('output' => 'json'))
-                )
+                'index'
         );        
     }
 
@@ -113,10 +103,6 @@ class SiteController extends Controller
     public function actionError()
     {
         if($error = Yii::app()->errorHandler->error) {
-            $this->registerUserScripts();
-            $this->includeCss = true;
-            $this->navigation = true;
-
             if(Yii::app()->request->isAjaxRequest && Yii::app()->request->isPostRequest) {
                 echo $error['message'];
             } else {
@@ -156,10 +142,6 @@ class SiteController extends Controller
             $model->email = Yii::app()->user->email;
         }
         
-        $this->registerUserScripts();
-        $this->includeCss = true;
-        $this->navigation = true;
-
         $this->render(
                 'contact',
                 array(
@@ -225,10 +207,6 @@ class SiteController extends Controller
             }
         }
         
-        $this->registerUserScripts();
-        $this->includeCss = true;
-        $this->navigation = true;
-
         $this->render(
                 'register',
                 array(
@@ -578,10 +556,8 @@ class SiteController extends Controller
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
         
         if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/utilities.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.js', CClientScript::POS_END);
         } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/utilities.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.min.js', CClientScript::POS_END);
         }
         
@@ -608,39 +584,7 @@ class SiteController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js', CClientScript::POS_END);
-        } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.min.js', CClientScript::POS_BEGIN);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js', CClientScript::POS_END);
-        }
+        $this->registerManagementScripts();
         
         // Setup the endpoints for the webpage to be able to grab data!
         $endpoints = array(
@@ -648,8 +592,6 @@ class SiteController extends Controller
             'details' => $this->createUrl('/management/getDetails'),
             'operations' => $this->createUrl('/management/getOperations'),
         );
-        
-        $this->includeCss = true;
         
         // display the management page
         $this->render(

@@ -33,6 +33,11 @@
     };
     
     _index.loadFile = function () {
+        if (typeof this.sciptFile !== "string" || this.scriptFile === "")
+        {
+            return;
+        }
+        
         $.ajax({
             url: this.scriptFile,
             dataType: "script",

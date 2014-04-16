@@ -11,7 +11,7 @@
 ?>
 
 <h3 class="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
-
+<!--
 <div class="mycalendar pull-right">
     <span class="month"><?php echo date('M'); ?></span>
     <span class="day"><?php echo date('j'); ?></span>
@@ -24,7 +24,7 @@
 <time class="mycalendar-small pull-right" datetime="<?php echo date('Y-m-d'); ?>">
     <?php echo date('j'); ?> <em><?php echo date('M'); ?></em>
 </time>
-<br />
+<br />-->
 <p class="sectionSubHeaderContent">
     Rinkfinder.com will help you find over 160 member arenas throughout Minnesota
     (and other states), including directions, facility details, related vendors

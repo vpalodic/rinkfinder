@@ -41,8 +41,6 @@
         if(defined('YII_DEBUG')) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.js', CClientScript::POS_HEAD);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.js', CClientScript::POS_HEAD);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.js', CClientScript::POS_BEGIN);
@@ -51,6 +49,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
@@ -59,8 +58,6 @@
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.min.js', CClientScript::POS_HEAD);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.min.js', CClientScript::POS_HEAD);
-//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/daterangepicker.min.js', CClientScript::POS_BEGIN);
@@ -69,6 +66,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
@@ -261,17 +259,17 @@
         
         <div class="row-fluid">
             <div class="span12">
-                <footer id="footer">
+                <div id="footer">
                     Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
                     All Rights Reserved.<br/>
                     <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> | 
                     <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?>
                     <br />
-                </footer><!-- footer -->
+                </div><!-- footer -->
             </div>
         </div>
     </div><!-- page -->
     
-<?php endif; ?><!-- if $hits->navigation -->
+<?php endif; ?><!-- if $this->navigation -->
 </body>
 </html>

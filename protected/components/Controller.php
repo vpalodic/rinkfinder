@@ -33,8 +33,35 @@ class Controller extends CController
      */
     public $navigation = true;
 
-    public function registerUserScripts()
+    public function registerManagementScripts()
     {
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_arena.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_location.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_contact.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_event.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_reservation.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_arena.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_location.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_contact.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_event.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_reservation.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js', CClientScript::POS_END);
+        }
+        
     }
     
     /**
