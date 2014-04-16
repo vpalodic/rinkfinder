@@ -224,6 +224,17 @@
                 that.setupMarkers();
                 that.isSearching = false;
                 $('#searchButton i').removeClass("fa-spin");
+                
+                if ($(window).width() > 767)
+                {
+                    $('#searchResultsWell').ScrollTo({
+                        offsetTop: 60
+                    });
+                }
+                else
+                {
+                    $('#searchResultsWell').ScrollTo();
+                }
             },
             error: function(xhr, status, errorThrown) {
                 window.setTimeout(function () {
@@ -265,7 +276,7 @@
     locationSearch.createMarker = function (latlng, marker, index) {
         var html = this.createInfoWindow(marker);        
         var that = this;
-        this.addLocationListItem(marker, index, html);
+        this.addLocationListItem(marker, index);
         this.addLocationSelectItem(marker, index);
         
         html = "<div class='infowindow'>" + html + "</div>";
@@ -286,13 +297,40 @@
     locationSearch.createInfoWindow = function (marker) {
         // Start with the general arena info
         var output = '<div class="accordion" id="accordionInfoWindow">';
+
+        // Now do the events!
+        if (typeof marker.events !== 'undefined' && marker.events !== null && marker.events.length > 0)
+        {
+            output += '<div class="accordion-group"><div class="accordion-heading">' +
+                    '<a class="accordion-toggle" data-toggle="collapse" ' +
+                    'data-parent="#accordionInfoWindow" href="#collapseInfoWindowThree">' +
+                    'Facility Events</a></div>';
+
+            output += '<div id="collapseInfoWindowThree" class="accordion-body collapse in">' +
+                    '<div class="accordion-inner">';
+
+            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
+            
+            for (var i = 0; i < marker.events.length; i++)
+            {
+                output += "<address><strong><a href='" + marker.events[i].event_view_url + "'>" + marker.events[i].event_type_name + "</a></strong><br />";
+                
+                output += "Found: " + marker.events[i].event_count + "<br />";
+                output += "Earliest: " + marker.events[i].start_date_time + "</address>";
+            }
+            output += '</div></div></div>';
+        }
+        else if (typeof marker.events_url !== 'undefined' && marker.events_url !== null && marker.events_url.length > 0)
+        {
+            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
+        }
         
         output += '<div class="accordion-group"><div class="accordion-heading">' +
                 '<a class="accordion-toggle" data-toggle="collapse" ' +
                 'data-parent="#accordionInfoWindow" href="#collapseInfoWindowOne">' +
                 'Facility Details</a></div>';
         
-        output += '<div id="collapseInfoWindowOne" class="accordion-body collapse in">' +
+        output += '<div id="collapseInfoWindowOne" class="accordion-body collapse">' +
                 '<div class="accordion-inner">';
 
         output += "<h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
@@ -414,48 +452,14 @@
             }
             output += '</div></div></div>';
         }
-
-        // Now do the events!
-        if (typeof marker.events !== 'undefined' && marker.events !== null && marker.events.length > 0)
-        {
-            output += '<div class="accordion-group"><div class="accordion-heading">' +
-                    '<a class="accordion-toggle" data-toggle="collapse" ' +
-                    'data-parent="#accordionInfoWindow" href="#collapseInfoWindowThree">' +
-                    'Facility Events</a></div>';
-
-            output += '<div id="collapseInfoWindowThree" class="accordion-body collapse">' +
-                    '<div class="accordion-inner">';
-
-            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
-            
-            for (var i = 0; i < marker.events.length; i++)
-            {
-                output += "<address><strong><a href='" + marker.events[i].event_view_url + "'>" + marker.events[i].event_type_name + "</a></strong><br />";
-                
-                output += "Found: " + marker.events[i].event_count + "<br />";
-                output += "Earliest: " + marker.events[i].start_date_time + "</address>";
-            }
-            output += '</div></div></div>';
-        }
-        else if (typeof marker.events_url !== 'undefined' && marker.events_url !== null && marker.events_url.length > 0)
-        {
-            output += "</div><h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
-        }
         
-//        output += '</div>';
+        output += '</div>';
         return output;
     };
     
-    locationSearch.addLocationListItem = function (marker, index, html) {
+    locationSearch.addLocationListItem = function (marker, index) {
         // Start with the general arena info
         var $list = $("#locationList");
-        
-//        if (typeof html === "string")
-//        {
-//            $list.append("<li data-marker-index='" + index + "'>" + html + "</li>");
-//            
-//            return;
-//        }
         
         var output = "<li data-marker-index='" + index + "'><h3><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h3><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><p>";
