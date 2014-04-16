@@ -861,17 +861,17 @@
         this.searchLocations();
     };
     
-    locationSearch.hideButtons()
+    locationSearch.hideButtons = function ()
     {
         var $bDiv = $("#searchButtons > button");
         
         $bDiv.filter(":visible").hide();        
-    }
+    };
     
-    locationSearch.showButtons()
+    locationSearch.showButtons = function ()
     {
         var $bDiv = $("#searchButtons > button");
         
         $bDiv.filter(":hidden").show();
-    }
+    };
 }( window.locationSearch = window.locationSearch || {}, jQuery ));
