@@ -206,6 +206,7 @@
         doSearch.lng = this.centerpoint.lng();
         
         this.isSearching = true;
+        this.hideButtons();
         
         $('#searchButton i').addClass("fa-spin");
         
@@ -223,6 +224,7 @@
                 
                 that.setupMarkers();
                 that.isSearching = false;
+                that.showButtons();
                 $('#searchButton i').removeClass("fa-spin");
                 
                 if ($(window).width() > 767)
@@ -239,6 +241,7 @@
             error: function(xhr, status, errorThrown) {
                 window.setTimeout(function () {
                     that.isSearching = false;
+                    that.showButtons();
                     $('#searchButton i').removeClass("fa-spin");
                     
                     utilities.ajaxError.show(
@@ -330,7 +333,7 @@
                 'data-parent="#accordionInfoWindow" href="#collapseInfoWindowOne">' +
                 'Facility Details</a></div>';
         
-        output += '<div id="collapseInfoWindowOne" class="accordion-body collapse">' +
+        output += '<div id="collapseInfoWindowOne" class="accordion-body collapse in">' +
                 '<div class="accordion-inner">';
 
         output += "<h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
@@ -401,7 +404,7 @@
                     'data-parent="#accordionInfoWindow" href="#collapseInfoWindowTwo">' +
                     'Facility Contacts</a></div>';
 
-            output += '<div id="collapseInfoWindowTwo" class="accordion-body collapse">' +
+            output += '<div id="collapseInfoWindowTwo" class="accordion-body collapse in">' +
                     '<div class="accordion-inner">';
 
             for (var i = 0; i < marker.contacts.length; i++)
@@ -857,4 +860,18 @@
 
         this.searchLocations();
     };
+    
+    locationSearch.hideButtons()
+    {
+        var $bDiv = $("#searchButtons > button");
+        
+        $bDiv.filter(":visible").hide();        
+    }
+    
+    locationSearch.showButtons()
+    {
+        var $bDiv = $("#searchButtons > button");
+        
+        $bDiv.filter(":hidden").show();
+    }
 }( window.locationSearch = window.locationSearch || {}, jQuery ));

@@ -14,7 +14,7 @@
                     <input name="saddr" style="margin-bottom: 15px;" class="span3 search-query" type="text" id="addressInput" placeholder="123 Main St, St Paul, MN 55122" />
                     <?php endif; ?>
                     <input type="hidden" name="submit" value="false">
-                    <div class="span3">
+                    <div class="span3" id="searchButtons">
                         <button rel="tooltip" title="Search" id="searchButton" style="margin-bottom: 15px;" class="btn btn-primary" type="submit">
                             <i class="fa fa-lg fa-search"></i>
                         </button>
