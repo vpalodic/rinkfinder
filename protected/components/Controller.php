@@ -45,7 +45,7 @@ class Controller extends CController
         if(defined('YII_DEBUG')) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.js', CClientScript::POS_HEAD);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.js', CClientScript::POS_HEAD);
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.js', CClientScript::POS_BEGIN);
@@ -63,7 +63,7 @@ class Controller extends CController
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.min.js', CClientScript::POS_HEAD);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.min.js', CClientScript::POS_HEAD);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-html5.min.js', CClientScript::POS_HEAD);
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/ajaxify-bookmarklet-helper.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment-recur.min.js', CClientScript::POS_BEGIN);

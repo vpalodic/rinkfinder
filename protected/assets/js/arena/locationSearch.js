@@ -152,7 +152,13 @@
 
     locationSearch.searchLocations = function () {
         var $address = $("#addressInput");
-        var address = $address.val().trim();
+        var address = $address.val();
+        
+        if (typeof address.trim === "function")
+        {
+            address = address.trim();
+        }
+        
         var that = this;
         
         if (address.length <= 0)
@@ -576,7 +582,12 @@
             {
                 if (typeof $(this).val() === "string")
                 {
-                    var value = $(this).val().trim();
+                    var value = $(this).val();
+                    
+                    if (typeof value.trim === "function")
+                    {
+                        value = value.trim();
+                    }
                     
                     if (this.name === "start_date" || this.name === "end_date")
                     {
