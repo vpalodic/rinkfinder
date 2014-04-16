@@ -179,7 +179,7 @@
         },
         
         image: {
-            enabled: false,
+            enabled: true,
             src: utilities.urls.base + '/images/spinners/ajax-loader.gif"',
             alt: 'Loading...',
             content: '<div id="loading" class="loading-spinner" ' +
