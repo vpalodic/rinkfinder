@@ -465,7 +465,7 @@
  
 #searchResults ul.my-search-results > li {
   padding: 5px;
-  max-height: 30%;
+  max-height: 40%;
   overflow: auto;
 }
  

@@ -1006,6 +1006,7 @@ class ArenaController extends Controller
         $open = isset($_GET['open']) &&  isset($_GET['open']) == 'false' ? false : true;
         $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
         $limit = isset($_GET['limit']) ? $_GET['limit'] : 20;
+        $price = isset($_GET['price']) ? $_GET['price'] : null;
         $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : null;
         $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : null;
         $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
@@ -1030,7 +1031,19 @@ class ArenaController extends Controller
         // Our parameters are set so lets get us some data!
         try {
 //            $markers = Arena::getAddressWithEventsMarkers($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
-            $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
+//            $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
+            $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, array(
+                'offset' => $offset,
+                'limit' => $limit,
+                'open' => $open,
+                'price' => $price,
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
+                'types' => $types
+                )
+            );
             if($output == "xml") {
                 $this->sendResponseHeaders(200, 'xml');
             

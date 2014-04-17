@@ -5,7 +5,7 @@
     <form id="searchForm" class="form" method="get" action="<?php echo $this->createUrl('arena/locationSearch'); ?>">
         <div class="well well-small">
             <fieldset>
-                <legend>Locate a Facility</legend>
+                <legend>Find Facilities & Events</legend>
                 <div class="controls controls-row">
                     <label for="addressInput">Starting Location</label>
                     <?php if(isset($_GET['saddr']) && !empty($_GET['saddr'])) : ?>
@@ -13,16 +13,19 @@
                     <?php else: ?>
                     <input name="saddr" style="margin-bottom: 15px;" class="span3 search-query" type="text" id="addressInput" placeholder="123 Main St, St Paul, MN 55122" />
                     <?php endif; ?>
-                    <input type="hidden" name="submit" value="false">
-                    <div class="span3" id="searchButtons">
-                        <button rel="tooltip" title="Search" id="searchButton" style="margin-bottom: 15px;" class="btn btn-primary" type="submit">
+                    <input type="hidden" name="submit" value="false" />
+                    <div class="span6" id="searchButtons">
+                        <button rel="tooltip" title="Find" id="searchButton" style="margin-bottom: 15px;" class="btn btn-primary" type="submit">
                             <i class="fa fa-lg fa-search"></i>
+                            <span>Find</span>
                         </button>
-                        <button rel="tooltip" title="Search Filter" id="searchFilterButton" style="margin-bottom: 15px;" class="btn" type="button">
+                        <button rel="tooltip" title="Filter By Events" id="searchFilterButton" style="margin-bottom: 15px;" class="btn btn-success" type="button">
                             <i class="fa fa-lg fa-filter"></i>
+                            <span>Events</span>
                         </button>
                         <button rel="tooltip" title="Reset" id="searchResetButton" style="margin-bottom: 15px;" class="btn btn-warning" type="reset">
                             <i class="fa fa-lg fa-times"></i>
+                            <span>Reset</span>
                         </button>
                     </div>
                 </div>
@@ -56,7 +59,7 @@
                         </select>
                     </div>
                     <div class="controls controls-row">
-                        <label for="eventType">That Has</label>
+                        <label for="eventType">That Has These Events</label>
                         <select name="types[]" style="margin-bottom: 15px;" class="span3" id="eventType" multiple="multiple">
                         <?php
                             $myTypes = isset($_GET['types']) && is_array($_GET['types']) ? $_GET['types'] : array();
@@ -73,9 +76,17 @@
                         </select>
                     </div>
                     <div class="controls controls-row">
+                        <label for="eventPrice">Costs No More Than</label>
+                        <?php if(isset($_GET['price']) && is_numeric($_GET['price'])) : ?>
+                        <input style="margin-bottom: 15px;" class="span3" id="eventPrice" name="price" value="<?php echo $_GET['price']; ?>" type="text" />
+                        <?php else: ?>
+                        <input style="margin-bottom: 15px;" class="span3" id="eventPrice" name="price" type="text" placeholder="150.00"/>
+                        <?php endif; ?>
+                    </div>
+                    <div class="controls controls-row">
                         <label for="searchDate">Available On</label>
                         <div class="span3">
-                            <div id="searchDate" class="mydate input-append date">
+                            <div id="searchDate" class="mydate input-append date" style="width: 100%">
                                 <?php if(isset($_GET['start_date']) && !empty($_GET['start_date'])) : ?>
                                 <input class="uneditable-input" name="start_date" value="<?php echo $_GET['start_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="startDate" />
                                 <?php else: ?>
@@ -91,7 +102,7 @@
                     <div class="controls controls-row">
                         <label for="searchDateEnd">Available To</label>
                         <div class="span3">
-                            <div id="searchDateEnd" class="mydate input-append date">
+                            <div id="searchDateEnd" class="mydate input-append date" style="width: 100%">
                                 <?php if(isset($_GET['end_date']) && !empty($_GET['end_date'])) : ?>
                                 <input class="uneditable-input" name="end_date" value="<?php echo $_GET['end_date']; ?>" style="margin-bottom: 15px;" data-format="MM/dd/yyyy" type="text" id="endDate" />
                                 <?php else: ?>

@@ -404,7 +404,7 @@
                     'data-parent="#accordionInfoWindow" href="#collapseInfoWindowTwo">' +
                     'Facility Contacts</a></div>';
 
-            output += '<div id="collapseInfoWindowTwo" class="accordion-body collapse in">' +
+            output += '<div id="collapseInfoWindowTwo" class="accordion-body collapse">' +
                     '<div class="accordion-inner">';
 
             for (var i = 0; i < marker.contacts.length; i++)
@@ -464,7 +464,7 @@
         // Start with the general arena info
         var $list = $("#locationList");
         
-        var output = "<li data-marker-index='" + index + "'><h3><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h3><small>" + 
+        var output = "<li data-marker-index='" + index + "'><h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><p>";
         
         if(this.geocodedAddr === '')
@@ -658,6 +658,15 @@
                             values[this.name] = myInt
                         }
                     }
+                    else if (this.name === "price")
+                    {
+                        var myFloat = parseFloat(value, 10);
+                        
+                        if (myFloat !== "NaN")
+                        {
+                            values[this.name] = myFloat.toFixed(2);
+                        }
+                    }
                 }
                 else
                 {
@@ -677,7 +686,7 @@
         var $mapc = $('#map-canvas');
         
         $sresults.height($(window).height() * .90);
-//        $('#locationList').parent().height($(window).height() * .85);
+        $('#locationList').parent().height($(window).height() * .85);
         $mapc.parent().height($(window).height() * .85);
         
             if ($(window).width() <= 767)
@@ -729,7 +738,7 @@
                 }
                 
                 $sresults.height($(window).height() * .90);
-                $('#locationList').parent().height($(window).height() * .85);
+                $('#locationList').parent().height($(window).height() - 60);
                 $mapc.parent().height($(window).height() - 60);
             }
             
@@ -783,9 +792,22 @@
                 }
                 
                 $sresults.height($(window).height() * .90);
-                $('#locationList').parent().height($(window).height() * .85);
+                $('#locationList').parent().height($(window).height() - 60);
                 $mapc.parent().height($(window).height() - 60);
             }
+        });
+        
+        $("#eventPrice").inputmask("decimal", {
+            placeholder: "$0.00",
+            autoUnmask: true,
+            digits: 2,
+            groupSeparator: ",",
+            radixPoint: ".",
+            autoGroup: true,
+            rightAlignNumerics: true,
+            clearMaskOnLostFocus: true,
+            clearIncomplete: true,
+            showTooltip: true
         });
         
         $.fn.datetimepicker.defaults = {
@@ -801,7 +823,7 @@
             pickTime: false
         });
 
-        var $picker = $('#searchDateEnd').datetimepicker({
+        $('#searchDateEnd').datetimepicker({
             pickDate: true,
             pickTime: false
         });

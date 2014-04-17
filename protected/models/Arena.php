@@ -972,9 +972,11 @@ class Arena extends RinkfinderActiveRecord
      * @param float $lat The lattitude of the center point.
      * @param float $lng The longitude of the center point.
      * @param float $radius The radius of the search circle.
+     * @param mixed[] An array of the optional parameters below.
      * @param integer $offset The offset to start returning records from.
      * @param integer $limit The maximum records to return. Returns all if 0.
      * @param boolean $open If true, limits the search to open facilities only.
+     * @param float $price The maximum price to search on.
      * @param string $start_date The date of events to start search on.
      * @param string $end_date The last date of events to search to.
      * @param string $start_time The start time of the event to search from.
@@ -983,9 +985,20 @@ class Arena extends RinkfinderActiveRecord
      * @return mixed[] The arena markers or an empty array.
      * @throws CDbException
      */
-    public static function getMarkersWithContactsEvents($lat, $lng, $radius, $offset = 0, $limit = 0, $open = true, $start_date = null, $end_date = null, $start_time = null, $end_time = null, $types = array())
+    public static function getMarkersWithContactsEvents($lat, $lng, $radius, $params = array())
     {
-        // Let's start by building up our query
+        // Set the default values before we go snooping through the passed in
+        // parameters...
+        $offset = (isset($params['offset']) && is_numeric($params['offset'])) ? (integer)$params['offset'] : 0;
+        $limit = (isset($params['limit']) && is_numeric($params['limit'])) ? (integer)$params['limit'] : 0;
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        $price = (isset($params['price']) && is_numeric($params['price'])) ? (float)floatval(filter_var($params['price'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION)) : 0;
+        $start_date = (isset($params['start_date']) && is_string($params['start_date']) && !empty($params['start_date'])) ? (string)$params['start_date'] : null;
+        $end_date = (isset($params['end_date']) && is_string($params['end_date']) && !empty($params['end_date'])) ? (string)$params['end_date'] : null;
+        $start_time = (isset($params['start_time']) && is_string($params['start_time']) && !empty($params['start_time'])) ? (string)$params['start_time'] : null;
+        $end_time = (isset($params['end_time']) && is_string($params['end_time']) && !empty($params['end_time'])) ? (string)$params['end_time'] : null;
+        $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
+        
         // Let's start by building up our query
         $url = Yii::app()->createUrl('arena/view');
         $eventsUrlParams = array();
@@ -997,11 +1010,9 @@ class Arena extends RinkfinderActiveRecord
         if($open === true) {
             $where .= "WHERE a.status_id = (SELECT s.id FROM arena_status s WHERE "
                     . "s.name = 'OPEN') ";
-        } else {
-            
         }
-                
-        if($start_date != null || $start_time != null || $end_date != null ||
+        
+        if($price > 0 || $start_date != null || $start_time != null || $end_date != null ||
                 $end_time != null || $typeCount > 0) {
             $incEvents = true;
             
@@ -1083,22 +1094,60 @@ class Arena extends RinkfinderActiveRecord
                 . "        FROM event e "
                 . "        WHERE e.status_id = (SELECT es.id FROM event_status es WHERE es.name = 'OPEN') ";
 
+        if($price > 0) {
+            $eventSql .= 'AND e.price <= :price ';
+            $eventsUrlParams['price'] = $price;
+        }
+        
         if($start_date != null && $end_date != null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            if($end < $start) {
+                $end_date = $start_date;
+                $end = $start;
+            }
+            
             $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
                     . 'AND e.start_date <= CAST(:end_date AS DATE) ';
             $eventsUrlParams['start_date'] = $start_date;
             $eventsUrlParams['end_date'] = $end_date;
         } elseif($start_date != null && $end_date == null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
             $eventSql .= 'AND e.start_date = CAST(:start_date AS DATE) ';
             $eventsUrlParams['start_date'] = $start_date;
         } elseif($start_date == null && $end_date != null) {
-            $newDate = new DateTime();
-            $start_date = $newDate->format('Y-m-d');
+            $start_date = date("Y-m-d", time());
+            $today = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($end < $today) {
+                $end_date = $start_date;
+                $end = $today;
+            }
             
             $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
                     . 'AND e.start_date <= CASE(:end_date AS DATE) ';
             $eventsUrlParams['start_date'] = $start_date;
             $eventsUrlParams['end_date'] = $end_date;
+        } else {
+            $start_date = date("Y-m-d", time());
+            
+            $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) ';
+            $eventsUrlParams['start_date'] = $start_date;
         }
         
         if($start_time != null && $end_time != null) {
@@ -1116,7 +1165,6 @@ class Arena extends RinkfinderActiveRecord
         
         if($typeCount > 0) {
             $eventSql .= 'AND e.type_id IN (';
-//            $eventsUrlParams['types'] = $types;
             
             for($i = 0; $i < $typeCount; $i++) {
                 if($i + 1 == $typeCount) {
@@ -1166,6 +1214,10 @@ class Arena extends RinkfinderActiveRecord
         if($limit > 0) {
             $command->bindValue(':offset', (integer)$offset, PDO::PARAM_INT);
             $command->bindValue(':limit', (integer)$limit, PDO::PARAM_INT);
+        }
+        
+        if($price > 0) {
+            $command->bindParam(':price', $price, PDO::PARAM_STR);
         }
         
         if($start_date != null) {
@@ -1452,8 +1504,6 @@ class Arena extends RinkfinderActiveRecord
                 $results[$arenaIndex]['events'] = array();
                 $contactIndex = 0;
                 $eventIndex = 0;
-                
-//                $results[$arena['id']] = $arena;
                 
                 $recordParams['id'] = $arena['id'];
                 $arenaParams = $recordParams;

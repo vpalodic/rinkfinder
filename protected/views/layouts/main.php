@@ -92,67 +92,57 @@
                 <a class="brand" href="<?php echo Yii::app()->request->baseUrl . '/'; ?>">
                     <?php echo Yii::app()->name; ?>
                 </a>
-                <ul id="navOuter" class="nav hidden-desktop" role="menu">
+                <ul id="navOuter" role="menu" class="nav hidden-desktop<?php if(Yii::app()->controller->uniqueId === 'arena' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
                     <li role="menuitem">
                         <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
-                            <i class="fa fa-search fa-lg"></i> Facilities
-                        </a>
-                    </li>
-                    <li role="menuitem">
-                        <a tabindex="-1" href="<?php echo $this->createUrl('/arena/eventSearch'); ?>">
-                            <i class="fa fa-search fa-lg"></i> Events
+                            <i class="fa fa-search fa-lg"></i> Find
                         </a>
                     </li>
                 </ul>
                 <div class="nav-collapse collapse" id="navCollapse">
                     <ul id="navInner1" class="nav" role="menu">
-                        <li role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'index') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/index'); ?>">
                                 <i class="fa fa-lg fa-home fa-fw"></i> Home
                             </a>
                         </li>
-                        <li role="menuitem" class="hidden-phone  hidden-tablet">
+                        <li role="menuitem" class="hidden-phone  hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'arena' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
                             <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
-                                <i class="fa fa-search fa-lg fa-fw"></i> Facilities
-                            </a>
-                        </li>
-                        <li role="menuitem" class="hidden-phone  hidden-tablet">
-                            <a tabindex="-1" href="<?php echo $this->createUrl('/arena/eventSearch'); ?>">
-                                <i class="fa fa-search fa-lg fa-fw"></i> Events
+                                <i class="fa fa-search fa-lg fa-fw"></i> Find
                             </a>
                         </li>
                         <?php if(Yii::app()->user->isRestrictedArenaManager()) : ?>
-                        <li role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'management') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/management'); ?>">
                                 <i class="fa fa-lg fa-briefcase fa-fw"></i> Management
                             </a>
                         </li>
                         <?php endif; ?>
                         <?php if(Yii::app()->user->isApplicationAdministrator()) : ?>
-                        <li role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'administration') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/administration'); ?>">
                                 <i class="fa fa-lg fa-tasks fa-fw"></i> Administration
                             </a>
                         </li>
                         <?php endif; ?>
-                        <li role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'contact') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/contact'); ?>">
                                 <i class="fa fa-lg fa-envelope fa-fw"></i> Contact
                             </a>
                         </li>
-                        <li role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'page') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/page?view=about'); ?>">
                                 <i class="fa fa-lg fa-info fa-fw"></i> About</a>
                         </li>
                     </ul>
                     <?php if(Yii::app()->user->isGuest) : ?>
                     <ul class="pull-right nav" id="navInner2" role="menu">
-                        <li visible="1" role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'login') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/login'); ?>">
                                 <i class="fa fa-lg fa-user fa-fw"></i> Login
                             </a>
                         </li>
-                        <li visible="1" role="menuitem">
+                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'register') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/register'); ?>">
                                 <i class="fa fa-lg fa-users fa-fw"></i> Register
                             </a>
@@ -160,29 +150,29 @@
                     </ul>
                     <?php else : ?>
                     <ul class="pull-right nav" id="navInner3" role="menu">
-                        <li visible="1" role="menuitem" class="dropdown">
+                        <li role="menuitem" class="dropdown<?php if(Yii::app()->controller->uniqueId === 'user' || Yii::app()->controller->uniqueId === 'profile') echo ' active'; ?>">
                             <a class="no-ajaxy dropdown-toggle" data-toggle="dropdown" href="">
                                 <i class="fa fa-lg fa-user fa-fw"></i> <?php echo Yii::app()->user->fullName; ?>
                                 <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu" id="dropdownUser" aria-labelledby="dropdownUser" role="menu">
                                 <li class="nav-header">Profile</li>
-                                <li visible="1" role="menuitem">
+                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'profile' && Yii::app()->controller->action->id === 'view') echo ' class="active"'; ?>>
                                     <a tabindex="-1" href="<?php echo $this->createUrl('/profile/view', array('id' => Yii::app()->user->id)); ?>">
                                         <i class="fa fa-lg fa-list-ul fa-fw"></i> View Profile
                                     </a>
                                 </li>
-                                <li visible="1" role="menuitem">
+                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'profile' && Yii::app()->controller->action->id === 'update') echo ' class="active"'; ?>>
                                     <a tabindex="-1" href="<?php echo $this->createUrl('/profile/update', array('id' => Yii::app()->user->id)); ?>">
                                         <i class="fa fa-lg fa-pencil fa-fw"></i> Edit Profile</a>
                                 </li>
-                                <li visible="1" role="menuitem">
+                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'user' && Yii::app()->controller->action->id === 'changePassword') echo ' class="active"'; ?>>
                                     <a tabindex="-1" href="<?php echo $this->createUrl('/user/changePassword', array('id' => Yii::app()->user->id)); ?>">
                                         <i class="fa fa-lg fa-edit fa-fw"></i> Change Password
                                     </a>
                                 </li>
                                 <li class="divider"></li>
-                                <li visible="1" role="menuitem">
+                                <li role="menuitem">
                                     <a class="no-ajaxy" tabindex="-1" href="<?php echo $this->createUrl('/site/logout'); ?>">
                                         <i class="fa fa-lg fa-power-off fa-fw"></i> Logout
                                     </a>

@@ -635,18 +635,28 @@ class Event extends RinkfinderActiveRecord
         $dtEventStartDateTime = new DateTime($this->start_date . ' ' . $this->start_time);
         
         $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
-        $this->duration = !empty($this->duration) ? abs($this->duration) : 60;
-        $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
         $bAllDay = $this->all_day;
+        
+        $this->duration = !empty($this->duration) ? abs($this->duration) : 60;
+        
+        $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
         
         if($dtEventEndDateTime == $dtEventStartDateTime ||
                 $dtEventEndDateTime < $dtEventStartDateTime) {
             // End date and time isn't set correctly so we calculate it
             if($bAllDay) {
-                $this->start_time = '00:00:00';
                 $this->end_date = $this->start_date;
                 $this->end_time = '23:59:59';
-            } else {
+                $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
+                $intvalDuration = $dtEventStartDateTime->diff($dtEventEndDateTime);
+                $this->duration = (integer)(
+                        ($intvalDuration->y * 525949) + 
+                        ($intvalDuration->m * 43829.1) + 
+                        ($intvalDuration->d * 1440) + 
+                        ($intvalDuration->h * 60) +
+                        $intvalDuration->i
+                );
+           } else {
                 $dtEventEndDateTime = $dtEventStartDateTime->add($intvalDuration);
                 
                 $this->end_date = $dtEventEndDateTime->format('Y-m-d');
