@@ -67,44 +67,18 @@
                 <?php echo TbHtml::link("Lost Password?", array("site/resetAccount")); ?>
             </div>
 	</div>
-        <?php
-            $widget = $this->widget(
-                    'yiiwheels.widgets.switch.WhSwitch',
-                    array(
-                        'model' => $model,
-                        'attribute' => 'rememberMe',
-                        'onLabel' => 'Yes',
-                        'offLabel' => 'No',
-                        'textLabel' => $model->getAttributeLabel('rememberMe'),
-                        'size' => 'large',
-                        'offColor' => 'warning',
-                        'htmlOptions' => array(
-                        ),
-                    ),
-                    true
-            );
-
-            echo '<div class="control-group">';
-            echo '<div class="controls">';
-/*            echo TbHtml::tag(
-                    'label',
-                    array(
-                        'for' => 'LoginForm_rememberMe',
-                        'class' => 'control-label',
-                    ),
-                    $widget . ' ' . $model->getAttributeLabel('rememberMe'));*/
-            echo $widget;
-            echo $form->labelEx(
-                    $model,
-                    'rememberMe',
-                    array(
-//                        'class' => 'control-label',
-                        )
-                    );
-            echo $form->error($model, 'rememberMe');
-            echo '</div>';
-            echo '</div>';
-         ?>
+        <div class="control-group">
+            <div class="controls">
+                <label for="LoginForm_rememberMe">
+                     Remember me?
+                </label>
+                <div class="make-switch switch-large" data-on-label="Yes" data-off-label="No" data-on="primary" data-off="warning" id="LoginForm_rememberMe_switch">
+                    <input id="LoginForm_rememberMe" type="checkbox" value="0" name="LoginForm[rememberMe]">
+                </div>
+                <p id="LoginForm_rememberMe_em_" style="display:none" class="help-block">
+                </p>
+            </div>
+        </div>
     </fieldset>
     <?php
         echo TbHtml::formActions(
@@ -119,3 +93,29 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<script type="text/javascript">
+$(document).ready(function () {
+    var $switch = $("#LoginForm_rememberMe_switch");
+    var $checkbox = $("#LoginForm_rememberMe");
+    
+    if ($switch.hasClass('has-switch') === false)
+    {
+        if(typeof $('.make-switch')['bootstrapSwitch'] !== "undefined")
+        {
+            $switch['bootstrapSwitch']();
+            $switch.removeClass('make-switch');
+            
+            $switch.on('change', function (e) {
+                if ($checkbox.is(':checked'))
+                {
+                    $checkbox.val(1);
+                }
+                else
+                {
+                    $checkbox.val(0)
+                }
+            });
+        }
+    }
+});
+</script>

@@ -24,6 +24,8 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
+            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar.css');
+            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar_theme_responsive.css');
         } elseif ($this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.min.css');
@@ -32,6 +34,8 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar_theme_responsive.min.css');
         }
         
         // Register Google Apps Maps API
@@ -54,6 +58,9 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/kalendar.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile('http://ericwenn.se/kalendar/free/', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/eventCalendar/js/jquery.eventCalendar.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
@@ -71,6 +78,8 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/kalendar.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/eventCalendar/js/jquery.eventCalendar.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
         }
     ?>
@@ -92,9 +101,9 @@
                 <a class="brand" href="<?php echo Yii::app()->request->baseUrl . '/'; ?>">
                     <?php echo Yii::app()->name; ?>
                 </a>
-                <ul id="navOuter" role="menu" class="nav hidden-desktop<?php if(Yii::app()->controller->uniqueId === 'arena' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
+                <ul id="navOuter" role="menu" class="nav hidden-desktop<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
                     <li role="menuitem">
-                        <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
+                        <a tabindex="-1" href="<?php echo $this->createUrl('/site/locationSearch'); ?>">
                             <i class="fa fa-search fa-lg"></i> Find
                         </a>
                     </li>
@@ -106,9 +115,14 @@
                                 <i class="fa fa-lg fa-home fa-fw"></i> Home
                             </a>
                         </li>
-                        <li role="menuitem" class="hidden-phone  hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'arena' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
-                            <a tabindex="-1" href="<?php echo $this->createUrl('/arena/locationSearch'); ?>">
+                        <li role="menuitem" class="hidden-phone  hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/locationSearch'); ?>">
                                 <i class="fa fa-search fa-lg fa-fw"></i> Find
+                            </a>
+                        </li>
+                        <li role="menuitem" <?php if(Yii::app()->controller->uniqueId === 'arena') echo 'class="active"'; ?>>
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/arena/index'); ?>">
+                                <i class="fa fa-th-list fa-lg fa-fw"></i> Facilities
                             </a>
                         </li>
                         <?php if(Yii::app()->user->isRestrictedArenaManager()) : ?>
@@ -211,7 +225,7 @@
     <?php endif; ?>
 
     <div class="container-fluid" id="page">
-        <?php if(isset($this->breadcrumbs) && !empty($this->breakcrumbs)):?>
+        <?php if(isset($this->breadcrumbs) && !empty($this->breadcrumbs)):?>
             <div class="row-fluid">
                 <div class="span12">
                     <?php 

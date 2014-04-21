@@ -142,7 +142,26 @@ class Arena extends RinkfinderActiveRecord
             'contacts' => array(
                 self::MANY_MANY,
                 'Contact',
-                'arena_contact_assignment(arena_id, contact_id)'
+                'arena_contact_assignment(arena_id, contact_id)',
+                'condition' => 'contacts.active = 1'
+            ),
+            'primaryContact' => array(
+                self::MANY_MANY,
+                'Contact',
+                'arena_contact_assignment(arena_id, contact_id)',
+                'condition' => 'primaryContact.active = 1 AND primaryContact_primaryContact.primary_contact = 1'
+            ),
+            'secondaryContacts' => array(
+                self::MANY_MANY,
+                'Contact',
+                'arena_contact_assignment(arena_id, contact_id)',
+                'condition' => 'secondaryContacts.active = 1 AND secondaryContacts_secondaryContacts.primary_contact = 0'
+            ),
+            'contactsCount' => array(
+                self::STAT,
+                'Contact',
+                'arena_contact_assignment(arena_id, contact_id)',
+                'condition' => 't.active = 1'
             ),
             'arenaReservationPolicies' => array(
                 self::HAS_MANY,
@@ -151,6 +170,11 @@ class Arena extends RinkfinderActiveRecord
             ),
             'users' => array(
                 self::MANY_MANY,
+                'User',
+                'arena_user_assignment(arena_id, user_id)'
+            ),
+            'managersCount' => array(
+                self::STAT,
                 'User',
                 'arena_user_assignment(arena_id, user_id)'
             ),
@@ -163,6 +187,23 @@ class Arena extends RinkfinderActiveRecord
                 self::HAS_MANY,
                 'Location',
                 'arena_id'
+            ),
+            'locationsCount' => array(
+                self::STAT,
+                'Location',
+                'arena_id',
+                'condition' => 't.status_id = (SELECT ls.id FROM location_status ls WHERE ls.name = "OPEN")',
+            ),
+            'events' => array(
+                self::HAS_MANY,
+                'Event',
+                'arena_id'
+            ),
+            'eventsCount' => array(
+                self::STAT,
+                'Event',
+                'arena_id',
+                'condition' => 't.status_id = (SELECT es.id FROM event_status es WHERE es.name = "OPEN")'
             ),
             'reservations' => array(
                 self::HAS_MANY,
@@ -274,7 +315,17 @@ class Arena extends RinkfinderActiveRecord
                 )
         );
     }
+    
+    public function scopes() {
 
+        return array(
+            'active' => array(
+                'condition' => 't.status_id = (SELECT ass.id FROM arena_status ass WHERE ass.name = "OPEN")',
+                'order' => 't.name',
+            ),
+        );
+    }
+    
     /**
      * Returns the static model of the specified AR class.
      * Please note that you should have this exact method in all your CActiveRecord descendants!
@@ -972,7 +1023,7 @@ class Arena extends RinkfinderActiveRecord
      * @param float $lat The lattitude of the center point.
      * @param float $lng The longitude of the center point.
      * @param float $radius The radius of the search circle.
-     * @param mixed[] An array of the optional parameters below.
+     * @param mixed[] $params An array of the optional parameters below.
      * @param integer $offset The offset to start returning records from.
      * @param integer $limit The maximum records to return. Returns all if 0.
      * @param boolean $open If true, limits the search to open facilities only.
@@ -1027,7 +1078,9 @@ class Arena extends RinkfinderActiveRecord
                 . "a.ext, "
                 . "a.fax, "
                 . "a.fax_ext, "
+                . "a.logo, "
                 . "a.url AS home_url, "
+                . "a.tags, "
                 . "a.lat, "
                 . "a.lng, "
                 . "( 3959 * ACOS( COS( RADIANS( :lat ) ) * COS( RADIANS( a.lat ) "
@@ -1064,7 +1117,9 @@ class Arena extends RinkfinderActiveRecord
                 . "a.ext, "
                 . "a.fax, "
                 . "a.fax_ext, "
+                . "a.logo, "
                 . "a.url AS home_url, "
+                . "a.tags, "
                 . "a.lat, "
                 . "a.lng, "
                 . "( 3959 * ACOS( COS( RADIANS( :lat ) ) * COS( RADIANS( a.lat ) "
@@ -1189,9 +1244,9 @@ class Arena extends RinkfinderActiveRecord
 
         if($radius != null && $radius > 0) {
             $sql .= "HAVING distance < :radius "
-                    . "ORDER BY distance ASC, contact_type ASC, contact_name ASC ";
+                    . "ORDER BY distance ASC, arena_name ASC, contact_type ASC, contact_name ASC ";
         } else {
-            $sql .= "ORDER BY distance ASC, contact_type ASC, contact_name ASC ";
+            $sql .= "ORDER BY distance ASC, arena_name ASC, contact_type ASC, contact_name ASC ";
         }
         
         if($incEvents == true) {
@@ -1245,6 +1300,394 @@ class Arena extends RinkfinderActiveRecord
         $ret = $command->queryAll(true);
         
         return Arena::buildAddressMarkersResults($ret, $eventsUrlParams, $typeCount, $types);
+    }
+
+    /**
+     * Returns a record for use with Index action of the Arena Controler.
+     * @param mixed[] $params An array of the optional parameters below.
+     * @param integer $offset The offset to start returning records from.
+     * @param integer $limit The maximum records to return. Returns all if 0.
+     * @param boolean $open If true, limits the search to open facilities only.
+     * @param float $price The maximum price to search on.
+     * @param string $start_date The date of events to start search on.
+     * @param string $end_date The last date of events to search to.
+     * @param string $start_time The start time of the event to search from.
+     * @param string $end_time The start time of the event to search to.
+     * @param integer[] $types The event types to search for.
+     * @return mixed[] The arena markers or an empty array.
+     * @throws CDbException
+     */
+    public static function getIndexWithContactsEvents($params = array())
+    {
+        // Set the default values before we go snooping through the passed in
+        // parameters...
+        $offset = (isset($params['offset']) && is_numeric($params['offset'])) ? (integer)$params['offset'] : 0;
+        $limit = (isset($params['limit']) && is_numeric($params['limit'])) ? (integer)$params['limit'] : 0;
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        $price = (isset($params['price']) && is_numeric($params['price'])) ? (float)floatval(filter_var($params['price'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION)) : 0;
+        $start_date = (isset($params['start_date']) && is_string($params['start_date']) && !empty($params['start_date'])) ? (string)$params['start_date'] : null;
+        $end_date = (isset($params['end_date']) && is_string($params['end_date']) && !empty($params['end_date'])) ? (string)$params['end_date'] : null;
+        $start_time = (isset($params['start_time']) && is_string($params['start_time']) && !empty($params['start_time'])) ? (string)$params['start_time'] : null;
+        $end_time = (isset($params['end_time']) && is_string($params['end_time']) && !empty($params['end_time'])) ? (string)$params['end_time'] : null;
+        $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
+        
+        // Let's start by building up our query
+        $url = Yii::app()->createUrl('arena/view');
+        $eventsUrlParams = array();
+        
+        $where = '';
+        $incEvents = false;
+        $typeCount = count($types);
+        
+        if($open === true) {
+            $where .= "WHERE a.status_id = (SELECT s.id FROM arena_status s WHERE "
+                    . "s.name = 'OPEN') ";
+        }
+        
+        if($price > 0 || $start_date != null || $start_time != null || $end_date != null ||
+                $end_time != null || $typeCount > 0) {
+            $incEvents = true;
+            
+            $sql = "SELECT CONCAT('" . $url . "?id=', a.id) AS view_url, "
+                . "a.id, "
+                . "a.name AS arena_name, "
+                . "a.address_line1, "
+                . "CASE WHEN a.address_line2 IS NULL OR a.address_line2 = '' THEN "
+                . "NULL ELSE a.address_line2 END AS address_line2, "
+                . "CONCAT(a.city, ', ', a.state, ' ', a.zip) AS city_state_zip, "
+                . "a.phone, "
+                . "a.ext, "
+                . "a.fax, "
+                . "a.fax_ext, "
+                . "a.logo, "
+                . "a.url AS home_url, "
+                . "a.tags, "
+                . "a.lat, "
+                . "a.lng, "
+                . "CASE WHEN l.count IS NULL THEN 0 ELSE l.count END AS location_count, "
+                . "CASE WHEN aca.primary_contact IS NULL THEN NULL WHEN "
+                . "aca.primary_contact = 1 THEN 'Primary' ELSE 'Secondary' END "
+                . "AS contact_type, "
+                . "c.id AS contact_id, "
+                . "CONCAT(c.first_name, ' ', c.last_name) AS contact_name, "
+                . "c.phone AS contact_phone, "
+                . "c.ext AS contact_ext, "
+                . "c.fax AS contact_fax, "
+                . "c.fax_ext AS contact_fax_ext, "
+                . "c.email AS contact_email, "
+                . "et.id AS event_type_id, "
+                . "et.display_name AS event_type_name, "
+                . "ec.count AS event_count, "
+                . "DATE_FORMAT(ec.start_date_time, '%c/%e/%Y %l:%i %p') AS start_date_time "
+                . "FROM arena a "
+                . "    LEFT OUTER JOIN arena_contact_assignment aca "
+                . "    ON a.id = aca.arena_id"
+                . "    LEFT OUTER JOIN contact c "
+                . "    ON c.id = aca.contact_id AND c.active = 1 "
+                . "    LEFT OUTER JOIN (SELECT al.arena_id, COUNT(al.id) AS count "
+                . "        FROM location al "
+                . "        WHERE al.status_id = (SELECT ls.id "
+                . "            FROM location_status ls "
+                . "            WHERE ls.name = 'OPEN') "
+                . "        GROUP BY al.arena_id) l "
+                . "    ON l.arena_id = a.id ";
+        } else {
+            $sql = "SELECT CONCAT('" . $url . "?id=', a.id) AS view_url, "
+                . "a.id, "
+                . "a.name AS arena_name, "
+                . "a.address_line1, "
+                . "CASE WHEN a.address_line2 IS NULL OR a.address_line2 = '' THEN "
+                . "NULL ELSE a.address_line2 END AS address_line2, "
+                . "CONCAT(a.city, ', ', a.state, ' ', a.zip) AS city_state_zip, "
+                . "a.phone, "
+                . "a.ext, "
+                . "a.fax, "
+                . "a.fax_ext, "
+                . "a.logo, "
+                . "a.url AS home_url, "
+                . "a.tags, "
+                . "a.lat, "
+                . "a.lng, "
+                . "CASE WHEN l.count IS NULL THEN 0 ELSE l.count END AS location_count, "
+                . "CASE WHEN aca.primary_contact IS NULL THEN NULL WHEN "
+                . "aca.primary_contact = 1 THEN 'Primary' ELSE 'Secondary' END "
+                . "AS contact_type, "
+                . "c.id AS contact_id, "
+                . "CONCAT(c.first_name, ' ', c.last_name) AS contact_name, "
+                . "c.phone AS contact_phone, "
+                . "c.ext AS contact_ext, "
+                . "c.fax AS contact_fax, "
+                . "c.fax_ext AS contact_fax_ext, "
+                . "c.email AS contact_email "
+                . "FROM arena a "
+                . "    LEFT OUTER JOIN arena_contact_assignment aca "
+                . "    ON a.id = aca.arena_id"
+                . "    LEFT OUTER JOIN contact c "
+                . "    ON c.id = aca.contact_id AND c.active = 1 "
+                . "    LEFT OUTER JOIN (SELECT al.arena_id, COUNT(al.id) AS count "
+                . "        FROM location al "
+                . "        WHERE al.status_id = (SELECT ls.id "
+                . "            FROM location_status ls "
+                . "            WHERE ls.name = 'OPEN') "
+                . "        GROUP BY al.arena_id) l "
+                . "    ON l.arena_id = a.id ";
+        }
+        
+        $eventSql = "    LEFT OUTER JOIN (SELECT e.arena_id, "
+                . "        e.type_id, "
+                . "        COUNT(e.id) AS count, "
+                . "        MIN(CAST(CONCAT(e.start_date, ' ', e.start_time) AS DATETIME)) AS start_date_time "
+                . "        FROM event e "
+                . "        WHERE e.status_id = (SELECT es.id FROM event_status es WHERE es.name = 'OPEN') ";
+
+        if($price > 0) {
+            $eventSql .= 'AND e.price <= :price ';
+            $eventsUrlParams['price'] = $price;
+        }
+        
+        if($start_date != null && $end_date != null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            if($end < $start) {
+                $end_date = $start_date;
+                $end = $start;
+            }
+            
+            $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CAST(:end_date AS DATE) ';
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } elseif($start_date != null && $end_date == null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            $eventSql .= 'AND e.start_date = CAST(:start_date AS DATE) ';
+            $eventsUrlParams['start_date'] = $start_date;
+        } elseif($start_date == null && $end_date != null) {
+            $start_date = date("Y-m-d", time());
+            $today = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($end < $today) {
+                $end_date = $start_date;
+                $end = $today;
+            }
+            
+            $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CASE(:end_date AS DATE) ';
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } else {
+            $start_date = date("Y-m-d", time());
+            
+            $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) ';
+            $eventsUrlParams['start_date'] = $start_date;
+        }
+        
+        if($start_time != null && $end_time != null) {
+            $eventSql .= 'AND e.start_time >= CAST(:start_time AS TIME) '
+                    . 'AND e.start_time <= CAST(:end_time AS TIME) ';
+            $eventsUrlParams['start_time'] = $start_time;
+            $eventsUrlParams['end_time'] = $end_time;
+        } elseif($start_time != null && $end_time == null) {
+            $eventSql .= 'AND e.start_time >= CAST(:start_time AS TIME) ';
+            $eventsUrlParams['start_time'] = $start_time;
+        } elseif($start_time == null && $end_time != null) {
+            $eventSql .= 'AND e.start_time <= CAST(:end_time AS TIME) ';
+            $eventsUrlParams['end_time'] = $end_time;
+        }
+        
+        if($typeCount > 0) {
+            $eventSql .= 'AND e.type_id IN (';
+            
+            for($i = 0; $i < $typeCount; $i++) {
+                if($i + 1 == $typeCount) {
+                    $eventSql .= ':eventType' . $i . ') ';
+                } else {
+                    $eventSql .= ':eventType' . $i . ', ';
+                }
+            }
+        }
+        
+        $eventSql .= "        GROUP BY e.arena_id, e.type_id) ec "
+                . "    ON a.id = ec.arena_id "
+                . "    LEFT OUTER JOIN event_type et "
+                . "    ON ec.type_id = et.id AND et.active = 1 ";
+        
+        
+        if($incEvents == true) {
+            $sql .= $eventSql . $where;
+        } else {
+            $sql .= $where;
+        }
+
+        $sql .= "ORDER BY arena_name ASC, contact_type ASC, contact_name ASC ";
+        
+        if($incEvents == true) {
+            $sql .= ", et.display_order ASC ";
+        }
+
+        if($limit > 0) {
+            $sql .= "LIMIT :offset, :limit";
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        if($limit > 0) {
+            $command->bindValue(':offset', (integer)$offset, PDO::PARAM_INT);
+            $command->bindValue(':limit', (integer)$limit, PDO::PARAM_INT);
+        }
+        
+        if($price > 0) {
+            $command->bindParam(':price', $price, PDO::PARAM_STR);
+        }
+        
+        if($start_date != null) {
+            $command->bindParam(':start_date', $start_date, PDO::PARAM_STR);
+        }
+        
+        if($end_date != null) {
+            $command->bindParam(':end_date', $end_date, PDO::PARAM_STR);
+        }
+        
+        if($start_time != null) {
+            $command->bindValue(':start_time', $start_time, PDO::PARAM_STR);
+        }
+            
+        if($end_time != null) {
+            $command->bindParam(':end_time', $end_time, PDO::PARAM_STR);
+        }
+            
+        if($typeCount > 0) {
+            for($i = 0; $i < $typeCount; $i++) {
+                $command->bindValue(':eventType' . $i, (integer)$types[$i], PDO::PARAM_INT);
+            }
+        }
+        
+        $ret = $command->queryAll(true);
+        
+        return Arena::buildAddressMarkersResults($ret, $eventsUrlParams, $typeCount, $types);
+    }
+
+    /**
+     * Returns a record for use with Index action of the Arena Controler.
+     * @param integer $id The Arena ID that we are retrieving
+     * @param mixed[] $params An array of the optional parameters below.
+     * @param integer $offset The offset to start returning records from.
+     * @param integer $limit The maximum records to return. Returns all if 0.
+     * @param boolean $open If true, limits the search to open facilities only.
+     * @param float $price The maximum price to search on.
+     * @param string $start_date The date of events to start search on.
+     * @param string $end_date The last date of events to search to.
+     * @param string $start_time The start time of the event to search from.
+     * @param string $end_time The start time of the event to search to.
+     * @param integer[] $types The event types to search for.
+     * @return mixed[] The arena markers or an empty array.
+     * @throws CDbException
+     */
+    public static function getViewWithContactsLocations($aid, $params = array())
+    {
+        // Set the default values before we go snooping through the passed in
+        // parameters...
+        $offset = (isset($params['offset']) && is_numeric($params['offset'])) ? (integer)$params['offset'] : 0;
+        $limit = (isset($params['limit']) && is_numeric($params['limit'])) ? (integer)$params['limit'] : 0;
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        
+        // Let's start by building up our query
+        $url = Yii::app()->createUrl('arena/view');
+        $where = '';
+        
+        if($open === true) {
+            $where .= "WHERE a.status_id = (SELECT s.id FROM arena_status s WHERE "
+                    . "s.name = 'OPEN') AND a.id = :aid ";
+        } else {
+            $where .= "WHERE a.id = :aid ";
+        }
+        
+        $sql = "SELECT CONCAT('" . $url . "?id=', a.id) AS view_url, "
+                . "a.id, "
+                . "a.name AS arena_name, "
+                . "a.address_line1, "
+                . "CASE WHEN a.address_line2 IS NULL OR a.address_line2 = '' THEN "
+                . "NULL ELSE a.address_line2 END AS address_line2, "
+                . "CONCAT(a.city, ', ', a.state, ' ', a.zip) AS city_state_zip, "
+                . "a.phone, "
+                . "a.ext, "
+                . "a.fax, "
+                . "a.fax_ext, "
+                . "a.logo, "
+                . "a.url AS home_url, "
+                . "a.tags, "
+                . "a.lat, "
+                . "a.lng, "
+                . "a.description, "
+                . "a.notes, "
+                . "CASE WHEN aca.primary_contact IS NULL THEN NULL WHEN "
+                . "aca.primary_contact = 1 THEN 'Primary' ELSE 'Secondary' END "
+                . "AS contact_type, "
+                . "c.id AS contact_id, "
+                . "CONCAT(c.first_name, ' ', c.last_name) AS contact_name, "
+                . "c.phone AS contact_phone, "
+                . "c.ext AS contact_ext, "
+                . "c.fax AS contact_fax, "
+                . "c.fax_ext AS contact_fax_ext, "
+                . "c.email AS contact_email, "
+                . "lt.id AS location_type_id, "
+                . "lt.name AS location_type_name, "
+                . "lt.display_name AS location_type_display_name, "
+                . "l.id AS location_id, "
+                . "l.name AS location_name, "
+                . "l.description AS location_description, "
+                . "l.tags AS location_tags, "
+                . "l.length AS location_length, "
+                . "l.width AS location_width, "
+                . "l.radius AS location_radius, "
+                . "l.seating AS location_seating, "
+                . "l.notes AS location_notes "
+                . "FROM arena a "
+                . "    LEFT OUTER JOIN arena_contact_assignment aca "
+                . "    ON a.id = aca.arena_id"
+                . "    LEFT OUTER JOIN contact c "
+                . "    ON c.id = aca.contact_id AND c.active = 1 "
+                . "    LEFT OUTER JOIN location l "
+                . "    ON l.arena_id = a.id AND l.status_id = (SELECT ls.id "
+                . "        FROM location_status ls "
+                . "        WHERE ls.name = 'OPEN') "
+                . "    LEFT OUTER JOIN location_type lt "
+                . "    ON l.type_id = lt.id AND lt.active = 1 ";
+
+        $sql .= $where;
+            
+        $sql .= "ORDER BY arena_name ASC, contact_type ASC, contact_name ASC, "
+                . "lt.display_order ASC, location_name ASC ";
+        
+        if($limit > 0) {
+            $sql .= "LIMIT :offset, :limit";
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        if($limit > 0) {
+            $command->bindValue(':offset', (integer)$offset, PDO::PARAM_INT);
+            $command->bindValue(':limit', (integer)$limit, PDO::PARAM_INT);
+        }
+        
+        $ret = $command->queryAll(true);
+        
+        return Arena::buildViewResults($ret);
     }
 
     /**
@@ -1448,6 +1891,14 @@ class Arena extends RinkfinderActiveRecord
         return $ret;
     }
     
+    /**
+     * Returns a filtered record set for use with Google Maps or the Index.
+     * @param mixed[] $input The record set to filter.
+     * @param mixed[] $urlParams The parameters used to build the record set.
+     * @param integer $typeCount The number of event types.
+     * @param integer[] $types The array of type ids.
+     * @return mixed[] The filtered arena markers or an empty array.
+     */
     public static function buildAddressMarkersResults($input, $urlParams, $typeCount, $types)
     {
         $results = array();
@@ -1463,10 +1914,13 @@ class Arena extends RinkfinderActiveRecord
             'ext',
             'fax',
             'fax_ext',
+            'logo',
             'home_url',
+            'tags',
             'lat',
             'lng',
-            'distance'
+            'distance',
+            'location_count'
         );
         
         $contactKeys = array(
@@ -1505,14 +1959,14 @@ class Arena extends RinkfinderActiveRecord
                 $contactIndex = 0;
                 $eventIndex = 0;
                 
-                $recordParams['id'] = $arena['id'];
+                $recordParams['aid'] = $arena['id'];
                 $arenaParams = $recordParams;
 
                 if($typeCount > 0) {
                     $arenaParams['types'] = $types;
                 }
                 
-                $results[$arenaIndex]['events_url'] = Yii::app()->createUrl('arena/view', $arenaParams);
+                $results[$arenaIndex]['events_url'] = Yii::app()->createUrl('event/index', $arenaParams);
             } 
             
             // Only process the contact if one exists!
@@ -1535,12 +1989,12 @@ class Arena extends RinkfinderActiveRecord
                     $results[$arenaIndex]['events'][$eventIndex]['event_type_id'] != $event['event_type_id']) {
                     $eventIndex = array_push($results[$arenaIndex]['events'], $event) - 1;
                     //$results[$arena['id']]['events'][$event['event_type_id']] = $event;
-                    
+                    $results[$arenaIndex]['tags'] = $results[$arenaIndex]['tags'] . ', ' . $event['event_type_name'];
                     $eventParams = $recordParams;
                     
                     $eventParams['types'] = array($event['event_type_id']);
                 
-                    $results[$arenaIndex]['events'][$eventIndex]['event_view_url'] = Yii::app()->createUrl('arena/view', $eventParams);
+                    $results[$arenaIndex]['events'][$eventIndex]['event_view_url'] = Yii::app()->createUrl('event/index', $eventParams);
                 }
             }
             
@@ -1548,6 +2002,126 @@ class Arena extends RinkfinderActiveRecord
             unset($arena);
             unset($contact);
             unset($event);
+         }
+         
+         return $results;
+    }
+    
+    /**
+     * Returns a filtered record set for use with the View.
+     * @param mixed[] $input The record set to filter.
+     * @param mixed[] $urlParams The parameters used to build the record set.
+     * @param integer $typeCount The number of event types.
+     * @param integer[] $types The array of type ids.
+     * @return mixed[] The filtered arena marker or an empty array.
+     */
+    public static function buildViewResults($input)
+    {
+        $results = array();
+        
+        $arenaKeys = array(
+            'view_url',
+            'id',
+            'arena_name',
+            'address_line1',
+            'address_line2',
+            'city_state_zip',
+            'phone',
+            'ext',
+            'fax',
+            'fax_ext',
+            'logo',
+            'home_url',
+            'tags',
+            'lat',
+            'lng',
+            'description',
+            'notes'
+        );
+        
+        $contactKeys = array(
+            'contact_id',
+            'contact_type',
+            'contact_name',
+            'contact_phone',
+            'contact_ext',
+            'contact_fax',
+            'contact_fax_ext',
+            'contact_email'
+        );
+        
+        $locationKeys = array(
+            'location_type_id',
+            'location_type_name',
+            'location_type_display_name',
+            'location_id',
+            'location_name',
+            'location_description',
+            'location_tags',
+            'location_length',
+            'location_width',
+            'location_radius',
+            'location_seating',
+            'location_notes'
+        );
+        
+        $contactIndex = 0;
+        $locationIndex = 0;
+
+        foreach($input as $record) {
+            $recordParams = array();
+            $arena = array_intersect_key($record, array_flip($arenaKeys));
+            $contact = array_intersect_key($record, array_flip($contactKeys));
+            $location = array_intersect_key($record, array_flip($locationKeys));
+            
+            // First see if we should add the arena
+            if(!isset($results['id']) || $results['id'] != $arena['id']) {
+                $results = $arena;
+                $results['contacts'] = array();
+                $results['locations'] = array();
+                $contactIndex = 0;
+                $locationIndex = 0;
+                
+                $recordParams['aid'] = $arena['id'];
+                $arenaParams = $recordParams;
+
+                $results['events_url'] = Yii::app()->createUrl('event/index', $arenaParams);
+                $arenaParams['output'] = 'json';
+                $results['events_json_url'] = Yii::app()->createUrl('event/getMonth', $arenaParams);
+            } 
+            
+            // Only process the contact if one exists!
+            if(isset($contact['contact_id']) && is_numeric($contact['contact_id'])) {
+                // We have a contact, so check if it has been added
+                if(!isset($results['contacts'][$contactIndex]) || 
+                    $results['contacts'][$contactIndex]['contact_id'] != $contact['contact_id']) {
+                    $contactIndex = array_push($results['contacts'], $contact) - 1;
+                    $locationIndex = 0;
+                }
+            }
+            
+            // Only process the location if one exists!
+            if(isset($location['location_id']) && is_numeric($location['location_id'])) {
+                // We have a location, so check if it has been added
+                if(!isset($results['locations'][$locationIndex]) || 
+                    $results['locations'][$locationIndex]['location_id'] != $location['location_id']) {
+                    $locationIndex = array_push($results['locations'], $location) - 1;
+                    
+                    $locationParams = $recordParams;
+                    $locationParams['lid'] = $location['location_id'];
+                    $locationParams['aid'] = $arena['id'];
+                    
+                    $results['locations'][$locationIndex]['events_url'] = 
+                             Yii::app()->createUrl('event/index', $locationParams);
+                } else {
+                    $locationIndex += 1;
+                }
+            }
+            
+            unset($record);
+            unset($arena);
+            unset($contact);
+            unset($location);
          }
          
          return $results;

@@ -34,7 +34,6 @@ class ArenaController extends Controller
                     'index',
                     'view',
                     'mapMarkers',
-                    'locationSearch',
                 ),
                 'users' => array(
                     '*'
@@ -79,12 +78,162 @@ class ArenaController extends Controller
      */
     public function actionView($id)
     {
-        $this->render(
-                'view',
-                array(
-                    'model' => $this->loadModel($id),
-		)
-        );
+        Yii::trace("In actionIndex.", "application.controllers.ArenaController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        $open = isset($_GET['open']) &&  isset($_GET['open']) == 'false' ? false : true;
+        $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
+        $limit = isset($_GET['limit']) ? $_GET['limit'] : 0;
+        $price = isset($_GET['price']) ? $_GET['price'] : null;
+        $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date("Y-m-d", time());
+        $end_date = date('Y-m-t', strtotime($start_date));
+        $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
+        $end_time = isset($_GET['end_time']) ? $_GET['end_time'] : null;
+        $types = isset($_GET['types']) ? $_GET['types'] : array();
+        
+        if(is_null($id) || !is_numeric($id) || $id <= 0) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Arena::getViewWithContactsLocations($id, array(
+                'offset' => $offset,
+                'limit' => $limit,
+                'open' => $open,
+                'price' => $price,
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
+                'types' => $types
+               )
+            );
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "view", "arena");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            if(defined('YII_DEBUG')) {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/view.js', CClientScript::POS_END);
+            } else {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/view.min.js', CClientScript::POS_END);
+            }
+            
+            $this->breadcrumbs = array(
+                'Facilities' => $this->createUrl('arena/index'),
+                CHtml::encode($data['arena_name'])
+            );
+
+            $this->registerUserScripts();
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "view",
+                        array(
+                            'data' => $data,
+                            'doReady' => false,
+                            'path' => $path,
+                        ));
+            } else {
+                $this->render(
+                        "view",
+                        array(
+                            'data' => $data,
+                            'doReady' => true,
+                            'path' => $path,
+                        ));
+            }
+        }
     }
 
 	/**
@@ -159,53 +308,134 @@ class ArenaController extends Controller
      */
     public function actionIndex()
     {
-        $dataProvider = new CActiveDataProvider('Arena');
-
-        $this->registerUserScripts();
-        $this->includeCss = true;
-        $this->navigation = true;
-
-        $this->render(
-                'index',
-                array(
-                    'dataProvider' => $dataProvider,
-                )
-        );
-    }
-
-    /**
-     * Lists all models.
-     */
-    public function actionLocationSearch()
-    {
-        // Publish and register our jQuery plugin
-        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        Yii::trace("In actionIndex.", "application.controllers.ArenaController");
         
-        if(defined('YII_DEBUG')) {
-            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/locationSearch.js', CClientScript::POS_END);
-        } else {
-            Yii::app()->clientScript->registerScriptFile($path . '/js/arena/locationSearch.min.js', CClientScript::POS_END);
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date("Y-m-d", time());
+        $end_date = date('Y-m-t', strtotime($start_date));
+        
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Arena::getIndexWithContactsEvents(array(
+                'start_date' => $start_date,
+                'end_date' => $end_date
+                )
+            );
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
             
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
         }
         
-        $this->registerUserScripts();
-        $this->includeCss = true;
-        $this->navigation = true;
-        $doReady = true;
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => $data,
+                    )
+            );
         
-        if(Yii::app()->request->isAjaxRequest) {
-            $doReady = false;
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "index", "arena");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            if(defined('YII_DEBUG')) {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/index.js', CClientScript::POS_END);
+            } else {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/index.min.js', CClientScript::POS_END);
+            }
+            
+            $this->breadcrumbs = array(
+                'Facilities',
+            );
+
+            $this->registerUserScripts();
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "index",
+                        array(
+                            'start_date' => $start_date,
+                            'data' => $data,
+                            'doReady' => false,
+                            'path' => $path,
+                        ));
+            } else {
+                $this->render(
+                        "index",
+                        array(
+                            'start_date' => $start_date,
+                            'data' => $data,
+                            'doReady' => true,
+                            'path' => $path,
+                        ));
+            }
         }
-        
-        $this->render(
-                '/arena/locationSearch',
-                array(
-                    'path' => $path,
-                    'types' => Event::getTypes(true),
-                    'searchUrl' => $this->createUrl('arena/mapMarkers', array('output' => 'json')),
-                    'doReady' => $doReady,
-                )
-        );
     }
 
 	/**

@@ -13,7 +13,6 @@
                     <?php else: ?>
                     <input name="saddr" style="margin-bottom: 15px;" class="span3 search-query" type="text" id="addressInput" placeholder="123 Main St, St Paul, MN 55122" />
                     <?php endif; ?>
-                    <input type="hidden" name="submit" value="false" />
                     <div class="span6" id="searchButtons">
                         <button rel="tooltip" title="Find" id="searchButton" style="margin-bottom: 15px;" class="btn btn-primary" type="submit">
                             <i class="fa fa-lg fa-search"></i>
@@ -199,7 +198,7 @@ $(document).ready(function () {
     
     if(typeof locationSearch === "undefined")
     {
-        var scriptName = utilities.urls.assets + '/js/arena/locationSearch.' + (utilities.debug ? 'js' : 'min.js');
+        var scriptName = utilities.urls.assets + '/js/site/locationSearch.' + (utilities.debug ? 'js' : 'min.js');
         
         $.ajax({
             url: scriptName,

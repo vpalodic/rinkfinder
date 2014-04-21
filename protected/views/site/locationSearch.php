@@ -1,5 +1,5 @@
 <?php
-    /* @var $this ArenaController   */
+    /* @var $this Site              */
     /* @var $path string            */
     /* @var $types []               */
     /* @var $searchUrl []           */
@@ -14,7 +14,7 @@
 ?>
 
 <?php
-    $this->renderPartial('/arena/_locationSearch', array(
+    $this->renderPartial('/site/_locationSearch', array(
         'types' => $types,
         'path' => $path,
         'searchUrl' => $searchUrl,

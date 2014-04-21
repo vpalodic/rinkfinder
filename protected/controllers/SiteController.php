@@ -51,6 +51,7 @@ class SiteController extends Controller
                     'login',
                     'register',
                     'resetAccount',
+                    'locationSearch',
                 ),
                 'users' => array(
                     '*'
@@ -82,7 +83,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        Yii::trace("In actionManagement.", "application.controllers.SiteController");
+        Yii::trace("In actionIndex.", "application.controllers.SiteController");
         
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
@@ -603,6 +604,43 @@ class SiteController extends Controller
         );        
     }
     
+    /**
+     * Find a facility and events.
+     */
+    public function actionLocationSearch()
+    {
+        Yii::trace("In actionLocationSearch.", "application.controllers.SiteController");
+        
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/locationSearch.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/site/locationSearch.min.js', CClientScript::POS_END);
+            
+        }
+        
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+        $doReady = true;
+        
+        if(Yii::app()->request->isAjaxRequest) {
+            $doReady = false;
+        }
+        
+        $this->render(
+                '/site/locationSearch',
+                array(
+                    'path' => $path,
+                    'types' => Event::getTypes(true),
+                    'searchUrl' => $this->createUrl('arena/mapMarkers', array('output' => 'json')),
+                    'doReady' => $doReady,
+                )
+        );
+    }
+
     /**
      * Sends the contact e-mail to the site admin and the user if requested
      * @param ContactForm $model

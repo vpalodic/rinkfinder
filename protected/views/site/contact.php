@@ -132,124 +132,28 @@ If you have business inquiries or other questions, please fill out the following
 </div><!-- form -->
 <?php endif; ?>
 <script type="text/javascript">
+$(document).ready(function () {
     var $switch = $("#ContactForm_copyMe_switch");
+    var $checkbox = $("#ContactForm_copyMe");
     
-    if ($switch.hasClass('make-switch'))
+    if ($switch.hasClass('has-switch') === false)
     {
         if(typeof $('.make-switch')['bootstrapSwitch'] !== "undefined")
         {
-            $('.make-switch')['bootstrapSwitch']();
-        }
-    }
-    
-    jQuery('body').popover({'selector':'a[rel=popover]'});
-    jQuery('body').tooltip({'selector':'a[rel=tooltip]'});
-
-        jQuery('#yw1').after("<a id=\"yw1_button\" href=\"\/rinkfinder\/site\/captcha?refresh=1\">Get a new code<\/a>");
-        
-        jQuery(document).on('click', '#yw1_button', function(){
-            jQuery.ajax({
-                url: "\/rinkfinder\/site\/captcha?refresh=1",
-                dataType: 'json',
-                cache: false,
-                success: function(data) {
-                    jQuery('#yw1').attr('src', data['url']);
-                    jQuery('body').data('captcha.hash', [data['hash1'], data['hash2']]);
+            $switch['bootstrapSwitch']();
+            $switch.removeClass('make-switch');
+            
+            $switch.on('change', function (e) {
+                if ($checkbox.is(':checked'))
+                {
+                    $checkbox.val(1);
+                }
+                else
+                {
+                    $checkbox.val(0)
                 }
             });
-            return false;
-        });
-
-        jQuery('#contact-form').yiiactiveform({
-            'validateOnSubmit':true,
-            'attributes':[
-                {
-                    'id':'ContactForm_name',
-                    'inputID':'ContactForm_name',
-                    'errorID':'ContactForm_name_em_',
-                    'model':'ContactForm',
-                    'name':'name',
-                    'enableAjaxValidation':false,
-                    'inputContainer':'div.control-group',
-                    'clientValidation':function(value, messages, attribute) {
-                        if(jQuery.trim(value) == '') {
-                            messages.push("Your Name cannot be blank.");
-                        }
-                    }
-                },
-                {
-                    'id':'ContactForm_email',
-                    'inputID':'ContactForm_email',
-                    'errorID':'ContactForm_email_em_',
-                    'model':'ContactForm',
-                    'name':'email',
-                    'enableAjaxValidation':false,
-                    'inputContainer':'div.control-group',
-                    'clientValidation':function(value, messages, attribute) {
-                        if(jQuery.trim(value) == '') {
-                            messages.push("Your E-mail Address cannot be blank.");
-                        }
-                        
-                        if(jQuery.trim(value) != '' && !value.match(/^[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/)) {
-                            messages.push("Your E-mail Address is not a valid email address.");
-                        }
-                    }
-                },
-                {
-                    'id':'ContactForm_subject',
-                    'inputID':'ContactForm_subject',
-                    'errorID':'ContactForm_subject_em_',
-                    'model':'ContactForm',
-                    'name':'subject',
-                    'enableAjaxValidation':false,
-                    'inputContainer':'div.control-group',
-                    'clientValidation':function(value, messages, attribute) {
-                        if(jQuery.trim(value) == '') {
-                            messages.push("Subject cannot be blank.");
-                        }
-                    }
-                },
-                {
-                    'id':'ContactForm_body',
-                    'inputID':'ContactForm_body',
-                    'errorID':'ContactForm_body_em_',
-                    'model':'ContactForm',
-                    'name':'body',
-                    'enableAjaxValidation':false,
-                    'inputContainer':'div.control-group',
-                    'clientValidation':function(value, messages, attribute) {
-                        if(jQuery.trim(value) == '') {
-                            messages.push("Message cannot be blank.");
-                        }
-                    }
-                },
-                {
-                    'id':'ContactForm_verifyCode',
-                    'inputID':'ContactForm_verifyCode',
-                    'errorID':'ContactForm_verifyCode_em_',
-                    'model':'ContactForm',
-                    'name':'verifyCode',
-                    'enableAjaxValidation':false,
-                    'inputContainer':'div.control-group',
-                    'clientValidation':function(value, messages, attribute) {
-                        var hash = jQuery('body').data('captcha.hash');
-                        
-                        if (hash == null)
-                            hash = 641;
-                        else
-                            hash = hash[1];
-                        
-                        for (var i = value.length - 1, h = 0; i >= 0; --i)
-                            h+=value.toLowerCase().charCodeAt(i);
-                        
-                        if (h != hash) {
-                            messages.push("The verification code is incorrect.");
-                        }
-                    }
-                }
-            ],
-            'summaryID':'contact-form_es_',
-            'errorCss':'error'
-        });
-
+        }
+    }
+});
 </script>

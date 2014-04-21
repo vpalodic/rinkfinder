@@ -21,9 +21,11 @@
     locationSearch.centerpoint = null;
     locationSearch.geocodedAddr = "";
     locationSearch.isSearching = false;
+    locationSearch.isGeolocating = false;
+    locationSearch.searchParams = {};
     
-    locationSearch.getUserPosition = function () {
-        if (this.isSearching === true)
+    locationSearch.getUserPosition = function (search) {
+        if (this.isGeolocating === true)
         {
             return;
         }
@@ -31,6 +33,8 @@
         var that = this;
         if (navigator.geolocation)
         {
+            that.isGeolocating = true;
+            
             navigator.geolocation.getCurrentPosition(function (pos) {
                 that.position = pos;
                 
@@ -40,10 +44,16 @@
                 
                 that.centerpoint = new google.maps.LatLng(that.position.coords.latitude, that.position.coords.longitude);
                 
-                that.searchLocationsNear();
+                that.isGeolocating = false;
+                
+                if (search === true)
+                {
+                    that.searchLocationsNear();
+                }
             },
             function (error) {
                 that.useGeoLocation = false;
+                that.isGeolocating = false;
                 
                 switch(error.code)
                 {
@@ -65,6 +75,7 @@
         else
         {
             this.useGeoLocation = false;
+            this.isGeolocating = false;
         }
     };
     
@@ -82,7 +93,7 @@
         if (typeof this.map === "undefined" || this.map === null) {
             this.map = new google.maps.Map(document.getElementById("map-canvas"), {
                 center: this.centerpoint,
-                zoom: 8,
+                zoom: 12,
                 mapTypeId: google.maps.MapTypeId.HYBRID
             });
         }
@@ -135,7 +146,7 @@
         else
         {
             this.map.panTo(this.centerpoint);
-            this.map.setZoom(12);
+            this.map.setZoom(8);
             
             $('#locationSelect').empty();
             $('#locationList').empty();
@@ -161,9 +172,9 @@
         
         var that = this;
         
-        if (address.length <= 0)
+        if (address.length <= 0 && this.useGeoLocation === true && this.isGeolocating === false)
         {
-            this.getUserPosition();
+            this.getUserPosition(true);
         }
         else if (address === this.geocodedAddr)
         {
@@ -202,19 +213,13 @@
             return;
         }
         
-        doSearch.lat = this.centerpoint.lat();
-        doSearch.lng = this.centerpoint.lng();
-        
         this.isSearching = true;
-        this.hideButtons();
-        
-        $('#searchButton i').addClass("fa-spin");
         
         $.ajax({
             url: this.endpoints.markers,
             type: "GET",
             dataType: "json",
-            data: doSearch,
+            data: that.searchParams,
             success: function (result, status, xhr) {
                 // Clear previous results!
                 that.searchResults = [];
@@ -225,7 +230,6 @@
                 that.setupMarkers();
                 that.isSearching = false;
                 that.showButtons();
-                $('#searchButton i').removeClass("fa-spin");
                 
                 if ($(window).width() > 767)
                 {
@@ -242,7 +246,6 @@
                 window.setTimeout(function () {
                     that.isSearching = false;
                     that.showButtons();
-                    $('#searchButton i').removeClass("fa-spin");
                     
                     utilities.ajaxError.show(
                             "Location Search",
@@ -336,7 +339,7 @@
         output += '<div id="collapseInfoWindowOne" class="accordion-body collapse in">' +
                 '<div class="accordion-inner">';
 
-        output += "<h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
+        output += "<h5><a href='" + marker.view_url + "'>" + marker.arena_name + "</a></h5><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><br />";
 
         if(this.geocodedAddr === '')
@@ -464,7 +467,7 @@
         // Start with the general arena info
         var $list = $("#locationList");
         
-        var output = "<li data-marker-index='" + index + "'><h5><a href='" + marker.events_url + "'>" + marker.arena_name + "</a></h5><small>" + 
+        var output = "<li data-marker-index='" + index + "'><h5><a href='" + marker.view_url + "'>" + marker.arena_name + "</a></h5><small>" + 
                 "<strong>" + parseFloat(marker.distance).toFixed(2) + "</strong> miles</small><p>";
         
         if(this.geocodedAddr === '')
@@ -582,7 +585,7 @@
         // Now do the events!
         if (typeof marker.events !== 'undefined' && marker.events !== null && marker.events.length > 0)
         {
-            output += "<h5><a href='" + marker.events_url + "'>Event Information</a></h5>";
+            output += "<h5><a href='" + marker.events_url + "'>Event Calendar</a></h5>";
             
             for (var i = 0; i < marker.events.length; i++)
             {
@@ -655,7 +658,7 @@
                         
                         if (myInt !== "NaN")
                         {
-                            values[this.name] = myInt
+                            values[this.name] = myInt;
                         }
                     }
                     else if (this.name === "price")
@@ -667,6 +670,10 @@
                             values[this.name] = myFloat.toFixed(2);
                         }
                     }
+                    else
+                    {
+                        values[this.name] = $(this).val();
+                    }
                 }
                 else
                 {
@@ -675,7 +682,11 @@
             }
         });
         
-        return values;
+        that.searchParams = values;
+        that.searchParams.lat = that.centerpoint.lat();
+        that.searchParams.lng = that.centerpoint.lng();
+
+        return values !== {};
     };
 
     locationSearch.onReady = function () {
@@ -689,59 +700,60 @@
         $('#locationList').parent().height($(window).height() * .85);
         $mapc.parent().height($(window).height() * .85);
         
-            if ($(window).width() <= 767)
+        if ($(window).width() <= 767)
+        {
+            if($swell.css('padding-top') !== '0px')
             {
-                if($swell.css('padding-top') !== '0px')
-                {
-                    $swell.css('padding-top', '0px');
-                    $swell.css('padding-right', '0px');
-                    $swell.css('padding-bottom', '0px');
-                    $swell.css('padding-left', '0px');
-                }
+                $swell.css('padding-top', '0px');
+                $swell.css('padding-right', '0px');
                 
-                if($body.css('padding-right') !== '0px')
-                {
-                    $body.css('padding-left', '0px');
-                    $body.css('padding-right', '0px');
-                    $('.navbar-fixed-top').css('margin-left', '0px');
-                    $('.navbar-fixed-top').css('margin-right', '0px');
-                }
-                
-                if($swell.css('magin-bottom') !== '0px')
-                {
-                    $swell.css('margin-bottom', '0px');
-                }
-                
-                $sresults.height($(window).height());
-            
-                $mapc.parent().height($sresults.height() - 52);
-            }
-            else
-            {
-                if($swell.css('padding-top') == '0px')
-                {
-                    $swell.css('padding-top', '9px');
-                    $swell.css('padding-right', '9px');
-                    $swell.css('padding-bottom', '9px');
-                    $swell.css('padding-left', '9px');
-                }
-                
-                if($body.css('padding-right') == '0px')
-                {
-                    $body.css('padding-left', '20px');
-                    $body.css('padding-right', '20px');
-                }
-                
-                if($swell.css('magin-bottom') == '0px')
-                {
-                    $swell.css('margin-bottom', '20px');
-                }
-                
-                $sresults.height($(window).height() * .90);
-                $('#locationList').parent().height($(window).height() - 60);
-                $mapc.parent().height($(window).height() - 60);
+                $swell.css('padding-bottom', '0px');
+                $swell.css('padding-left', '0px');
             }
             
+            if($body.css('padding-right') !== '0px')
+            {
+                $body.css('padding-left', '0px');
+                $body.css('padding-right', '0px');
+                $('.navbar-fixed-top').css('margin-left', '0px');
+                $('.navbar-fixed-top').css('margin-right', '0px');
+            }
+            
+            if($swell.css('magin-bottom') !== '0px')
+            {
+                $swell.css('margin-bottom', '0px');
+            }
+            
+            $sresults.height($(window).height());
+            
+            $mapc.parent().height($sresults.height() - 52);
+        }
+        else
+        {
+            if($swell.css('padding-top') == '0px')
+            {
+                $swell.css('padding-top', '9px');
+                $swell.css('padding-right', '9px');
+                $swell.css('padding-bottom', '9px');
+                $swell.css('padding-left', '9px');
+            }
+            
+            if($body.css('padding-right') == '0px')
+            {
+                $body.css('padding-left', '20px');
+                $body.css('padding-right', '20px');
+            }
+            
+            if($swell.css('magin-bottom') == '0px')
+            {
+                $swell.css('margin-bottom', '20px');
+            }
+            
+            $sresults.height($(window).height() * .90);
+            $('#locationList').parent().height($(window).height() - 60);
+            $mapc.parent().height($(window).height() - 60);
+        }
+        
         $(window).on('resize', function (e) {
             if ($(window).width() <= 767)
             {
@@ -760,14 +772,14 @@
                     $('.navbar-fixed-top').css('margin-left', '0px');
                     $('.navbar-fixed-top').css('margin-right', '0px');
                 }
-                
+                                
                 if($swell.css('magin-bottom') !== '0px')
                 {
                     $swell.css('margin-bottom', '0px');
                 }
                 
                 $sresults.height($(window).height());
-            
+                
                 $mapc.parent().height($sresults.height() - 52);
             }
             else
@@ -873,14 +885,16 @@
             
             $("input[name=submit]").val(true);
             
-            that.searchLocations();
+            that.hideButtons();
+
+            that.searchLocations();            
         });
         
         var params = utilities.getUrlVars();
         
         this.initMap();
 
-        this.searchLocations();
+        this.getUserPosition();
     };
     
     locationSearch.hideButtons = function ()
