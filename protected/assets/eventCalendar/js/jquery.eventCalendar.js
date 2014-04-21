@@ -8,8 +8,8 @@
 		Paradigma Tecnologico (@paradigmate)
 */
 
-;$.fn.eventCalendar = function(options){
-    var eventsOpts = $.extend({}, $.fn.eventCalendar.defaults, options);
+$.fn.eventCalendar = function(options){
+    var eventsOpts = $.extend(true, {}, $.fn.eventCalendar.defaults, options);
     
     // define global vars for the function
     var flags = {
@@ -129,9 +129,6 @@
         // if current show current month & day
         if (show === "current") {
             day = date.getDate();
-            $eventsCalendarArrows = $("<a href='#' class='arrow prev'><span>" + 
-                    eventsOpts.txt_prev + "</span></a><a href='#' class='arrow next'><span>" + 
-                    eventsOpts.txt_next + "</span></a>");
             $eventsCalendarSlider.append($eventsCalendarArrows);
             $('.arrow.prev').hide();
         } else {
@@ -336,7 +333,7 @@
             //wrap.find('.eventsCalendar-list li').fadeIn();
             var events = [];
             
-            data = $(data).sort(sortJson); // sort event by dates
+//            data = $(data).sort(sortJson); // sort event by dates
             // each event
             if (data.length) {
                 // show or hide event description

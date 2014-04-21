@@ -221,6 +221,7 @@ class ArenaController extends Controller
                         "view",
                         array(
                             'data' => $data,
+                            'start_date' => $start_date,
                             'doReady' => false,
                             'path' => $path,
                         ));
@@ -229,6 +230,7 @@ class ArenaController extends Controller
                         "view",
                         array(
                             'data' => $data,
+                            'start_date' => $start_date,
                             'doReady' => true,
                             'path' => $path,
                         ));

@@ -8,6 +8,16 @@
 (function ( arenaView, $, undefined ) {
     "use strict";
     // public properties
+    arenaView.endpoints = {
+        calendar: '/server/endpoint'
+    };
+    
+    arenaView.$calendar;
+    arenaView.data;
+    arenaView.earliestDate = moment().format("YYYY-MM-DD");
+    arenaView.start_date = moment().format("YYYY-MM-DD");
+    arenaView.spinner = '<div id="loading"><img src="' + utilities.urls.base +
+            '/images/spinners/ajax-loader.gif" ' + 'alt="Loading..." /></div>';
     
     arenaView.onReady = function () {
         $('[data-toggle="tooltip"]').tooltip();

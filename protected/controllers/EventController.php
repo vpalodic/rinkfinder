@@ -103,6 +103,12 @@ class EventController extends Controller
     {
         Yii::trace("In actionIndex.", "application.controllers.ArenaController");
         
+        // Send some headers that will allow cross-domain requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type');
+        
         // Default to HTML output!
         $outputFormat = "html";
         

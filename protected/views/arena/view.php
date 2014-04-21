@@ -126,109 +126,84 @@
 </div>
 <div class="row-fluid">
     <div class="page-container">
-        <div class="span8 offset2">
+        <div class="span10 offset">
             <h2 class="text-center">Event Calendar</h2>
         </div>
     </div>
 </div>
 <div class="row-fluid">
-    <div class="span8 offset2">
+    <div class="span10 offset1">
         <div id="eventsCalendar">
         </div>
     </div>
 </div>
 
-<script>
-    $(document).ready(function() {
-        var $calendarContainer = $("#eventsCalendar");
-        var options = { 
-            events: [
-                {
-                    title:"Colored events",
-                    url: "http://www.google.se",
-                    start: {
-                        date: 20140515,
-                        time: "12.00"
-                    },
-                    end: {
-                        date: "20140515",
-                        time: "14.00"
-                    },
-                    location: "London"
-                },
-                {
-                    title:"Colored events",
-                    url: "http://www.google.se",
-                    start: {
-                        date: 20140515,
-                        time: "12.00"
-                    },
-                    end: {
-                        date: "20140515",
-                        time: "14.00"
-                    },
-                    location: "London"
-                },
-                {
-                    title:"Colored events",
-                    url: "http://www.google.se",
-                    start: {
-                        date: 20140516,
-                        time: "12.00"
-                    },
-                    end: {
-                        date: "20140516",
-                        time: "14.00"
-                    },
-                    location: "London"
-                },
-                {
-                    title:"Way Out West",
-                    url: "http://www.google.se",
-                    start: {
-                        date: 20140430,
-                        time: "12.00"
-                    },
-                    end: {
-                        date: "20140430",
-                        time: "14.00"
-                    },
-                    location: "Gothenburg",
-                    color: "yellow"
-                }
-            ],
-            eventcolors: {
-                yellow: {
-                    background: "#FC0",
-                    text: "#000",
-                    link: "#000"
-                },
-                blue: {
-                    background: "#6180FC",
-                    text: "#FFF",
-                    link: "#FFF"
-                }
-            },
-            onDayClick: function(e) {
-                console.log(e);
-            },
-            firstDayOfWeek: "Sunday",
-            showDays: true,
-            color: "blue",
-            urlText: "Help me please..."
-        };
+<?php if($doReady) : ?>
+<?php
+    Yii::app()->clientScript->registerScript(
+            'doReady_Index',
+            'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
+            . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
+            . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
+            . 'utilities.urls.assets = "' . $path . '";'
+            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . 'arenaView.endpoints.calendar ="' . $data['events_json_url'] . '";'
+            . 'arenaView.start_date = "' . $start_date . '";'
+            . 'arenaView.$calendar = $("#eventsCalendar");'
+            . 'arenaView.onReady();',
+            CClientScript::POS_READY
+    );
+?>
+<?php else: ?>
+<script type="text/javascript">
+$(document).ready(function () {
+    utilities.urls.login = "<?php echo $this->createUrl('site/login'); ?>";
+    utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
+    utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
+    utilities.urls.assets = "<?php echo $path; ?>";
+    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    
+    if(typeof arenaView === "undefined")
+    {
+        var scriptName = utilities.urls.assets + '/js/arena/view.' + (utilities.debug ? 'js' : 'min.js');
         
-//        $calendarContainer.height($(window).height() * .80);
-//        $("#eventsCalendar").kalendar(options);
-        $("#eventsCalendar").eventCalendar({
-            showDescription: true,
-            eventsScrollable: true,
-            startWeekOnMonday: false,
-            eventsLimit: 0,
-            eventsjson: '<?php echo $data['events_json_url']; ?>',
-            txt_NextEvents: 'Comming Events:',
-            jsonDateFormat: 'human',  // 'YYYY-MM-DD HH:MM:SS'
-            openEventInNewWindow: true
+        $.ajax({
+            url: scriptName,
+            dataType: "script",
+            cache: true,
+            success: function () {
+                console.log("Loaded: " + scriptName);
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                    "Error",
+                    "Failed to retrieve javsScript file",
+                    xhr,
+                    status,
+                    errorThrown
+                );
+            }
         });
-    });
+        
+        var interval = setInterval(function () {
+            if (typeof arenaView !== "undefined") {
+                clearInterval(interval);
+                arenaView.endpoints.calendar ="<?php echo $data['events_json_url']; ?>";
+                arenaView.start_date = "<?php echo $start_date; ?>";
+                arenaView.$calendar = $("#eventsCalendar");
+                arenaView.onReady();
+            } else if (console && console.log) {
+                console.log("Loading arenaIndex.js");
+            }
+        }, 500);
+    }
+    else
+    {
+        arenaView.endpoints.calendar ="<?php echo $data['events_json_url']; ?>";
+        arenaView.start_date = "<?php echo $start_date; ?>";
+        arenaView.$calendar = $("#eventsCalendar");
+        arenaView.onReady();
+    }
+});
 </script>
+<?php endif; ?>
