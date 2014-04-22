@@ -24,8 +24,6 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
-            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar.css');
-            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar_theme_responsive.css');
         } elseif ($this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.min.css');
@@ -34,8 +32,6 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
-            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar.min.css');
-            Yii::app()->clientScript->registerCssFile($path . '/eventCalendar/css/eventCalendar_theme_responsive.min.css');
         }
         
         // Register Google Apps Maps API
@@ -58,10 +54,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/kalendar.min.js', CClientScript::POS_END);
-//            Yii::app()->clientScript->registerScriptFile('http://ericwenn.se/kalendar/free/', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/eventCalendar/js/jquery.eventCalendar.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_BEGIN);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.min.js', CClientScript::POS_HEAD);
@@ -78,9 +71,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/kalendar.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/eventCalendar/js/jquery.eventCalendar.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_BEGIN);
         }
     ?>
     <link rel="shortcut icon" href="<?php echo Yii::app()->request->baseUrl; ?>/images/favicon.ico">
@@ -89,7 +80,7 @@
 </head>
 
 <body>
-<?php if($this->navigation): ?>
+<?php if($this->navigation == true): ?>
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">

@@ -118,7 +118,7 @@ class EventController extends Controller
         
         $aid = isset($_GET['aid']) ? $_GET['aid'] : null;
         $lid = isset($_GET['lid']) ? $_GET['lid'] : null;
-        $open = isset($_GET['open']) &&  isset($_GET['open']) == 'false' ? false : true;
+        $open = isset($_GET['open']) &&  ($_GET['open'] == 'false' || $_GET['open'] <= 0 || empty($_GET['open'])) ? false : true;
         $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
         $limit = isset($_GET['limit']) ? $_GET['limit'] : 0;
         $price = isset($_GET['price']) ? $_GET['price'] : null;
@@ -130,6 +130,7 @@ class EventController extends Controller
         $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
         $end_time = isset($_GET['end_time']) ? $_GET['end_time'] : null;
         $types = isset($_GET['types']) ? $_GET['types'] : array();
+        $navigation = isset($_GET['nav']) && ($_GET['nav'] == 'false' || $_GET['nav'] <= 0 || empty($_GET['nav'])) ? false : true;
         
         if(is_null($aid) || !is_numeric($aid) || $aid <= 0) {
             if($outputFormat == "xml" || $outputFormat == "html") {
@@ -163,6 +164,10 @@ class EventController extends Controller
                 'types' => $types
                )
             );
+            
+            $data['requestUrl'] = '/event/getMonth';
+            $data['params']['output'] = $outputFormat;
+            $data['params']['nav'] = $navigation;
         } catch (Exception $ex) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(500);
@@ -215,7 +220,7 @@ class EventController extends Controller
         if($outputFormat == 'json') {
             $this->sendResponseHeaders(200, 'json');
 
-            echo json_encode($data['calendar']);        
+            echo json_encode($data);        
             Yii::app()->end();
         } elseif($outputFormat == 'xml') {
             $this->sendResponseHeaders(200, 'xml');
@@ -229,34 +234,39 @@ class EventController extends Controller
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
 
-            if(defined('YII_DEBUG')) {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/view.js', CClientScript::POS_END);
-            } else {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/view.min.js', CClientScript::POS_END);
-            }
-            
-            $this->breadcrumbs = array(
-                'Facilities' => $this->createUrl('arena/index'),
-                CHtml::encode($data['arena_name'])
-            );
-
-            $this->registerUserScripts();
-            $this->includeCss = true;
-            $this->navigation = true;
-
             if(Yii::app()->request->isAjaxRequest) {
+                //$this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = false;
+                
                 $this->renderPartial(
-                        "view",
+                        "_calendar",
                         array(
                             'data' => $data,
+                            'start_date' => $start_date,
                             'doReady' => false,
                             'path' => $path,
                         ));
             } else {
+                if(defined('YII_DEBUG')) {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.js', CClientScript::POS_END);
+                } else {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.min.js', CClientScript::POS_END);
+                }
+            
+                $this->breadcrumbs = array(
+                    'Events'
+                );
+
+                $this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = $navigation;
+
                 $this->render(
-                        "view",
+                        "calendar",
                         array(
                             'data' => $data,
+                            'start_date' => $start_date,
                             'doReady' => true,
                             'path' => $path,
                         ));
@@ -520,10 +530,7 @@ class EventController extends Controller
 	 */
 	public function actionIndex()
 	{
-		$dataProvider=new CActiveDataProvider('Event');
-		$this->render('index',array(
-			'dataProvider'=>$dataProvider,
-		));
+		$this->actionGetMonth();
 	}
 
 	/**

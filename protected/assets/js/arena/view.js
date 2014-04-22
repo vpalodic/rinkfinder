@@ -21,6 +21,22 @@
     
     arenaView.onReady = function () {
         $('[data-toggle="tooltip"]').tooltip();
+        
+        var that = this;
+        
+        $.ajax({
+            url: that.endpoints.calendar,
+            data: {
+                output: "html"
+            },
+            dataType: 'html',
+            type: 'GET',
+            success: function (data, textStatus, jqXhr) {
+                var $data = $(data);
+                var $content = $data.find('#content');
+                that.$calendar.html(data);
+            }
+        });
     };
     
 }( window.arenaView = window.arenaView || {}, jQuery ));

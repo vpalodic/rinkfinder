@@ -672,7 +672,7 @@
                     }
                     else
                     {
-                        values[this.name] = $(this).val();
+                        values[this.name] = value;
                     }
                 }
                 else

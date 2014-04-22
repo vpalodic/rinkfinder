@@ -323,7 +323,6 @@ $(document).ready(function () {
     
     $phone.inputmask({
         mask: "(999) 999-9999",
-        placeholder: "(999) 999-9999",
         autoUnmask: true,
         showTooltip: true
     });

@@ -1075,12 +1075,14 @@ class Event extends RinkfinderActiveRecord
         $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
         
         // Let's start by building up our query
-        $arenaUrl = Yii::app()->createUrl('arena/view');
-        $eventUrl = Yii::app()->createUrl('event/view');
-        $eventsUrlParams = array();
+        $arenaUrl = Yii::app()->createAbsoluteUrl('arena/view');
+        $eventUrl = Yii::app()->createAbsoluteUrl('event/view');
+        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+
+        $eventsUrlParams = array('aid' => $aid);
         
         $where = '';
-        $incEvents = false;
         $typeCount = count($types);
         
         if($open === true) {
@@ -1090,13 +1092,16 @@ class Event extends RinkfinderActiveRecord
             $where .= "WHERE e.arena_id = :aid ";
         }
         
-        $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', :aid) AS arena_view_url, "
+        $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', e.arena_id) AS arena_view_url, "
                 . "CONCAT('" . $eventUrl . "?id=', e.id) AS url, "
+                . "CONCAT('" . $purchaseUrl . "?eid=', e.id, '&aid=', e.arena_id) AS pUrl, "
+                . "CONCAT('" . $infoUrl . "?eid=', e.id, '&aid=', e.arena_id) AS iUrl, "
                 . "(SELECT a.name FROM arena a WHERE a.id = e.arena_id) AS arena_name, "
                 . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location_name, "
                 . "(SELECT LOWER(et.name) FROM event_type et WHERE et.id = e.type_id) AS type_class, "
                 . "(SELECT et.display_name FROM event_type et WHERE et.id = e.type_id) AS type, "
                 . "e.id, "
+                . "e.arena_id, "
                 . "CASE WHEN e.name IS NULl THEN '' ELSE e.name END AS name, "
                 . "CASE WHEN e.description IS NULL THEN '' ELSE e.description END AS description, "
                 . "e.tags AS tags, "
@@ -1270,10 +1275,25 @@ class Event extends RinkfinderActiveRecord
     public static function buildCalendarResults($input, $urlParams, $typeCount, $types)
     {
         $count = count($input);
+        $time = isset($urlParams['start_date']) ? strtotime($urlParams['start_date']) : 0;
+        $month = isset($urlParams['start_date']) ? date('F', $time) : '';
+        $year = isset($urlParams['start_date']) ? date('Y', $time) : '';
+        
+        if($typeCount > 0) {
+            $urlParams['types'] = $types;
+        }
+        
         $ret = array(
-            'reocords' => $input,
-            'calendar' => array()
+            'records' => $input,
+            'calendar' => array(),
+            'month' => $month,
+            'year' => $year,
+            'params' => $urlParams
         );
+        
+        if($count <= 0) {
+            return $ret;
+        }
         
         for($i = 0; $i < $count; $i++) {
             $calendar = array(

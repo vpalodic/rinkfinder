@@ -1950,7 +1950,7 @@ class Arena extends RinkfinderActiveRecord
             $arena = array_intersect_key($record, array_flip($arenaKeys));
             $contact = array_intersect_key($record, array_flip($contactKeys));
             $event = array_intersect_key($record, array_flip($eventKeys));
-            
+            $recordParams['aid'] = $arena['id'];
             // First see if we should add the arena
             if(!isset($results[$arenaIndex]) || $results[$arenaIndex]['id'] != $arena['id'] ) {
                 $arenaIndex = array_push($results, $arena) - 1;
@@ -2086,7 +2086,7 @@ class Arena extends RinkfinderActiveRecord
                 $arenaParams = $recordParams;
 
                 $results['events_url'] = Yii::app()->createUrl('event/index', $arenaParams);
-                $arenaParams['output'] = 'json';
+                //$arenaParams['output'] = 'json';
                 $results['events_json_url'] = Yii::app()->createUrl('event/getMonth', $arenaParams);
             } 
             
