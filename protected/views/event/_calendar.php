@@ -49,34 +49,55 @@
 
 <?php if($doReady) : ?>
 <?php
-    if(Yii::app()->user->isGuest) {
-        Yii::app()->clientScript->registerScript(
-                'doReady_Index',
-                'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
-                . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
-                . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
-                . 'utilities.urls.assets = "' . $path . '";'
-                . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
-                . 'eventCalendar.onReady();',
-            CClientScript::POS_READY
-        );
-    } else {
-    Yii::app()->clientScript->registerScript(
-            'doReady_Index',
-            'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
-            . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
-            . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
-            . 'utilities.urls.assets = "' . $path . '";'
-            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
-            . 'eventCalendar.requester = { '
+$mScript = '';
+if(!Yii::app()->user->isGuest) {
+    $mScript = 'eventCalendar.requester = { '
             . '    requester_name: "' . Yii::app()->user->fullName . '", '
             . '    requester_email: "' . Yii::app()->user->email . '", '
             . '    requester_phone: "' . Yii::app()->user->phone . '" '
-            . '};'
-            . 'eventCalendar.onReady();',
-            CClientScript::POS_READY
-    );
-    }
+            . '};';
+}
+$script = 'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
+        . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
+        . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
+        . 'utilities.urls.assets = "' . $path . '";'
+        . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+        . 'if(typeof eventCalendar === "undefined") '
+        . '{ '
+        . "    var scriptName = utilities.urls.assets + '/js/event/calendar.' + "
+        . "        (utilities.debug ? 'js' : 'min.js'); "
+        . "    $.ajax({"
+        . "        url: scriptName,"
+        . "        dataType: 'script',"
+        . "        cache: true,"
+        . "        success: function () { "
+        . "            console.log('Loaded: ' + scriptName);"
+        . "        },"
+        . "        error: function(xhr, status, errorThrown) { "
+        . "            utilities.ajaxError.show( 'Error', "
+        . "                'Failed to retrieve javsScript file',"
+        . "                xhr,"
+        . "                status,"
+        . "                errorThrown"
+        . "            );"
+        . "        }"
+        . "    }); "
+        . "    "
+        . "    var interval = setInterval(function () {"
+        . "        if (typeof eventCalendar !== 'undefined') {"
+        . "            clearInterval(interval); " . $mScript
+        . "            eventCalendar.onReady(); "
+        . "        } else if (console && console.log) {"
+        . "            console.log('Loading arenaIndex.js');"
+        . "        }"
+        . "    }, 500);"
+        . "}"
+        . "else { " . $mScript 
+        . "    eventCalendar.onReady();"
+        . "}";
+
+    Yii::app()->clientScript->registerScript(
+            'doReady_eventCalendar', $script, CClientScript::POS_READY);
 ?>
 <?php else: ?>
 <script type="text/javascript">
@@ -86,14 +107,6 @@ $(document).ready(function () {
     utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
     utilities.urls.assets = "<?php echo $path; ?>";
     utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
-    <?php if(!Yii::app()->user->isGuest) : ?>
-    eventCalendar.requester = {
-        requester_name: '<?php echo Yii::app()->user->fullName; ?>',
-        requester_email: '<?php echo Yii::app()->user->email; ?>',
-        requester_phone: '<?php echo Yii::app()->user->phone; ?>'
-    };
-    <?php endif; ?>
-        
     if(typeof eventCalendar === "undefined")
     {
         var scriptName = utilities.urls.assets + '/js/event/calendar.' + (utilities.debug ? 'js' : 'min.js');
@@ -119,6 +132,14 @@ $(document).ready(function () {
         var interval = setInterval(function () {
             if (typeof eventCalendar !== "undefined") {
                 clearInterval(interval);
+                <?php if(!Yii::app()->user->isGuest) : ?>
+                eventCalendar.requester = {
+                    requester_name: '<?php echo Yii::app()->user->fullName; ?>',
+                    requester_email: '<?php echo Yii::app()->user->email; ?>',
+                    requester_phone: '<?php echo Yii::app()->user->phone; ?>'
+                };
+                <?php endif; ?>
+        
                 eventCalendar.onReady();
             } else if (console && console.log) {
                 console.log("Loading arenaIndex.js");
@@ -127,6 +148,14 @@ $(document).ready(function () {
     }
     else
     {
+        <?php if(!Yii::app()->user->isGuest) : ?>
+        eventCalendar.requester = {
+        requester_name: '<?php echo Yii::app()->user->fullName; ?>',
+        requester_email: '<?php echo Yii::app()->user->email; ?>',
+        requester_phone: '<?php echo Yii::app()->user->phone; ?>'
+        };
+        <?php endif; ?>
+        
         eventCalendar.onReady();
     }
 });

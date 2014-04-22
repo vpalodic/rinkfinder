@@ -31,10 +31,10 @@
                     $data.hide();
                     var $parent = $mycalendar.parent();
 
-                    $mycalendar.fadeOut(500, function () {
+                    $mycalendar.fadeOut(333, function () {
                         $mycalendar.remove();
                         $parent.append($data);
-                        $data.fadeIn(200, function() {
+                        $data.fadeIn(666, function() {
                             $mycalendar = $data;
                         });
                     });
