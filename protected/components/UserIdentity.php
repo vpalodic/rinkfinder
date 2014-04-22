@@ -39,6 +39,11 @@ class UserIdentity extends CUserIdentity
     private $_email;
 
     /**
+     * @var string Holds the user's phone number
+     */
+    private $_phone;
+
+    /**
      * @var integer Holds the user id
      */
     private $_id;
@@ -94,6 +99,15 @@ class UserIdentity extends CUserIdentity
     }
 
     /**
+     * Returns the phone number of the user
+     * @return string
+     */
+    public function getPhone()
+    {
+        return $this->_phone;
+    }
+
+    /**
      * Returns the id of the user
      * @return integer
      */
@@ -145,6 +159,7 @@ class UserIdentity extends CUserIdentity
                 $this->_lastName = $this->_user->lastName;
                 $this->_fullName = $this->_user->fullName;
                 $this->_email = $this->_user->email;
+                $this->_phone = $this->_user->phone;
                 $this->_roles = $this->_user->roles;
                 $this->errorCode = self::ERROR_NONE;
                 $this->_user->loginSuccessful();

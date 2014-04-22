@@ -2126,4 +2126,48 @@ class Arena extends RinkfinderActiveRecord
          
          return $results;
     }
+    
+    /**
+     * Returns an array of manager and contact e-mail addresses for the specified arena
+     * Please note that unlike access checks, the user must be explicitly assigned to
+     * either the Manager or RestrictedManager roles in order for them to be pulled
+     * @param integer $aid The Arena we are retrieving the e-mails for.
+     * @return integer[] The arena manager e-mail addresses.
+     * @throws CDbException
+     */
+    public static function getRealManagerContactEmails($aid)
+    {
+        // Let's start by building up our query
+        $emails = array();
+        
+        $sql = "SELECT DISTINCT u.email "
+                . "FROM user u "
+                . "INNER JOIN arena_user_assignment aua "
+                . "ON u.id = aua.user_id "
+                . "INNER JOIN arena a "
+                . "ON a.id = aua.arena_id AND a.id = :aid "
+                . "INNER JOIN " . Yii::app()->authManager->assignmentTable . " auth "
+                . "ON u.id = auth.userid AND auth.itemname IN ('Manager', 'RestrictedManager') "
+                . "UNION DISTINCT "
+                . "SELECT DISTINCT c.email "
+                . "FROM contact c "
+                . "INNER JOIN arena_contact_assignment aca "
+                . "ON c.id = aca.contact_id AND c.active = 1 "
+                . "INNER JOIN arena a "
+                . "ON a.id = aca.arena_id AND a.id = :aid";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':aid', $aid, PDO::PARAM_INT);
+
+        $emails = $command->queryAll(true);
+        
+        $ret = array();
+        
+        foreach($emails as $email) {
+            $ret[] = $email['email'];
+        }
+        
+        return $ret;
+    }    
 }

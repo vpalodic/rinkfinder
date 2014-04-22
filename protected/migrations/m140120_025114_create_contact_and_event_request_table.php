@@ -147,7 +147,7 @@ class m140120_025114_create_contact_and_event_request_table extends CDbMigration
                 'rejected_reason' => 'VARCHAR(511) NULL',
                 'notes' => 'TEXT NULL',
                 'type_id' => 'INT(3) NOT NULL',
-                'status_id' => 'INT(3) NOT NULL',
+                'status_id' => 'INT(3) NOT NULL DEFAULT 1',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
                 'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',

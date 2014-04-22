@@ -103,6 +103,27 @@ class RinkfinderWebUser extends CWebUser
     }
     
     /**
+     * Return phone number of the user.
+     * access it by Yii::app()->user->phone
+     * @return string The user's phone number
+     */
+    public function getPhone()
+    {
+        Yii::trace('getPhone()', 'application.components.RinkfinderWebUser');
+	return $this->getState('__phone');
+    }
+    
+    /**
+     * Sets phone number of the user.
+     * @param string $value The user's phone number
+     */
+    public function setPhone($value)
+    {
+        Yii::trace('setPhone()', 'application.components.RinkfinderWebUser');
+	$this->setState('__phone', $value);
+    }
+    
+    /**
      * Return roles of the user.
      * access it by Yii::app()->user->roles
      * @return string[] The user's roles
@@ -368,6 +389,7 @@ class RinkfinderWebUser extends CWebUser
             $this->setLastName($identity->getLastName());
             $this->setFullName($identity->getFullName());
             $this->setEmail($identity->getEmail());
+            $this->setEmail($identity->getPhone());
             $this->setRoles($identity->getRoles());
         }
         

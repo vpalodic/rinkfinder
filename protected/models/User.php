@@ -518,6 +518,15 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
+     * Retrieves the user's phone number
+     * @return string
+     */
+    public function getPhone()
+    {
+        return (isset($this->profile) && isset($this->profile->phone)) ? $this->profile->phone : '';
+    }
+
+    /**
      * Retrieves the user's roles
      * @return string[]
      */

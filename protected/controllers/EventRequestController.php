@@ -2,83 +2,357 @@
 
 class EventRequestController extends Controller
 {
-	/**
-	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
-	 * using two-column layout. See 'protected/views/layouts/column2.php'.
-	 */
-	public $layout='//layouts/column1';
+    /**
+     * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
+     * using two-column layout. See 'protected/views/layouts/column2.php'.
+     */
+    public $layout='//layouts/column1';
 
-	/**
-	 * @return array action filters
-	 */
-	public function filters()
-	{
-		return array(
-			'accessControl', // perform access control for CRUD operations
-                        'ajaxOnly + type status',
-			'postOnly + delete', // we only allow deletion via POST request
-		);
-	}
+    /**
+     * @return array action filters
+     */
+    public function filters()
+    {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+            'ajaxOnly + type status',
+            'postOnly + delete purchase info',
+        );
+    }
 
-	/**
-	 * Specifies the access control rules.
-	 * This method is used by the 'accessControl' filter.
-	 * @return array access control rules
-	 */
-	public function accessRules()
-	{
-		return array(
-			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('index','view', 'type', 'status'),
-				'users'=>array('*'),
-			),
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update'),
-				'users'=>array('@'),
-			),
-			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('admin','delete'),
-				'users'=>array('@'),
-			),
-			array('deny',  // deny all users
-				'users'=>array('*'),
-			),
-		);
-	}
+    /**
+     * Specifies the access control rules.
+     * This method is used by the 'accessControl' filter.
+     * @return array access control rules
+     */
+    public function accessRules()
+    {
+        return array(
+            array(
+                'allow',
+                'actions' => array('index', 'view', 'type', 'status', 'purchase', 'info'),
+                'users' => array('*'),
+            ),
+            array(
+                'allow',
+                'actions' => array('create', 'update'),
+                'users' => array('@'),
+            ),
+            array('allow',
+                'actions' => array('admin', 'delete'),
+                'users' => array('@'),
+            ),
+            array('deny',
+                'users'=>array('*'),
+            ),
+        );
+    }
 
-	/**
-	 * Displays a particular model.
-	 * @param integer $id the ID of the model to be displayed
-	 */
-	public function actionView($id)
-	{
-		$this->render('view',array(
-			'model'=>$this->loadModel($id),
-		));
-	}
+    /**
+     * Displays a particular model.
+     * @param integer $id the ID of the model to be displayed
+     */
+    public function actionView($id)
+    {
+        $this->render('view',array(
+            'model'=>$this->loadModel($id),
+        ));
+    }
 
-	/**
-	 * Creates a new model.
-	 * If creation is successful, the browser will be redirected to the 'view' page.
-	 */
-	public function actionCreate()
-	{
-		$model=new EventRequest;
+    /**
+     * Creates a new model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     */
+    public function actionCreate()
+    {
+        $model = new EventRequest;
 
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
 
-		if (isset($_POST['EventRequest'])) {
-			$model->attributes=$_POST['EventRequest'];
-			if ($model->save()) {
-				$this->redirect(array('view','id'=>$model->id));
-			}
-		}
+        if (isset($_POST['EventRequest'])) {
+            $model->attributes=$_POST['EventRequest'];
+            if ($model->save()) {
+                $this->redirect(array('view','id'=>$model->id));
+            }
+        }
 
-		$this->render('create',array(
-			'model'=>$model,
-		));
-	}
+        $this->render('create',array(
+            'model'=>$model,
+        ));
+    }
+
+    /**
+     * Creates a "Purchase" request and sends e-mails to arena managers and
+     * the requester
+     */
+    public function actionPurchase()
+    {
+        Yii::trace("In actionPurchase.", "application.controllers.EventRequestController");
+        
+        // Default to JSON output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_REQUEST['output']) && ($_REQUEST['output'] == 'xml' || $_REQUEST['output'] == 'json')) {
+            $outputFormat = $_REQUEST['output'];
+        }
+        
+        $requester_id = Yii::app()->user->isGuest ? 3 : Yii::app()->user->id;
+        $requester_name = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
+        $requester_email = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
+        $requester_phone = isset($_POST['requester_phone']) ? $_POST['requester_phone'] : null;
+        $aid = isset($_REQUEST['aid']) ? $_REQUEST['aid'] : null;
+        $eid = isset($_REQUEST['eid']) ? $_REQUEST['eid'] : null;
+        $type_id = EventRequestType::model()->find('name = "PURCHASE"')->id;
+        
+        if(is_null($aid) || is_null($type_id) || is_null($eid) || 
+                is_null($requester_phone) || is_null($requester_email) || 
+                is_null($requester_name) || is_null($requester_id)) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Try and save the data!
+        try {
+            $model = new EventRequest();
+            
+            $model->event_id = $eid;
+            $model->requester_id = $requester_id;
+            $model->requester_name = $requester_name;
+            $model->requester_email = $requester_email;
+            $model->requester_phone = $requester_phone;
+            $model->type_id = $type_id;
+            
+            // validate and save the model!!
+            $saved = $model->save();
+            
+            if(!$saved) {
+                throw new CHttpException(500, "Failed to save the request");
+            }
+            
+            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, "Reserve / Purchase", $model->id, $eid, $aid);
+            
+            // log any e-mail failures!
+            if($emailsSent !== true) {
+                Yii::log($emailsSent, CLogger::LEVEL_ERROR, 'application.models.EventRequest');
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw $ex;
+                }
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(array('success' => true));
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('success' => true), "response", "node");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
+
+    /**
+     * Creates a "Purchase" request and sends e-mails to arena managers and
+     * the requester
+     */
+    public function actionInfo()
+    {
+        Yii::trace("In actionInfo.", "application.controllers.EventRequestController");
+        
+        // Default to JSON output!
+        $outputFormat = "json";
+        $data = array();
+        
+        if(isset($_REQUEST['output']) && ($_REQUEST['output'] == 'xml' || $_REQUEST['output'] == 'json')) {
+            $outputFormat = $_REQUEST['output'];
+        }
+        
+        $requester_id = Yii::app()->user->isGuest ? 3 : Yii::app()->user->id;
+        $requester_name = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
+        $requester_email = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
+        $requester_phone = isset($_POST['requester_phone']) ? $_POST['requester_phone'] : null;
+        $aid = isset($_REQUEST['aid']) ? $_REQUEST['aid'] : null;
+        $eid = isset($_REQUEST['eid']) ? $_REQUEST['eid'] : null;
+        $type_id = EventRequestType::model()->find('name = "INFORMATION"')->id;
+        
+        if(is_null($aid) || is_null($type_id) || is_null($eid) || 
+                is_null($requester_phone) || is_null($requester_email) || 
+                is_null($requester_name) || is_null($requester_id)) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Try and save the data!
+        try {
+            $model = new EventRequest();
+            
+            $model->event_id = $eid;
+            $model->requester_id = $requester_id;
+            $model->requester_name = $requester_name;
+            $model->requester_email = $requester_email;
+            $model->requester_phone = $requester_phone;
+            $model->type_id = $type_id;
+            
+            // validate and save the model!!
+            $saved = $model->save();
+            
+            if(!$saved) {
+                throw new CHttpException(500, "Failed to save the request");
+            }
+            
+            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, "Information", $model->id, $eid, $aid);
+            
+            // log any e-mail failures!
+            if($emailsSent !== true) {
+                Yii::log($emailsSent, CLogger::LEVEL_ERROR, 'application.models.EventRequest');
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw $ex;
+                }
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(array('success' => true));
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('success' => true), "response", "node");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+        }
+    }
 
     /**
      * Gets a list of available types for the event request

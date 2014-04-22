@@ -9,22 +9,16 @@
                     A Service of the Minnesota Ice Arena Manager's Association
                 </h3>
                 <p style="padding-bottom:0px;padding-right:0px;padding-top:0px;padding-right:0px;font-size:1.0em;font-weight:normal;color:#000000;background:#ffffff;">
-                <?php if(is_array($requestStatus) && $requestStatus[0] == "Rejected") : ?>
-                    Your request has been <strong><?php echo $requestStatus[0]; ?>.</strong><br />
-                    
-                    <br />It was rejected for the following reason: <?php echo nl2br(CHtml::encode($requestStatus[1])); ?> <br /><br />
-                <?php elseif(is_array($requestStatus) && $requestStatus[0] == "Message") : ?>
-                    A facility manager has sent you the following message regarding your request:<br />
-                    
-                    <br /><?php echo nl2br(CHtml::encode($requestStatus[1])); ?> <br /><br />
-                <?php else: ?>
-                    Your request has been <strong><?php echo $requestStatus; ?>.</strong><br /><br />
-                <?php endif; ?>
+                    Your request regarding the event below has been received.<br /><br />
+                    Someone will be contacting you soon regarding your request. <br /><br />
                     Here are the details for the event that your request is based off of: <br />
                 </p>
                 <h3>Event Details:</h3>
                 <p>
                     <ul>
+                        <li>
+                            Request Type: <b><?php echo $requestType; ?></b>
+                        </li>
                         <li>
                             Facility: <b><?php echo $event->arena->name; ?></b>
                         </li>
@@ -37,9 +31,9 @@
                             Address: <b><?php echo $event->arena->address_line1 . ", " . $event->arena->city . ". " . $event->arena->state . " " . $event->arena->zip; ?></b>
                         </li>
                         <?php endif; ?>
-                        <?php if(isset($event->arena->locations[0]->name) && !empty($event->arena->locations[0]->name)) : ?>
+                        <?php if(isset($event->location->name) && !empty($event->location->name)) : ?>
                         <li>
-                            Venue: <b><?php echo $event->arena->locations[0]->name; ?></b>
+                            Venue: <b><?php echo $event->location->name; ?></b>
                         </li>
                         <?php endif; ?>
                         <li>

@@ -29,7 +29,7 @@
  *
  * The followings are the available model relations:
  * @property Arena $arena
- * @property Location $iceSheet
+ * @property Location $location
  * @property EventType $type
  * @property EventStatus $status
  * @property User $createdBy

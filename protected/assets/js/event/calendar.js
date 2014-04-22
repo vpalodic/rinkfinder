@@ -8,6 +8,12 @@
 (function ( eventCalendar, $, undefined ) {
     "use strict";
     // public properties
+    eventCalendar.requester = {
+        requester_name: '',
+        requester_email: '',
+        requester_phone: ''
+    };
+    
     eventCalendar.onReady = function () {
         var $mycalendar = $('.my-calendar-list');
     
@@ -65,6 +71,10 @@
             });
             
             // Now that our modal is in the DOM, we can attach our hooks into it!
+            $('#requesterPhone').val(eventCalendar.requester.requester_phone);
+            $('#requesterName').val(eventCalendar.requester.requester_name);
+            $('#requesterEmail').val(eventCalendar.requester.requester_email);
+            
             $('#requesterPhone').inputmask({
                 mask: "(999) 999-9999",
                 autoUnmask: true,
@@ -75,8 +85,8 @@
             $("button[type=submit]").attr("disabled", "disabled");
             
             //Append a change event listener to modal inputs
-            $('input').off('change');
-            $('input').on('change', function(){
+            $('input').off('keyup');
+            $('input').on('keyup', function(){
                 var params = eventCalendar.getRequestInputs();
                 
                 if(params === false)
@@ -145,6 +155,8 @@
             });
             
             $modal.show();
+            
+           $('input').trigger('keyup');           
         });
     };
     

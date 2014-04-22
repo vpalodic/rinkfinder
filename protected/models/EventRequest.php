@@ -1721,7 +1721,7 @@ class EventRequest extends RinkfinderActiveRecord
     }
     
     /**
-     * Sends an evenr request acknowledgement e-mail to the requester
+     * Sends an event request acknowledgement e-mail to the requester
      * @param mixed $status The status of the request.
      * @param string $requesterName The name of the requester.
      * @param string $requesterEmail The email of the requester.
@@ -1745,8 +1745,7 @@ class EventRequest extends RinkfinderActiveRecord
                     'arena.locations' => array(
                         'condition' => 'locations.id = :lid',
                         'params' => array(':lid' => $lid)
-                    ),
-                    'arena.contacts'
+                    )
                 ))->findByPk($eid);
         } else {
             $event = Event::model()->with (
@@ -1754,10 +1753,15 @@ class EventRequest extends RinkfinderActiveRecord
                     'arena' => array(
                         'condition' => 'arena.id = :aid',
                         'params' => array(':aid' => $aid)
-                    ),
-                    'arena.contacts'
+                    )
                 ))->findByPk($eid);
         }
+        
+        if($event == null) {
+            return "Unable to retrieve the event";
+        }
+        $notifyEmails = Arena::getRealManagerContactEmails($aid);
+        
         $data = array();
         $data['requestStatus'] = $status;
         $data['requester']['name'] = $requesterName;
@@ -1786,6 +1790,91 @@ class EventRequest extends RinkfinderActiveRecord
                 $subject,
                 $data,
                 'eventRequestUpdate'
+        );
+        
+        return $mailSent;
+    }
+    
+    /**
+     * Sends a new event request e-mail to the requester and managers!!
+     * @param string $requesterName The name of the requester.
+     * @param string $requesterEmail The email of the requester.
+     * @param string $requesterPhone The email of the requester.
+     * @param string $requestType The email of the requester.
+     * @param integer $id The id of the Event Request.
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $eid The event id the request was generated from.
+     * @param integer $aid The arena id the event was genereated from.
+     * @param integer $lid The optional location id to event was generated from.
+     * @return boolean True if the email was successfully send.
+     */
+    public static function sendNewEmailNotifications($requesterName, $requesterEmail, $requesterPhone, $requestType, $id, $eid, $aid)
+    {
+        // We need to pull the full event and arena information!
+        $event = Event::model()->with (
+            array(
+                'arena' => array(
+                    'condition' => 'arena.id = :aid',
+                    'params' => array(':aid' => $aid)
+                ),
+                'location'
+            ))->findByPk($eid);
+        
+        if($event == null) {
+            return "Unable to retrieve the event";
+        }
+        $notifyEmails = Arena::getRealManagerContactEmails($aid);
+        
+        $data = array();
+        $data['requester']['name'] = $requesterName;
+        $data['requester']['email'] = $requesterEmail;
+        $data['requester']['phone'] = $requesterPhone;
+        $data['requestType'] = $requestType;
+        $data['event'] = $event;
+        $data['eventUrl'] = Yii::app()->createAbsoluteUrl(
+                'event/view',
+                array(
+                    'id' => $eid,
+                )
+        );
+        $data['arenaUrl'] = Yii::app()->createAbsoluteUrl(
+                'arena/view',
+                array(
+                    'id' => $aid,
+                )
+        );
+        $data['eventRequestUrl'] = Yii::app()->createAbsoluteUrl(
+                'eventRequest/view',
+                array(
+                    'id' => $id,
+                )
+        );
+        $data['loginUrl'] = Yii::app()->createAbsoluteUrl(
+                'site/login',
+                array()
+        );
+        
+        $to = array($requesterEmail => $requesterName);
+        $subject = CHtml::encode(Yii::app()->name) . ': New Event Request at ' . $event->arena->name . ' Confirmation';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $to,
+                $subject,
+                $subject,
+                $data,
+                'eventRequestNew'
+        );
+        
+        $subject = CHtml::encode(Yii::app()->name) . ': New Event Request at ' . $event->arena->name . ' Notification';
+        
+        $mailSent = Yii::app()->sendMail(
+                '',
+                $notifyEmails,
+                $subject,
+                $subject,
+                $data,
+                'eventRequestNewManagers'
         );
         
         return $mailSent;
