@@ -1,54 +1,72 @@
 <?php
-    /* @var $this EventController */
-    /* @var $data mixed[] */
-    /* @var $start_date string */
-    /* @var $path string */
-    /* @var $doReady boolean */
-    $sdTime = strtotime($data['params']['start_date']);
-    $nextMonth = date('Y-m-01', strtotime("+1 month", $sdTime));
-    $previousMonth = date('Y-m-01', strtotime("-1 month", $sdTime));
-    
-    $nextParams = $data['params'];
-    $previousParams = $data['params'];
-    
-    $nextParams['start_date'] = $nextMonth;
-    unset($nextParams['end_date']);
-    
-    $previousParams['start_date'] = $previousMonth;
-    unset($previousParams['end_date']);
-    
-    $nextUrl = $this->createAbsoluteUrl($data['requestUrl'], $nextParams);
-    $previousUrl = $this->createAbsoluteUrl($data['requestUrl'], $previousParams);
+    /* @var $this EventController   */
+    /* @var $data mixed[]           */
+    /* @var $arena Arena            */
+    /* @var $start_date string      */
+    /* @var $path string            */
+    /* @var $doReady boolean        */
 ?>
 
 <div class="my-calendar-list">
+    <?php if(!is_null($arena) && isset($arena->name) && !empty($arena->name)) : ?>
+    <div class="row-fluid">
+        <div class="span4">
+            <?php if(isset($arena->logo) && !empty($arena->logo) && $arena->logo != '') : ?>
+            <img class="img-circle"
+                 src="<?php echo $arena->logo; ?>"
+                 alt="Facility Logo">
+            <?php endif; ?>
+        </div>
+        <div class="span8">
+            <h2 id="arenaHeader"><a href="<?php echo Yii::app()->createAbsoluteUrl('/arena/view', array('id' => $arena->id)); ?>"><?php echo CHtml::encode($arena->name); ?></a>
+                <br />
+                <small class="text-muted">
+                    <address>
+                        <?php echo $arena->address_line1; ?><br />
+                        <?php if(isset($arena->address_line2) && !empty($arena->address_line2)) {
+                            echo $arena->address_line2 . '<br />';
+                        } ?>
+                        <?php echo $arena->city . ', ' . $arena->state . ' ' . $arena->zip . '<br />'; ?>
+                        <?php if(isset($arena->phone) && !empty($arena->phone)) {
+                            echo '<abbr title="Phone">P:</abbr> ' . RinkfinderActiveRecord::format_telephone($arena->phone);
+                            if(isset($arena->ext) && !empty($arena->ext)) {
+                                echo ' <abbr title="Extension">E:</abbr> ' . $arena->ext . '<br />';
+                            } else {
+                                echo '<br />';
+                            }
+                        } ?>
+                        <?php if(isset($arena->fax) && !empty($arena->fax)) {
+                            echo '<abbr title="Fax">F:</abbr> ' . RinkfinderActiveRecord::format_telephone($arena->fax);
+                            if(isset($arena->fax_ext) && !empty($arena->fax_ext)) {
+                                echo ' <abbr title="Fax Extension">E:</abbr> ' . $arena->fax_ext . '<br />';
+                            } else {
+                                echo '<br />';
+                            }
+                        } ?>
+                        <?php if(isset($arena->url) && !empty($arena->url)) {
+                            echo  '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' . $arena->url . '">' . 'Home Page' . '</a><br />';
+                        } ?>
+                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($arena->address_line1 . ', ' . $arena->city . ', ' . $arena->state . ' ' . $arena->zip); ?>">
+                            Driving Directions
+                        </a>
+                    </address>
+                </small>
+            </h2>
+        </div>
+    </div>
+    <?php endif; ?>
     <div class="row-fluid">
         <div class="span12">
             <h3 class="text-center">
-                <?php if($data['month'] != '') : ?>
-                Events for <?php echo $data['month'] . ' ' . $data['year']; ?>
-                <?php else: ?>
-                Events
-                <?php endif; ?>
+                <?php echo $data['count']; ?> Events Found
             </h3>
-            <ul class="pager">
-                <?php if($data['month'] . $data['year'] == date("F", time()) . date("Y", time())) : ?>
-                <?php else : ?>
-                <li class="previous">
-                    <a class="previous-link" href="<?php echo $previousUrl; ?>">&larr; Previous</a>
-                </li>
-                <?php endif; ?>
-                <li class="next">
-                    <a class="next-link" href="<?php echo $nextUrl; ?>">Next &rarr;</a>
-                </li>
-            </ul>
         </div>
     </div>
     <?php if($data['count'] <= 0) : ?>
     <div class="my-calendar-list-item">
         <div class="row-fluid">
             <div class="span12">
-                <h3 class='text-center'>No events found for this period.</h3>
+                <h3 class='text-center'>No events found matching the criteria.</h3>
             </div>
         </div>
     </div>

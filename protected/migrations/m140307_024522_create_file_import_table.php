@@ -21,7 +21,7 @@ class m140307_024522_create_file_import_table extends CDbMigration
         // when we create the table
         $this->createTable('file_import', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
-                'file_upload_id' => 'INT(11) NOT NULL',
+                'file_upload_id' => 'INT(11) NULL',
                 'table_count' => 'INT(3) NOT NULL',
                 'tables' => 'VARCHAR(1024) NOT NULL',
                 'total_records' => 'INT(11) NOT NULL',
@@ -29,17 +29,17 @@ class m140307_024522_create_file_import_table extends CDbMigration
                 'total_updated' => 'INT(11) NOT NULL',
                 'auto_tagged' => 'BOOLEAN NOT NULL DEFAULT 0',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
-                'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
+                'created_by_id' => 'INT(11) NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',
-                'updated_by_id' => 'INT(11) NOT NULL DEFAULT 1',
+                'updated_by_id' => 'INT(11) NULL DEFAULT 1',
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
                 'KEY file_import_file_upload_id_fk (file_upload_id)',
                 'KEY file_import_created_by_id_fk (created_by_id)',
                 'KEY file_import_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT file_import_file_upload_id_fk FOREIGN KEY (file_upload_id) REFERENCES file_upload (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_import_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_import_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_import_file_upload_id_fk FOREIGN KEY (file_upload_id) REFERENCES file_upload (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_import_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_import_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

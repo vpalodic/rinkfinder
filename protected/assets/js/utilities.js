@@ -150,7 +150,19 @@
             else if (xhr && xhr.responseText)
             {
                 htmlOutput += "<h4>Error Details</h4>";
-                htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</pre></strong>";
+                
+                // We have a possible HTML response, so let's check to see if it is the error
+                // page. If it is, we will simply grab the content and nothing else
+                var $content = $(xhr.responseText).find(("#content"));
+                
+                if ($content.length > 0)
+                {
+                    htmlOutput += "<pre>Error: <strong>" + $content.html() + "</pre></strong>";
+                }
+                else
+                {
+                    htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</pre></strong>";
+                }
             }
 
             utilities.modal.add(label, htmlOutput, null, null, true).modal('show');

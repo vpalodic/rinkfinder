@@ -537,6 +537,22 @@ class Arena extends RinkfinderActiveRecord
     }
 
     /**
+     * Returns an array of open arenas for use in a select list
+     * @return array[] the array of arenas
+     * @throws CDbException
+     */
+    public static function getOpenList()
+    {
+        $sql = 'SELECT a.id, a.name, a.city '
+                . 'FROM arena a '
+                . 'WHERE a.status_id = (SELECT ass.id FROM arena_status ass WHERE ass.name = "OPEN") '
+                . 'ORDER BY a.name ASC, a.city';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of arena statuses
      * @return array[] the array of arena statuses
      * @throws CDbException
@@ -1202,7 +1218,6 @@ class Arena extends RinkfinderActiveRecord
             $start_date = date("Y-m-d", time());
             
             $eventSql .= 'AND e.start_date >= CAST(:start_date AS DATE) ';
-            $eventsUrlParams['start_date'] = $start_date;
         }
         
         if($start_time != null && $end_time != null) {
@@ -1243,7 +1258,7 @@ class Arena extends RinkfinderActiveRecord
         }
 
         if($radius != null && $radius > 0) {
-            $sql .= "HAVING distance < :radius "
+            $sql .= "HAVING distance <= :radius "
                     . "ORDER BY distance ASC, arena_name ASC, contact_type ASC, contact_name ASC ";
         } else {
             $sql .= "ORDER BY distance ASC, arena_name ASC, contact_type ASC, contact_name ASC ";

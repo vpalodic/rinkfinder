@@ -394,7 +394,7 @@
         
         if (typeof marker.home_url !== 'undefined' && marker.home_url !== null && marker.home_url.length > 0)
         {
-            output += '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' + marker.home_url + '">' + marker.home_url + '</a><br />';
+            output += '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' + marker.home_url + '">' + 'Home Page' + '</a><br />';
         }
         
         output += '</address></div></div></div>';
@@ -524,7 +524,7 @@
         
         if (typeof marker.home_url !== 'undefined' && marker.home_url !== null && marker.home_url.length > 0)
         {
-            output += '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' + marker.home_url + '">' + marker.home_url + '</a><br />';
+            output += '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' + marker.home_url + '">' + 'Home Page' + '</a><br />';
         }
         
         output += "</address>";

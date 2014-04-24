@@ -22,7 +22,7 @@ class EventController extends Controller
         return array(
             'accessControl', // perform access control for CRUD operations
             'postOnly + delete', // we only allow deletion via POST request
-            'arenaContext + index create admin uploadEvents', // check to ensure proper arena context
+            'arenaContext + create admin uploadEvents', // check to ensure proper arena context
             'ajaxOnly + uploadEventsFileDelete uploadEventsProcessCSV type status', // we only delete and process files via ajax!
         );
     }
@@ -39,6 +39,7 @@ class EventController extends Controller
                 'allow',  // allow all users to perform 'index' and 'view' actions
                 'actions' => array(
                     'getMonth',
+                    'getSearch',
                     'index',
                     'view',
                     'type',
@@ -83,25 +84,401 @@ class EventController extends Controller
     
     /**
      * Displays a particular model.
-     * @param integer $id the ID of the model to be displayed
      */
-    public function actionView($id)
+    public function actionView()
     {
-        $this->render(
-                'view',
-                array(
-                    'model' => $this->loadModel($id),
-		)
-        );
+        Yii::trace("In actionView.", "application.controllers.EventController");
+        
+        // Send some headers that will allow cross-domain requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type');
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        $aid = isset($_GET['aid']) ? $_GET['aid'] : null;
+        $lid = isset($_GET['lid']) ? $_GET['lid'] : null;
+        $open = isset($_GET['open']) &&  ($_GET['open'] == 'false' || $_GET['open'] <= 0 || empty($_GET['open'])) ? 0 : 1;
+        $navigation = isset($_GET['nav']) && ($_GET['nav'] == 'false' || $_GET['nav'] <= 0 || empty($_GET['nav'])) ? 0 : 1;
+        
+        // We are pretty flexible in what we will accept as we can either send
+        // lat & lng pair to search by distance, a single arena id, or an array
+        // of arena IDs. At least one of these must be passed in to us or else
+        // we will bomb out.
+        if(is_null($aid) || !is_numeric($aid) || $aid <= 0 ||
+                is_null($id) || !is_numeric($id) || $id <= 0) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Try and get the data!
+        try {
+            $data = Event::getSingleEventView($id, $aid, array(
+                    'open' => $open,
+                    'lid' => $lid
+                    )
+                );
+            
+            $data['requestUrl'] = '/event/view';
+            $data['params']['output'] = $outputFormat;
+            $data['params']['nav'] = $navigation;
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode($data);        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "events", "event");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            $arena = null;
+            
+            if(count($data['records']) == 1)
+            {
+                $arena = Arena::model()->findByPk($data['records'][0]['arena_id']);
+            }
+            
+            if(Yii::app()->request->isAjaxRequest) {
+                //$this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = false;
+                
+                $this->renderPartial(
+                        "_view",
+                        array(
+                            'data' => $data,
+                            'arena' => $arena,
+                            'doReady' => false,
+                            'path' => $path,
+                        ));
+            } else {
+                if(defined('YII_DEBUG')) {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.js', CClientScript::POS_END);
+                } else {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.min.js', CClientScript::POS_END);
+                }
+
+                $this->breadcrumbs = array(
+                    'Facilities' => array('/arena/index'),
+                    $data['records'][0]['arena_name'] => array('/arena/view', 'id' => $data['records'][0]['arena_id']),
+                    'Events' => array('/event/index', 'aid' => $data['records'][0]['arena_id'], 'limit' => 100),
+                    $data['records'][0]['type'] => array('/event/index', 'aid' => $data['records'][0]['arena_id'], 'limit' => 100, 'types' => array($data['records'][0]['type_id']))
+                );
+
+                $this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = $navigation;
+
+                $this->render(
+                        "view",
+                        array(
+                            'data' => $data,
+                            'arena' => $arena,
+                            'doReady' => true,
+                            'path' => $path,
+                        ));
+            }
+        }
     }
 
     /**
-     * Displays a particular model.
-     * @param integer $id the ID of the model to be displayed
+     * Displays a particular arena's events one month at a time.
+     */
+    public function actionGetSearch()
+    {
+        Yii::trace("In actionGetSearch.", "application.controllers.EventController");
+        
+        // Send some headers that will allow cross-domain requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type');
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        $aid = isset($_GET['aid']) ? $_GET['aid'] : null;
+        $aids = isset($_GET['aids']) ? $_GET['aids'] : array();
+        $lat = isset($_GET['lat']) ? $_GET['lat'] : null;
+        $lng = isset($_GET['lng']) ? $_GET['lng'] : null;
+        $radius = isset($_GET['radius']) ? $_GET['radius'] : 20;
+        $lid = isset($_GET['lid']) ? $_GET['lid'] : null;
+        $open = isset($_GET['open']) &&  ($_GET['open'] == 'false' || $_GET['open'] <= 0 || empty($_GET['open'])) ? 0 : 1;
+        $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
+        $limit = isset($_GET['limit']) ? $_GET['limit'] : 20;
+        $price = isset($_GET['price']) ? $_GET['price'] : null;
+        $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : null;
+        $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : null;
+        $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
+        $end_time = isset($_GET['end_time']) ? $_GET['end_time'] : null;
+        $types = isset($_GET['types']) ? $_GET['types'] : array();
+        $navigation = isset($_GET['nav']) && ($_GET['nav'] == 'false' || $_GET['nav'] <= 0 || empty($_GET['nav'])) ? 0 : 1;
+        
+        // We are pretty flexible in what we will accept as we can either send
+        // lat & lng pair to search by distance, a single arena id, or an array
+        // of arena IDs. At least one of these must be passed in to us or else
+        // we will bomb out.
+        if((is_null($aid) || !is_numeric($aid) || $aid <= 0) && count($aids) <= 0 &&
+                (is_null($lat) || !is_numeric($lat) || is_null($lng) || !is_numeric($lng))) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // To ease the pain, we will always search with $aids. so, we will simply
+        // add the single $aid to the array if it has been set
+        if(!is_null($aid) && is_numeric($aid) && $aid > 0) {
+            $aids[] = $aid;
+        }
+        
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            // We will do one of two searches, if count($aids) is greater than 0
+            // we will search by the selected arenas, otherwise we will search
+            // by $lat and $lng
+            if(count($aids) > 0) {
+                $data = Event::getEventsSearchByArenas($aids, array(
+                    'offset' => $offset,
+                    'limit' => $limit,
+                    'open' => $open,
+                    'lid' => $lid,
+                    'price' => $price,
+                    'start_date' => $start_date,
+                    'end_date' => $end_date,
+                    'start_time' => $start_time,
+                    'end_time' => $end_time,
+                    'types' => $types
+                    )
+                );
+            } else {
+                $data = Event::getEventsSearchByLatLng($lat, $lng, $radius, array(
+                    'offset' => $offset,
+                    'limit' => $limit,
+                    'open' => $open,
+                    'lid' => $lid,
+                    'price' => $price,
+                    'start_date' => $start_date,
+                    'end_date' => $end_date,
+                    'start_time' => $start_time,
+                    'end_time' => $end_time,
+                    'types' => $types
+                    )
+                );
+            }
+            
+            $data['requestUrl'] = '/event/getSearch';
+            $data['params']['output'] = $outputFormat;
+            $data['params']['nav'] = $navigation;
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode($data);        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array($data, "events", "event");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            $arena = null;
+            
+            if(count($aids) == 1)
+            {
+                $arena = Arena::model()->findByPk($aids[0]);
+            }
+            
+            if(Yii::app()->request->isAjaxRequest) {
+                //$this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = false;
+                
+                $this->renderPartial(
+                        "_eventSearch",
+                        array(
+                            'data' => $data,
+                            'arena' => $arena,
+                            'start_date' => $start_date,
+                            'doReady' => false,
+                            'path' => $path,
+                        ));
+            } else {
+                if(defined('YII_DEBUG')) {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.js', CClientScript::POS_END);
+                } else {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.min.js', CClientScript::POS_END);
+                }
+            
+                $this->breadcrumbs = array(
+                    'Events'
+                );
+
+                $this->registerUserScripts();
+                $this->includeCss = true;
+                $this->navigation = $navigation;
+
+                $this->render(
+                        "eventSearch",
+                        array(
+                            'data' => $data,
+                            'arena' => $arena,
+                            'start_date' => $start_date,
+                            'doReady' => true,
+                            'path' => $path,
+                        ));
+            }
+        }
+    }
+
+    /**
+     * Displays a particular arena's events one month at a time.
      */
     public function actionGetMonth()
     {
-        Yii::trace("In actionIndex.", "application.controllers.ArenaController");
+        Yii::trace("In actionGetMonth.", "application.controllers.EventController");
         
         // Send some headers that will allow cross-domain requests
         header('Access-Control-Allow-Origin: *');
@@ -118,19 +495,16 @@ class EventController extends Controller
         
         $aid = isset($_GET['aid']) ? $_GET['aid'] : null;
         $lid = isset($_GET['lid']) ? $_GET['lid'] : null;
-        $open = isset($_GET['open']) &&  ($_GET['open'] == 'false' || $_GET['open'] <= 0 || empty($_GET['open'])) ? false : true;
+        $open = isset($_GET['open']) &&  ($_GET['open'] == 'false' || $_GET['open'] <= 0 || empty($_GET['open'])) ? 0 : 1;
         $offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
         $limit = isset($_GET['limit']) ? $_GET['limit'] : 0;
         $price = isset($_GET['price']) ? $_GET['price'] : null;
-        $day = isset($_GET['day']) ? $_GET['day'] : null;
-        $month = isset($_GET['month']) ? $_GET['month'] : null;
-        $year = isset($_GET['year']) ? $_GET['year'] : null;
         $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date("Y-m-d", time());
         $end_date = date('Y-m-t', strtotime($start_date));
         $start_time = isset($_GET['start_time']) ? $_GET['start_time'] : null;
         $end_time = isset($_GET['end_time']) ? $_GET['end_time'] : null;
         $types = isset($_GET['types']) ? $_GET['types'] : array();
-        $navigation = isset($_GET['nav']) && ($_GET['nav'] == 'false' || $_GET['nav'] <= 0 || empty($_GET['nav'])) ? false : true;
+        $navigation = isset($_GET['nav']) && ($_GET['nav'] == 'false' || $_GET['nav'] <= 0 || empty($_GET['nav'])) ? 0 : 1;
         
         if(is_null($aid) || !is_numeric($aid) || $aid <= 0) {
             if($outputFormat == "xml" || $outputFormat == "html") {
@@ -235,7 +609,6 @@ class EventController extends Controller
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
 
             if(Yii::app()->request->isAjaxRequest) {
-                //$this->registerUserScripts();
                 $this->includeCss = true;
                 $this->navigation = false;
                 
@@ -530,7 +903,7 @@ class EventController extends Controller
 	 */
 	public function actionIndex()
 	{
-		$this->actionGetMonth();
+		$this->actionGetSearch();
 	}
 
 	/**

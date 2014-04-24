@@ -2,17 +2,18 @@
     /* @var $this EventController   */
     /* @var $data mixed[]           */
     /* @var $arena Arena            */
+    /* @var $start_date string      */
     /* @var $path string            */
     /* @var $doReady boolean        */
 ?>
 
-<h2>Event #<?php echo $data['records'][0]['id']; ?></h2>
-
-<?php 
-    $this->renderPartial('_view', array(
+<?php
+    $this->renderPartial('/event/_eventSearch', array(
         'data' => $data,
         'arena' => $arena,
-        'doReady' => false,
-        'path' => $path
+        '$start_date' => $start_date,
+        'path' => $path,
+        'doReady' => $doReady,
     ));
 ?>
+

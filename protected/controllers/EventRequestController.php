@@ -129,6 +129,8 @@ class EventRequestController extends Controller
             
             $model->event_id = $eid;
             $model->requester_id = $requester_id;
+            $model->created_by_id = $requester_id;
+            $model->updated_by_id = $requester_id;
             $model->requester_name = $requester_name;
             $model->requester_email = $requester_email;
             $model->requester_phone = $requester_phone;

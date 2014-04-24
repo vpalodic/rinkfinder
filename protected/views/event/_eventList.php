@@ -1,6 +1,6 @@
     <?php foreach($data['records'] as $record): ?>
     <?php $sdtStr = strtotime($record['startDate']); ?>
-    <div class="my-calendar-list-item">
+    <div class="my-calendar-list-item <?php echo $record['type_class']; ?>">
         <div class="row-fluid">
             <div class="span2">
                 <time datetime="<?php echo $record['startDate']; ?>">
@@ -18,11 +18,14 @@
                         echo $record['type'];
                     }?>
                 </h5>
+                <?php if(isset($record['distance']) && !empty($record['distance'])) {
+                    echo '<strong><em>' . round($record['distance'], 2) . ' miles</em></strong><br />';
+                }?>
                 <strong>
                     <?php if($record['all_day'] == 'Yes') {
-                        echo 'All Day Event';
+                        echo 'All Day Event<br />';
                     } else {
-                        echo $record['start_time'] . ' - ' . $record['end_time'];
+                        echo $record['start_time'] . ' - ' . $record['end_time'] . ' <small>(' . $record['duration'] . ' minutes)</small><br /> ';
                     }?>
                 </strong>
                 <?php if(isset($record['location_name']) && $record['location_name'] != '') {

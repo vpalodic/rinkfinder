@@ -1760,7 +1760,6 @@ class EventRequest extends RinkfinderActiveRecord
         if($event == null) {
             return "Unable to retrieve the event";
         }
-        $notifyEmails = Arena::getRealManagerContactEmails($aid);
         
         $data = array();
         $data['requestStatus'] = $status;
@@ -1771,6 +1770,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'event/view',
                 array(
                     'id' => $eid,
+                    'aid' => $aid
                 )
         );
         $data['arenaUrl'] = Yii::app()->createAbsoluteUrl(
@@ -1835,6 +1835,7 @@ class EventRequest extends RinkfinderActiveRecord
                 'event/view',
                 array(
                     'id' => $eid,
+                    'aid' => $aid,
                 )
         );
         $data['arenaUrl'] = Yii::app()->createAbsoluteUrl(
@@ -1844,9 +1845,12 @@ class EventRequest extends RinkfinderActiveRecord
                 )
         );
         $data['eventRequestUrl'] = Yii::app()->createAbsoluteUrl(
-                'eventRequest/view',
+                'management/view',
                 array(
                     'id' => $id,
+                    'aid' => $aid,
+                    'eid' => $eid,
+                    'model' => 'eventrequest'
                 )
         );
         $data['loginUrl'] = Yii::app()->createAbsoluteUrl(

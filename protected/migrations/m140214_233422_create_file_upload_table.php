@@ -23,7 +23,7 @@ class m140214_233422_create_file_upload_table extends CDbMigration
         // when we create the table
         $this->createTable('file_upload', array(
                 'id' => 'INT(11) NOT NULL AUTO_INCREMENT',
-                'user_id' => 'INT(11) NOT NULL',
+                'user_id' => 'INT(11) NULL',
                 'arena_id' => 'INT(11) NULL',
                 'location_id' => 'INT(11) NULL',
                 'upload_type_id' => 'INT(3) NOT NULL',
@@ -35,9 +35,9 @@ class m140214_233422_create_file_upload_table extends CDbMigration
                 'size' => 'INT(11) NOT NULL',
                 'error_code' => 'INT(3) NOT NULL DEFAULT 0',
                 'lock_version' => 'INT(11) NOT NULL DEFAULT 0',
-                'created_by_id' => 'INT(11) NOT NULL DEFAULT 1',
+                'created_by_id' => 'INT(11) NULL DEFAULT 1',
                 'created_on' => 'DATETIME NOT NULL',
-                'updated_by_id' => 'INT(11) NOT NULL DEFAULT 1',
+                'updated_by_id' => 'INT(11) NULL DEFAULT 1',
                 'updated_on' => 'DATETIME NOT NULL',
                 'PRIMARY KEY id (id)',
                 'KEY file_upload_user_id_fk (user_id)',
@@ -45,11 +45,11 @@ class m140214_233422_create_file_upload_table extends CDbMigration
                 'KEY file_upload_location_id_fk (location_id)',
                 'KEY file_upload_created_by_id_fk (created_by_id)',
                 'KEY file_upload_updated_by_id_fk (updated_by_id)',
-                'CONSTRAINT file_upload_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_upload_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_upload_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_upload_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
-                'CONSTRAINT file_upload_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+                'CONSTRAINT file_upload_user_id_fk FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_upload_arena_id_fk FOREIGN KEY (arena_id) REFERENCES arena (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_upload_location_id_fk FOREIGN KEY (location_id) REFERENCES location (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_upload_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL',
+                'CONSTRAINT file_upload_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE SET NULL',
             ),
             'ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci'
         );

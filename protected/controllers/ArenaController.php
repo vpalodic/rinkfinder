@@ -218,7 +218,7 @@ class ArenaController extends Controller
 
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
-                        "view",
+                        "_view",
                         array(
                             'data' => $data,
                             'start_date' => $start_date,

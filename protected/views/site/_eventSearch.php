@@ -2,25 +2,45 @@
 ?>
 
 <div class="row-fluid">
-    <form id="searchForm" class="form" method="get" action="<?php echo $this->createUrl('site/locationSearch'); ?>">
+    <form id="searchForm" class="form" method="get" action="<?php echo $this->createUrl('site/eventSearch'); ?>">
         <div class="well well-small">
             <fieldset>
-                <legend>Find Facilities & Events</legend>
-                <div class="controls controls-row">
-                    <label for="addressInput">Starting Location</label>
+                <legend>Find Events</legend>
+                <div class="control-group">
+                    <label class="control-label" for="addressInput">Starting Location</label>
                     <?php if(isset($_GET['saddr']) && !empty($_GET['saddr'])) : ?>
                     <input name="saddr" value="<?php echo $_GET['saddr']; ?>" style="margin-bottom: 15px;" class="span6 search-query" type="text" id="addressInput" placeholder="123 Main St, St Paul, MN 55122" />
                     <?php else: ?>
                     <input name="saddr" style="margin-bottom: 15px;" class="span6 search-query" type="text" id="addressInput" placeholder="123 Main St, St Paul, MN 55122" />
                     <?php endif; ?>
-                    <div class="span6" id="searchButtons">
+                    <label class="control-label" for="arenaSelect">Or At These Facilities</label>
+                    <select name="aids[]" style="margin-bottom: 15px;" class="span6" id="arenaSelect" multiple="multiple">
+                        <?php
+                            $myArenas = isset($_GET['aids']) && is_array($_GET['aids']) ? $_GET['aids'] : array();
+                            $singleAid = isset($_GET['aid']) && is_numeric($_GET['aid']) ? $_GET['aid'] : 0;
+                            
+                            if($singleAid > 0) {
+                                $myArenas[] = $singleAid;
+                            }
+                            
+                            foreach($arenas as $arena) {
+                                if(in_array($arena['id'], $myArenas, true)) {
+                                    echo '<option selected="selected" value="' . $arena['id'] . '">' . $arena['name'] . ' - ' . $arena['city'] . '</option>';
+                                } else {
+                                    echo '<option value="' . $arena['id'] . '">' . $arena['name'] . ' - ' . $arena['city'] . '</option>';
+                                }
+                                
+                            }
+                        ?>
+                    </select>
+                    <div id="searchButtons">
                         <button rel="tooltip" title="Find" id="searchButton" style="margin-bottom: 15px;" class="btn btn-primary" type="submit">
                             <i class="fa fa-lg fa-search"></i>
                             <span>Find</span>
                         </button>
                         <button rel="tooltip" title="Filter By Events" id="searchFilterButton" style="margin-bottom: 15px;" class="btn btn-success" type="button">
                             <i class="fa fa-lg fa-filter"></i>
-                            <span>Events</span>
+                            <span>Filter</span>
                         </button>
                         <button rel="tooltip" title="Reset" id="searchResetButton" style="margin-bottom: 15px;" class="btn btn-warning" type="reset">
                             <i class="fa fa-lg fa-times"></i>
@@ -30,7 +50,34 @@
                 </div>
                 <div id="searchFilterDiv" style="display: none;">
                     <div class="controls controls-row">
-                        <label for="radiusSelect">Within</label>
+                        <label for="limitSelect">The First</label>
+                        <select name="limit" style="margin-bottom: 15px;" class="span6" id="limitSelect">
+                        <?php
+                            $limit = (isset($_GET['limit']) && is_numeric($_GET['limit'])) ? $_GET['limit'] : 20;
+                            $limits = array(
+                                '5 events' => 5,
+                                '10 events' => 10,
+                                '15 events' => 15,
+                                '20 events' => 20,
+                                '25 events' => 25,
+                                '50 events' => 50,
+                                '75 events' => 75,
+                                '100 events' => 100,
+                                '200 events' => 200,
+                            );
+                            
+                            foreach($limits as $key => $value) {
+                                if($limit == $value) {
+                                    echo '<option value="' . $value . '" selected="selected">' . $key . '</option>';
+                                } else {
+                                    echo '<option value="' . $value . '">' . $key . '</option>';
+                                }
+                            }
+                        ?>
+                        </select>
+                    </div>
+                    <div class="controls controls-row">
+                        <label for="radiusSelect">Within <small class="text-muted">(Only valid if no facility is selected.)</small></label>
                         <select name="radius" style="margin-bottom: 15px;" class="span6" id="radiusSelect">
                         <?php
                             $radius = (isset($_GET['radius']) && is_numeric($_GET['radius'])) ? $_GET['radius'] : 20;
@@ -153,21 +200,8 @@
 </div>
 <div class="row-fluid info-infos search-results">
     <div id="searchResults">
-        <div class="span3">
-            <div id="searchResultsWell" class="well well-small hidden">
-                <div class="hidden-desktop hidden-tablet">
-                    <select id="locationSelect" style="width:100%;"></select>
-                </div>
-                <div class="hidden-phone">
-                    <ul id="locationList"  class="my-search-results">
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="span9">
-            <div class="google-map-canvas">
-                <div id="map-canvas" style="width: 100%;  height: 100%;">
-                </div>
+        <div class="span12">
+            <div class='my-calendar-list'>                    
             </div>
         </div>
     </div>
@@ -176,14 +210,15 @@
 <?php if($doReady) : ?>
 <?php
     Yii::app()->clientScript->registerScript(
-            'doReady_Index',
+            'doReady_EventSearch',
             'utilities.urls.login = "' . $this->createUrl('site/login') . '";'
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
             . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
-            . 'locationSearch.endpoints.markers = "' . $searchUrl . '";'
-            . 'locationSearch.onReady();',
+            . 'eventSearch.endpoints.events = "' . $searchUrl . '";'
+            . 'eventSearch.$search = $(".my-calendar-list");'
+            . 'eventSearch.onReady();',
             CClientScript::POS_READY
     );
 ?>
@@ -196,9 +231,9 @@ $(document).ready(function () {
     utilities.urls.assets = "<?php echo $path; ?>";
     utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
     
-    if(typeof locationSearch === "undefined")
+    if(typeof eventSearch === "undefined")
     {
-        var scriptName = utilities.urls.assets + '/js/site/locationSearch.' + (utilities.debug ? 'js' : 'min.js');
+        var scriptName = utilities.urls.assets + '/js/site/eventSearch.' + (utilities.debug ? 'js' : 'min.js');
         
         $.ajax({
             url: scriptName,
@@ -219,19 +254,21 @@ $(document).ready(function () {
         });
         
         var interval = setInterval(function () {
-            if (typeof locationSearch !== "undefined") {
+            if (typeof eventSearch !== "undefined") {
                 clearInterval(interval);
-                locationSearch.endpoints.markers = "<?php echo $searchUrl; ?>";
-                locationSearch.onReady();
+                eventSearch.endpoints.events = "<?php echo $searchUrl; ?>";
+                eventSearch.$search = $(".my-calendar-list");
+                eventSearch.onReady();
             } else if (console && console.log) {
-                console.log("Loading locationSearch.js");
+                console.log("Loading eventSearch.js");
             }
         }, 500);
     }
     else
     {
-        locationSearch.endpoints.markers = "<?php echo $searchUrl; ?>";
-        locationSearch.onReady();
+        eventSearch.endpoints.events = "<?php echo $searchUrl; ?>";
+        eventSearch.$search = $(".my-calendar-list");
+        eventSearch.onReady();
     }
 });
 </script>

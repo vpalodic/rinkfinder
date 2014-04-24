@@ -93,9 +93,14 @@
                     <?php echo Yii::app()->name; ?>
                 </a>
                 <ul id="navOuter" role="menu" class="nav hidden-desktop<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
-                    <li role="menuitem">
+                    <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' class="active"'; ?>>
                         <a tabindex="-1" href="<?php echo $this->createUrl('/site/locationSearch'); ?>">
                             <i class="fa fa-search fa-lg"></i> Find
+                        </a>
+                    </li>
+                    <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'eventSearch') echo ' class="active"'; ?>>
+                        <a tabindex="-1" href="<?php echo $this->createUrl('/site/eventSearch'); ?>">
+                            <i class="fa fa-ticket fa-lg"></i> Events
                         </a>
                     </li>
                 </ul>
@@ -106,9 +111,14 @@
                                 <i class="fa fa-lg fa-home fa-fw"></i> Home
                             </a>
                         </li>
-                        <li role="menuitem" class="hidden-phone  hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
+                        <li role="menuitem" class="hidden-phone hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'locationSearch') echo ' active'; ?>">
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/locationSearch'); ?>">
                                 <i class="fa fa-search fa-lg fa-fw"></i> Find
+                            </a>
+                        </li>
+                        <li role="menuitem" class="hidden-phone hidden-tablet<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'eventSearch') echo ' active'; ?>">
+                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/eventSearch'); ?>">
+                                <i class="fa fa-ticket fa-lg"></i> Events
                             </a>
                         </li>
                         <li role="menuitem" <?php if(Yii::app()->controller->uniqueId === 'arena') echo 'class="active"'; ?>>

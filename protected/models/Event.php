@@ -1093,7 +1093,7 @@ class Event extends RinkfinderActiveRecord
         }
         
         $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', e.arena_id) AS arena_view_url, "
-                . "CONCAT('" . $eventUrl . "?id=', e.id) AS url, "
+                . "CONCAT('" . $eventUrl . "?id=', e.id, '&aid=', e.arena_id) AS url, "
                 . "CONCAT('" . $purchaseUrl . "?eid=', e.id, '&aid=', e.arena_id) AS pUrl, "
                 . "CONCAT('" . $infoUrl . "?eid=', e.id, '&aid=', e.arena_id) AS iUrl, "
                 . "(SELECT a.name FROM arena a WHERE a.id = e.arena_id) AS arena_name, "
@@ -1265,6 +1265,575 @@ class Event extends RinkfinderActiveRecord
     }
 
     /**
+     * Returns a record set for use with a calendar view.
+     * @param integer $aid The Arena ID that we are retrieving
+     * @param mixed[] $params An array of the optional parameters below.
+     * @param integer $offset The offset to start returning records from.
+     * @param integer $limit The maximum records to return. Returns all if 0.
+     * @param boolean $open If true, limits the search to open events only.
+     * @param integer $lid The Location ID to return records for.
+     * @param float $price The maximum price to search on.
+     * @param string $start_date The date of events to start search on.
+     * @param string $end_date The last date of events to search to.
+     * @param string $start_time The start time of the event to search from.
+     * @param string $end_time The start time of the event to search to.
+     * @param integer[] $types The event types to search for.
+     * @return mixed[] a filtered recordset or an empty array.
+     * @throws CDbException
+     */
+    public static function getSingleEventView($id, $aid, $params = array())
+    {
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        $lid = (isset($params['lid']) && is_numeric($params['lid']) && $params['lid'] > 0) ? (integer)$params['lid'] : null;
+        
+        // Let's start by building up our query
+        $arenaUrl = Yii::app()->createAbsoluteUrl('arena/view');
+        $eventUrl = Yii::app()->createAbsoluteUrl('event/view');
+        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+
+        $eventsUrlParams = array('aid' => $aid);
+        
+        $where = '';
+        
+        if($open === true) {
+            $where .= "WHERE e.status_id = (SELECT s.id FROM event_status s WHERE "
+                    . "s.name = 'OPEN') AND e.arena_id = :aid AND e.id = :id ";
+        } else {
+            $where .= "WHERE e.arena_id = :aid AND e.id = :id ";
+        }
+        
+        $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', e.arena_id) AS arena_view_url, "
+                . "CONCAT('" . $eventUrl . "?id=', e.id, '&aid=', e.arena_id) AS url, "
+                . "CONCAT('" . $purchaseUrl . "?eid=', e.id, '&aid=', e.arena_id) AS pUrl, "
+                . "CONCAT('" . $infoUrl . "?eid=', e.id, '&aid=', e.arena_id) AS iUrl, "
+                . "(SELECT a.name FROM arena a WHERE a.id = e.arena_id) AS arena_name, "
+                . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location_name, "
+                . "(SELECT LOWER(et.name) FROM event_type et WHERE et.id = e.type_id) AS type_class, "
+                . "(SELECT et.display_name FROM event_type et WHERE et.id = e.type_id) AS type, "
+                . "e.id, "
+                . "e.arena_id, "
+                . "e.type_id, "
+                . "CASE WHEN e.name IS NULl THEN '' ELSE e.name END AS name, "
+                . "CASE WHEN e.description IS NULL THEN '' ELSE e.description END AS description, "
+                . "e.tags AS tags, "
+                . "CASE WHEN e.all_day = 0 THEN 'No' ELSE 'Yes' END AS all_day, "
+                . "DATE_FORMAT(e.start_date, '%c/%e/%Y') AS start_date, "
+                . "DATE_FORMAT(e.start_time, '%l:%i %p') AS start_time, "
+                . "CONCAT(e.start_date, ' ', e.start_time) AS startDate, "
+                . "CONCAT(e.end_date, ' ', e.end_time) AS endDate, "
+                . "e.duration AS duration, "
+                . "DATE_FORMAT(e.end_date, '%c/%e/%Y') AS end_date, "
+                . "DATE_FORMAT(e.end_time, '%l:%i %p') AS end_time, "
+                . "e.price AS price, "
+                . "CASE WHEN e.notes IS NULL THEN '' ELSE e.notes END AS notes "
+                . "FROM event e ";
+        
+        $sql .= $where;
+        
+        if($lid != null) {
+            $sql .= 'AND e.location_id = :lid ';
+            $eventsUrlParams['lid'] = $lid;
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        $command->bindValue(':id', (integer)$id, PDO::PARAM_INT);
+        
+        if($lid != null) {
+            $command->bindParam(':lid', (integer)$lid, PDO::PARAM_INT);
+        }
+        
+        $ret = $command->queryAll(true);
+        
+        return Event::buildCalendarResults($ret, $eventsUrlParams, 0, null);
+    }
+
+    /**
+     * Returns a record set for the event search view.
+     * @param float $lat The lattitude of the center point.
+     * @param float $lng The longitude of the center point.
+     * @param float $radius The radius of the search circle.
+     * @param mixed[] $params An array of the optional parameters below.
+     * @param integer $offset The offset to start returning records from.
+     * @param integer $limit The maximum records to return. Returns all if 0.
+     * @param boolean $open If true, limits the search to open facilities only.
+     * @param float $price The maximum price to search on.
+     * @param string $start_date The date of events to start search on.
+     * @param string $end_date The last date of events to search to.
+     * @param string $start_time The start time of the event to search from.
+     * @param string $end_time The start time of the event to search to.
+     * @param integer[] $types The event types to search for.
+     * @return mixed[] The arena markers or an empty array.
+     * @throws CDbException
+     */
+    public static function getEventsSearchByLatLng($lat, $lng, $radius, $params = array())
+    {
+        // Set the default values before we go snooping through the passed in
+        // parameters...
+        $offset = (isset($params['offset']) && is_numeric($params['offset'])) ? (integer)$params['offset'] : 0;
+        $limit = (isset($params['limit']) && is_numeric($params['limit'])) ? (integer)$params['limit'] : 0;
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        $lid = (isset($params['lid']) && is_numeric($params['lid']) && $params['lid'] > 0) ? (integer)$params['lid'] : null;
+        $price = (isset($params['price']) && is_numeric($params['price'])) ? (float)floatval(filter_var($params['price'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION)) : 0;
+        $start_date = (isset($params['start_date']) && is_string($params['start_date']) && !empty($params['start_date'])) ? (string)$params['start_date'] : null;
+        $end_date = (isset($params['end_date']) && is_string($params['end_date']) && !empty($params['end_date'])) ? (string)$params['end_date'] : null;
+        $start_time = (isset($params['start_time']) && is_string($params['start_time']) && !empty($params['start_time'])) ? (string)$params['start_time'] : null;
+        $end_time = (isset($params['end_time']) && is_string($params['end_time']) && !empty($params['end_time'])) ? (string)$params['end_time'] : null;
+        $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
+        
+        // Let's start by building up our query
+        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
+        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
+        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+
+        $eventsUrlParams = array();
+        
+        $where = '';
+        $sqlWhere = '';
+        $typeCount = count($types);
+        
+        if($open === true) {
+            $where .= "WHERE e.status_id = (SELECT s.id FROM event_status s WHERE "
+                    . "s.name = 'OPEN') ";
+        }
+        
+        $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', e.arena_id) AS arena_view_url, "
+                . "CONCAT('" . $eventUrl . "?id=', e.id, '&aid=', e.arena_id) AS url, "
+                . "CONCAT('" . $purchaseUrl . "?eid=', e.id, '&aid=', e.arena_id) AS pUrl, "
+                . "CONCAT('" . $infoUrl . "?eid=', e.id, '&aid=', e.arena_id) AS iUrl, "
+                . "arenas.name AS arena_name, "
+                . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location_name, "
+                . "(SELECT LOWER(et.name) FROM event_type et WHERE et.id = e.type_id) AS type_class, "
+                . "(SELECT et.display_name FROM event_type et WHERE et.id = e.type_id) AS type, "
+                . "e.id, "
+                . "e.arena_id, "
+                . "CASE WHEN e.name IS NULl THEN '' ELSE e.name END AS name, "
+                . "CASE WHEN e.description IS NULL THEN '' ELSE e.description END AS description, "
+                . "e.tags AS tags, "
+                . "CASE WHEN e.all_day = 0 THEN 'No' ELSE 'Yes' END AS all_day, "
+                . "DATE_FORMAT(e.start_date, '%c/%e/%Y') AS start_date, "
+                . "DATE_FORMAT(e.start_time, '%l:%i %p') AS start_time, "
+                . "CONCAT(e.start_date, ' ', e.start_time) AS startDate, "
+                . "CONCAT(e.end_date, ' ', e.end_time) AS endDate, "
+                . "e.duration AS duration, "
+                . "DATE_FORMAT(e.end_date, '%c/%e/%Y') AS end_date, "
+                . "DATE_FORMAT(e.end_time, '%l:%i %p') AS end_time, "
+                . "e.price AS price, "
+                . "CASE WHEN e.notes IS NULL THEN '' ELSE e.notes END AS notes, "
+                . "arenas.distance "
+                . "FROM event e "
+                . "     INNER JOIN (SELECT a.id,"
+                . "         a.name, "
+                . "         ( 3959 * ACOS( COS( RADIANS( :lat ) ) * COS( RADIANS( a.lat ) "
+                . "         ) * COS( RADIANS( a.lng ) - RADIANS( :lng ) ) + SIN( RADIANS( "
+                . "         :lat ) ) * SIN( RADIANS( a.lat ) ) ) ) AS distance"
+                . "         FROM arena a "
+                . "         WHERE a.status_id = (SELECT ass.id FROM arena_status ass WHERE ass.name = 'OPEN')) arenas "
+                . "     ON e.arena_id = arenas.id ";
+        
+        if($price > 0) {
+            $sqlWhere .= 'AND e.price <= :price ';
+            $eventsUrlParams['price'] = $price;
+        }
+        
+        if($lid != null) {
+            $sqlWhere .= 'AND e.location_id = :lid ';
+            $eventsUrlParams['lid'] = $lid;
+        }
+        
+        if($start_date != null && $end_date != null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            if($end < $start) {
+                $end_date = $start_date;
+                $end = $start;
+            }
+            
+            $sqlWhere .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CAST(:end_date AS DATE) ';
+            
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } elseif($start_date != null && $end_date == null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            $sqlWhere .= 'AND e.start_date = CAST(:start_date AS DATE) ';
+            
+            $eventsUrlParams['start_date'] = $start_date;
+        } elseif($start_date == null && $end_date != null) {
+            $start_date = date("Y-m-d", time());
+            $today = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($end < $today) {
+                $end_date = $start_date;
+                $end = $today;
+            }
+            
+            $sqlWhere .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CAST(:end_date AS DATE) ';
+                
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } else {
+            $start_date = date("Y-m-d", time());
+           
+            $sqlWhere .= 'AND e.start_date >= CAST(:start_date AS DATE) ';
+        }
+        
+        if($start_time != null && $end_time != null) {
+            $sqlWhere .= 'AND e.start_time >= CAST(:start_time AS TIME) '
+                    . 'AND e.start_time <= CAST(:end_time AS TIME) ';
+            
+            $eventsUrlParams['start_time'] = $start_time;
+            $eventsUrlParams['end_time'] = $end_time;
+        } elseif($start_time != null && $end_time == null) {
+            $sqlWhere .= 'AND e.start_time >= CAST(:start_time AS TIME) ';
+            
+            $eventsUrlParams['start_time'] = $start_time;
+        } elseif($start_time == null && $end_time != null) {
+            $sqlWhere .= 'AND e.start_time <= CAST(:end_time AS TIME) ';
+                
+            $eventsUrlParams['end_time'] = $end_time;
+        }
+        
+        if($typeCount > 0) {
+            $sqlWhere .= 'AND e.type_id IN (';
+                
+            for($i = 0; $i < $typeCount; $i++) {
+                if($i + 1 == $typeCount) {
+                    $sqlWhere .= ':eventType' . $i . ') ';
+                } else {
+                    $sqlWhere .= ':eventType' . $i . ', ';
+                }
+            }
+        }
+
+        if($where != '') {
+            $sql .= $where . $sqlWhere;
+        } else if($sqlWhere != '') {
+            $sql .= 'WHERE ' . substr($sqlWhere, 4);
+        }
+        
+        if($radius != null && $radius > 0) {
+            $sql .= "HAVING distance <= :radius "
+                    . "ORDER BY startDate ASC, type ASC, distance ASC, arena_name ASC ";
+        } else {
+            $sql .= "ORDER BY startDate ASC, type ASC, distance ASC, arena_name ASC ";
+        }
+        
+        if($limit > 0) {
+            $sql .= "LIMIT :offset, :limit";
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':lat', $lat, PDO::PARAM_STR);
+        $command->bindParam(':lng', $lng, PDO::PARAM_STR);
+        
+        if($radius != null && $radius > 0) {
+            $command->bindParam(':radius', $radius, PDO::PARAM_STR);
+        }
+        
+        if($limit > 0) {
+            $command->bindValue(':offset', (integer)$offset, PDO::PARAM_INT);
+            $command->bindValue(':limit', (integer)$limit, PDO::PARAM_INT);
+        }
+        
+        if($price > 0) {
+            $command->bindParam(':price', $price, PDO::PARAM_STR);
+        }
+        
+        if($lid != null) {
+            $command->bindParam(':lid', (integer)$lid, PDO::PARAM_INT);
+        }
+        
+        if($start_date != null) {
+            $command->bindParam(':start_date', $start_date, PDO::PARAM_STR);
+        }
+        
+        if($end_date != null) {
+            $command->bindParam(':end_date', $end_date, PDO::PARAM_STR);
+        }
+        
+        if($start_time != null) {
+            $command->bindValue(':start_time', $start_time, PDO::PARAM_STR);
+        }
+            
+        if($end_time != null) {
+            $command->bindParam(':end_time', $end_time, PDO::PARAM_STR);
+        }
+            
+        if($typeCount > 0) {
+            for($i = 0; $i < $typeCount; $i++) {
+                $command->bindValue(':eventType' . $i, (integer)$types[$i], PDO::PARAM_INT);
+            }
+        }
+        
+        $ret = $command->queryAll(true);
+        
+        return Event::buildCalendarResults($ret, $eventsUrlParams, $typeCount, $types);
+    }
+
+    /**
+     * Returns a record set for use with a search view.
+     * @param integer[] $aids The Arena IDs that we are retrieving.
+     * @param mixed[] $params An array of the optional parameters below.
+     * @param integer $offset The offset to start returning records from.
+     * @param integer $limit The maximum records to return. Returns all if 0.
+     * @param boolean $open If true, limits the search to open events only.
+     * @param integer $lid The Location ID to return records for.
+     * @param float $price The maximum price to search on.
+     * @param string $start_date The date of events to start search on.
+     * @param string $end_date The last date of events to search to.
+     * @param string $start_time The start time of the event to search from.
+     * @param string $end_time The start time of the event to search to.
+     * @param integer[] $types The event types to search for.
+     * @return mixed[] a filtered recordset or an empty array.
+     * @throws CDbException
+     */
+    public static function getEventsSearchByArenas($aids, $params = array())
+    {
+        $offset = (isset($params['offset']) && is_numeric($params['offset'])) ? (integer)$params['offset'] : 0;
+        $limit = (isset($params['limit']) && is_numeric($params['limit'])) ? (integer)$params['limit'] : 0;
+        $open = (isset($params['open']) && is_bool($params['open'])) ? (bool)$params['open'] : true;
+        $lid = (isset($params['lid']) && is_numeric($params['lid']) && $params['lid'] > 0) ? (integer)$params['lid'] : null;
+        $price = (isset($params['price']) && is_numeric($params['price'])) ? (float)floatval(filter_var($params['price'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION)) : 0;
+        $start_date = (isset($params['start_date']) && is_string($params['start_date']) && !empty($params['start_date'])) ? (string)$params['start_date'] : null;
+        $end_date = (isset($params['end_date']) && is_string($params['end_date']) && !empty($params['end_date'])) ? (string)$params['end_date'] : null;
+        $start_time = (isset($params['start_time']) && is_string($params['start_time']) && !empty($params['start_time'])) ? (string)$params['start_time'] : null;
+        $end_time = (isset($params['end_time']) && is_string($params['end_time']) && !empty($params['end_time'])) ? (string)$params['end_time'] : null;
+        $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
+        
+        // Let's start by building up our query
+        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
+        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
+        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+
+        $eventsUrlParams = array('aids' => $aids);
+        
+        $where = '';
+        $typeCount = count($types);
+        $arenaCount = count($aids);
+        
+        if($open === true) {
+            $where .= "WHERE e.status_id = (SELECT s.id FROM event_status s WHERE "
+                    . "s.name = 'OPEN') ";
+            
+            if($arenaCount > 0) {
+                $where .= 'AND e.arena_id IN (';
+                
+                for($i = 0; $i < $arenaCount; $i++) {
+                    if($i + 1 == $arenaCount) {
+                        $where .= ':aid' . $i . ') ';
+                    } else {
+                        $where .= ':aid' . $i . ', ';
+                    }
+                }
+            }
+        } else {
+            if($arenaCount > 0) {
+                $where .= 'WHERE e.arena_id IN (';
+                
+                for($i = 0; $i < $arenaCount; $i++) {
+                    if($i + 1 == $arenaCount) {
+                        $where .= ':aid' . $i . ') ';
+                    } else {
+                        $where .= ':aid' . $i . ', ';
+                    }
+                }
+            }
+        }
+        
+        $sql = "SELECT CONCAT('" . $arenaUrl . "?id=', e.arena_id) AS arena_view_url, "
+                . "CONCAT('" . $eventUrl . "?id=', e.id, '&aid=', e.arena_id) AS url, "
+                . "CONCAT('" . $purchaseUrl . "?eid=', e.id, '&aid=', e.arena_id) AS pUrl, "
+                . "CONCAT('" . $infoUrl . "?eid=', e.id, '&aid=', e.arena_id) AS iUrl, "
+                . "(SELECT a.name FROM arena a WHERE a.id = e.arena_id) AS arena_name, "
+                . "(SELECT l.name FROM location l WHERE l.id = e.location_id) AS location_name, "
+                . "(SELECT LOWER(et.name) FROM event_type et WHERE et.id = e.type_id) AS type_class, "
+                . "(SELECT et.display_name FROM event_type et WHERE et.id = e.type_id) AS type, "
+                . "e.id, "
+                . "e.arena_id, "
+                . "CASE WHEN e.name IS NULl THEN '' ELSE e.name END AS name, "
+                . "CASE WHEN e.description IS NULL THEN '' ELSE e.description END AS description, "
+                . "e.tags AS tags, "
+                . "CASE WHEN e.all_day = 0 THEN 'No' ELSE 'Yes' END AS all_day, "
+                . "DATE_FORMAT(e.start_date, '%c/%e/%Y') AS start_date, "
+                . "DATE_FORMAT(e.start_time, '%l:%i %p') AS start_time, "
+                . "CONCAT(e.start_date, ' ', e.start_time) AS startDate, "
+                . "CONCAT(e.end_date, ' ', e.end_time) AS endDate, "
+                . "e.duration AS duration, "
+                . "DATE_FORMAT(e.end_date, '%c/%e/%Y') AS end_date, "
+                . "DATE_FORMAT(e.end_time, '%l:%i %p') AS end_time, "
+                . "e.price AS price, "
+                . "CASE WHEN e.notes IS NULL THEN '' ELSE e.notes END AS notes "
+                . "FROM event e ";
+        
+        $sql .= $where;
+        
+        if($price > 0) {
+            $sql .= 'AND e.price <= :price ';
+            $eventsUrlParams['price'] = $price;
+        }
+        
+        if($lid != null) {
+            $sql .= 'AND e.location_id = :lid ';
+            $eventsUrlParams['lid'] = $lid;
+        }
+        
+        if($start_date != null && $end_date != null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            if($end < $start) {
+                $end_date = $start_date;
+                $end = $start;
+            }
+            
+            $sql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CAST(:end_date AS DATE) ';
+            
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } elseif($start_date != null && $end_date == null) {
+            $today = strtotime(date("Y-m-d", time()));
+            $start = strtotime($start_date);
+            
+            if($start < $today) {
+                $start_date = date("Y-m-d", $today);
+                $start = $today;
+            }
+            
+            $sql .= 'AND e.start_date = CAST(:start_date AS DATE) ';
+            
+            $eventsUrlParams['start_date'] = $start_date;
+        } elseif($start_date == null && $end_date != null) {
+            $start_date = date("Y-m-d", time());
+            $today = strtotime($start_date);
+            $end = strtotime($end_date);
+            
+            if($end < $today) {
+                $end_date = $start_date;
+                $end = $today;
+            }
+            
+            $sql .= 'AND e.start_date >= CAST(:start_date AS DATE) '
+                    . 'AND e.start_date <= CAST(:end_date AS DATE) ';
+                
+            $eventsUrlParams['start_date'] = $start_date;
+            $eventsUrlParams['end_date'] = $end_date;
+        } else {
+            $start_date = date("Y-m-d", time());
+           
+            $sql .= 'AND e.start_date >= CAST(:start_date AS DATE) ';
+        }
+        
+        if($start_time != null && $end_time != null) {
+            $sql .= 'AND e.start_time >= CAST(:start_time AS TIME) '
+                    . 'AND e.start_time <= CAST(:end_time AS TIME) ';
+            
+            $eventsUrlParams['start_time'] = $start_time;
+            $eventsUrlParams['end_time'] = $end_time;
+        } elseif($start_time != null && $end_time == null) {
+            $sql .= 'AND e.start_time >= CAST(:start_time AS TIME) ';
+            
+            $eventsUrlParams['start_time'] = $start_time;
+        } elseif($start_time == null && $end_time != null) {
+            $sql .= 'AND e.start_time <= CAST(:end_time AS TIME) ';
+                
+            $eventsUrlParams['end_time'] = $end_time;
+        }
+        
+        if($typeCount > 0) {
+            $sql .= 'AND e.type_id IN (';
+                
+            for($i = 0; $i < $typeCount; $i++) {
+                if($i + 1 == $typeCount) {
+                    $sql .= ':eventType' . $i . ') ';
+                } else {
+                    $sql .= ':eventType' . $i . ', ';
+                }
+            }
+        }
+        
+        $sql .= "ORDER BY startDate ASC, type ASC, arena_name ";
+        
+        if($limit > 0) {
+            $sql .= "LIMIT :offset, :limit";
+        }
+        
+        $command = Yii::app()->db->createCommand($sql);
+
+        if($arenaCount > 0) {
+            for($i = 0; $i < $arenaCount; $i++) {
+                $command->bindValue(':aid' . $i, (integer)$aids[$i], PDO::PARAM_INT);
+            }
+        }
+        
+        if($limit > 0) {
+            $command->bindValue(':offset', (integer)$offset, PDO::PARAM_INT);
+            $command->bindValue(':limit', (integer)$limit, PDO::PARAM_INT);
+        }
+        
+        if($price > 0) {
+            $command->bindParam(':price', $price, PDO::PARAM_STR);
+        }
+        
+        if($lid != null) {
+            $command->bindParam(':lid', (integer)$lid, PDO::PARAM_INT);
+        }
+        
+        if($start_date != null) {
+            $command->bindParam(':start_date', $start_date, PDO::PARAM_STR);
+        }
+        
+        if($end_date != null) {
+            $command->bindParam(':end_date', $end_date, PDO::PARAM_STR);
+        }
+        
+        if($start_time != null) {
+            $command->bindValue(':start_time', $start_time, PDO::PARAM_STR);
+        }
+            
+        if($end_time != null) {
+            $command->bindParam(':end_time', $end_time, PDO::PARAM_STR);
+        }
+            
+        if($typeCount > 0) {
+            for($i = 0; $i < $typeCount; $i++) {
+                $command->bindValue(':eventType' . $i, (integer)$types[$i], PDO::PARAM_INT);
+            }
+        }
+        
+        $ret = $command->queryAll(true);
+        
+        return Event::buildCalendarResults($ret, $eventsUrlParams, $typeCount, $types);
+    }
+
+    /**
      * Returns a filtered record set for use with the Index.
      * @param mixed[] $input The record set to filter.
      * @param mixed[] $urlParams The parameters used to build the record set.
@@ -1286,6 +1855,7 @@ class Event extends RinkfinderActiveRecord
         $ret = array(
             'records' => $input,
             'calendar' => array(),
+            'count' => $count,
             'month' => $month,
             'year' => $year,
             'params' => $urlParams
