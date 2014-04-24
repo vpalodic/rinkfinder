@@ -20,7 +20,7 @@
                         </button>
                         <button rel="tooltip" title="Filter By Events" id="searchFilterButton" style="margin-bottom: 15px;" class="btn btn-success" type="button">
                             <i class="fa fa-lg fa-filter"></i>
-                            <span>Events</span>
+                            <span>Filter</span>
                         </button>
                         <button rel="tooltip" title="Reset" id="searchResetButton" style="margin-bottom: 15px;" class="btn btn-warning" type="reset">
                             <i class="fa fa-lg fa-times"></i>
