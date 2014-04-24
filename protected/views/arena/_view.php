@@ -127,13 +127,6 @@
     </div>
 </div>
 <div class="row-fluid">
-    <div class="page-container">
-        <div class="span10 offset1">
-            <h2 class="text-center">Event Calendar</h2>
-        </div>
-    </div>
-</div>
-<div class="row-fluid">
     <div class="span10 offset1">
         <div id="eventsCalendar">
             
