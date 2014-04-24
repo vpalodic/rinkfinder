@@ -4,3 +4,6 @@ protected/config/
 nbproject/private/
 /www/uploads/
 /protected/assets/uploads/2014/
+/ssh_private.key
+/putty_public_key.ppk
+/putty_private_key.ppk
