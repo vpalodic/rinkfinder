@@ -639,7 +639,6 @@ class m140117_005726_create_user_and_profile_table extends CDbMigration
                 'city' => 'Saint Paul',
                 'state' => 'MN',
                 'zip' => '55122',
-                'phone' => '6128675309',
                 'created_on' => new CDbExpression('NOW()'),
                 'updated_on' => new CDbExpression('NOW()'),
             )

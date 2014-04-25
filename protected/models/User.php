@@ -907,6 +907,15 @@ class User extends RinkfinderActiveRecord
     }
 
     /**
+     * Really deletes the account!!!
+     * @return bool true if the account was deleted
+     */
+    public function adminDeleteAccount()
+    {
+        return $this->delete();
+    }
+
+    /**
      * Prepares a new user account from self-registration prior to them
      * being added to the system.
      * Sets the status_id to not activated and records the user's

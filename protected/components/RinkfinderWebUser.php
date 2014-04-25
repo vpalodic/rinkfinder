@@ -389,7 +389,7 @@ class RinkfinderWebUser extends CWebUser
             $this->setLastName($identity->getLastName());
             $this->setFullName($identity->getFullName());
             $this->setEmail($identity->getEmail());
-            $this->setEmail($identity->getPhone());
+            $this->setPhone($identity->getPhone());
             $this->setRoles($identity->getRoles());
         }
         

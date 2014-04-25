@@ -15,7 +15,7 @@ class UserController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
+//            'postOnly + delete', // we only allow deletion via POST request
         );
     }
 
@@ -250,20 +250,20 @@ class UserController extends Controller
         $model = $this->loadModel($id);
 
         if(Yii::app()->user->checkAccess('deleteUser', array('user' => $model))) {
-            if(Yii::app()->request->isPostRequest) {
+//            if(Yii::app()->request->isPostRequest) {
                 // we only allow deletion via POST request
-                $model->deleteAccount();
+                $model->adminDeleteAccount();
                 
                 // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
                 if(!isset($_GET['ajax'])) {
                     $this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
                 }
-            } else {
-                throw new CHttpException(
-                        400,
-                        'Invalid request. Please do not repeat this request again.'
-                );
-            }
+//            } else {
+//                throw new CHttpException(
+//                        400,
+//                        'Invalid request. Please do not repeat this request again.'
+//                );
+//            }
         } else {
             throw new CHttpException(
                     403,
