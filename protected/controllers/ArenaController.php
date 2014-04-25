@@ -1262,8 +1262,6 @@ class ArenaController extends Controller
         
         // Our parameters are set so lets get us some data!
         try {
-//            $markers = Arena::getAddressWithEventsMarkers($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
-//            $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, $offset, $limit, $open, $start_date, $end_date, $start_time, $end_time, $types);
             $markers = Arena::getMarkersWithContactsEvents($lat, $lng, $radius, array(
                 'offset' => $offset,
                 'limit' => $limit,
