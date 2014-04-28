@@ -46,6 +46,7 @@ class Controller extends CController
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_arena.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/arenaManagementView.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_location.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_contact.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.js', CClientScript::POS_END);
@@ -57,6 +58,7 @@ class Controller extends CController
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_arena.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/arenaManagementView.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_location.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_contact.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.min.js', CClientScript::POS_END);

@@ -386,9 +386,18 @@ class ArenaController extends Controller
             
         // Ok, we have what appear to be valid parameters and so
         // it is time to validate and then update the value!
-        $model->$name = $value;
+        if($name == 'geocoding') {
+            $model->lat = $value[0];
+            $model->lng = $value[1];
+            
+            $attribs = array('lat', 'lng');
+        } else {
+            $model->$name = $value;
+            
+            $attribs = array($name);
+        }        
 
-        $valid = $model->validate(array($name));
+        $valid = $model->validate($attribs);
             
         if(!$valid) {
             $errors = $model->getErrors($name);
@@ -430,11 +439,20 @@ class ArenaController extends Controller
                 $value = new CDbExpression('NULL');
             }
             
-            $attributes = array(
-                $name => $value,
-                'updated_by_id' => $uid,
-                'updated_on' => new CDbExpression('NOW()')
-            );
+            if($name == 'geocoding') {
+                $attributes = array(
+                    'lat' => $value[0],
+                    'lng' => $value[1],
+                    'updated_by_id' => $uid,
+                    'updated_on' => new CDbExpression('NOW()')
+                );
+            } else {
+                $attributes = array(
+                    $name => $value,
+                    'updated_by_id' => $uid,
+                    'updated_on' => new CDbExpression('NOW()')
+                );
+            }
 
             if(!$model->saveAttributes($attributes)) {
                 $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';

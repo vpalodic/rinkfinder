@@ -412,12 +412,6 @@ class ManagementController extends Controller
             } else {
                 $this->registerManagementScripts();
         
-                if(defined('YII_DEBUG')) {
-                    Yii::app()->clientScript->registerScriptFile($path . '/js/management/arenaManagementView.js', CClientScript::POS_END);
-                } else {
-                    Yii::app()->clientScript->registerScriptFile($path . '/js/user/arenaManagementView.min.js', CClientScript::POS_END);                        
-                }
-        
                 $this->render(
                         "_arena",
                         array(

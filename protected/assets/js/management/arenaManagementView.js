@@ -272,9 +272,11 @@
                             
                             // Save the updated geocoding!
                             var myParams = arenaManagementView.params;
-                            myParams.name = 'lat';
-                            myParams.value = centerpoint.lat();
+                            myParams.name = 'geocoding';
+                            myParams.value = [centerpoint.lat(), centerpoint.lng()];
                             myParams.pk = myParams.id;
+                            myParams.lat = centerpoint.lat();
+                            myParams.lng = centerpoint.lng();
                             
                             $.ajax({
                                 url: arenaManagementView.endpoints.arena.updateRecord,
@@ -282,35 +284,11 @@
                                 type: 'POST',
                                 dataType: "html",
                                 success: function () {
-                                    myParams.name = 'lng';
-                                    myParams.value = centerpoint.lng();
-                                    
-                                    $.ajax({
-                                        url: arenaManagementView.endpoints.arena.updateRecord,
-                                        type: 'POST',
-                                        data: myParams,
-                                        dataType: 'html',
-                                        success: function () {
                                             $('#Arena_geocode_btn').show(300, function () {
                                                 $parent.find('#loading').remove();
                                                 var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
-                                                $parent.append(alertSuccess);
+                                                $parent.prepend(alertSuccess);
                                             });
-                                        },
-                                        error: function(xhr, status, errorThrown) {
-                                            $('#Arena_geocode_btn').show(300, function () {
-                                                $parent.find('#loading').remove();
-                                            });
-                                            
-                                            utilities.ajaxError.show(
-                                                "Error",
-                                                "Failed to update the longitude",
-                                                xhr,
-                                                status,
-                                                errorThrown
-                                            );
-                                        }
-                                    });
                                 },
                                 error: function(xhr, status, errorThrown) {
                                     $('#Arena_geocode_btn').show(300, function () {
@@ -447,6 +425,9 @@
         $('#deleteContactButton').attr("disabled", "disabled");
         $('#saveContactButton').attr("disabled", "disabled").hide();
         $('#cancelContactButton').attr("disabled", "disabled").hide();
+        
+        // Setup the select lists!
+        
     };
     
     arenaManagementView.setupContactEditables = function () {
