@@ -44,9 +44,15 @@
                         <?php if(isset($data['home_url']) && !empty($data['home_url'])) {
                             echo  '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' . $data['home_url'] . '">' . 'Home Page' . '</a><br />';
                         } ?>
-                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo (isset($data['address_line1']) && isset($data['city_state_zip']) ? urlencode($data['address_line1'] . ', ' . $data['city_state_zip']) : ''); ?>">
+                        <?php if(isset($data['address_line2']) && !empty($data['address_line2'])) : ?>
+                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($data['address_line1'] . ', ' . $data['address_line2'] . ', ' . $data['city_state_zip']); ?>">
                             Driving Directions
                         </a>
+                        <?php elseif(isset($data['address_line1']) && isset($data['city_state_zip'])) : ?>
+                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($data['address_line1'] . ', ' . $data['city_state_zip']); ?>">
+                            Driving Directions
+                        </a>
+                        <?php endif; ?>
                     </small>
                 </address>
             </h2>

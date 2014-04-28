@@ -285,6 +285,12 @@
                                 dataType: "html",
                                 success: function () {
                                             $('#Arena_geocode_btn').show(300, function () {
+                                                var $link = $('#Arena_directions');
+                                                
+                                                var newHref = 'http://maps.google.com/maps?daddr=' + escape(address);
+                                                
+                                                $link.attr('href', newHref);
+                                                
                                                 $parent.find('#loading').remove();
                                                 var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
                                                 $parent.prepend(alertSuccess);
@@ -420,11 +426,256 @@
     arenaManagementView.setupInitialContactView = function () {
         // Disable all buttons except the New button 
         // and hide the save / cancel buttons
-        $('#assignContactButton').attr("disabled", "disabled");
-        $('#unassignContactButton').attr("disabled", "disabled");
-        $('#deleteContactButton').attr("disabled", "disabled");
-        $('#saveContactButton').attr("disabled", "disabled").hide();
-        $('#cancelContactButton').attr("disabled", "disabled").hide();
+        var $assignBtn = $('#assignContactButton');
+        var $unassignBtn = $('#unassignContactButton');
+        var $newBtn = $('#newContactButton');
+        var $deleteBtn = $('#deleteContactButton');
+        var $saveBtn = $('#saveContactButton');
+        var $cancelBtn = $('#cancelContactButton');
+        var $availableMS = $('#availableContactsMSelect');
+        var $assignedMS = $('#assignedContactsMSelect');
+        var $assignedS = $('#assignedContactsSelect');
+        
+        $assignBtn.attr("disabled", "disabled");
+        $unassignBtn.attr("disabled", "disabled");
+        $deleteBtn.attr("disabled", "disabled");
+        $saveBtn.attr("disabled", "disabled").hide();
+        $cancelBtn.attr("disabled", "disabled").hide();
+        
+        // Setup the select change handlers!
+        $availableMS.on('change', function (e) {
+            // Get the selected options from the available select list
+            var $selected = $availableMS.find('option:selected');
+            
+            if($selected.length > 0)
+            {
+                // we have at least one selection so enable the button
+                $assignBtn.removeAttr("disabled");
+            }
+            else
+            {
+                // Nothing selected so disable the button
+                $assignBtn.attr("disabled", "disabled");
+            }
+        });
+        
+        $assignedMS.on('change', function (e) {
+            // Get the selected options from the available select list
+            var $selected = $assignedMS.find('option:selected');
+            
+            if($selected.length > 0)
+            {
+                // we have at least one selection so enable the button
+                $unassignBtn.removeAttr("disabled");
+            }
+            else
+            {
+                // Nothing selected so disable the button
+                $unassignBtn.attr("disabled", "disabled");
+            }
+        });
+        
+        $assignedS.on('change', function (e) {
+            // Get the selected options from the available select list
+            var $selected = $assignedS.find('option:selected');
+            
+            if($selected.length > 0)
+            {
+                // we have our selection, so clear the edit screen and
+                // load in the new contact
+                
+            }
+            else
+            {
+                // Nothing selected, so clear the edit screen
+                
+            }
+        });
+        
+        // Setup the button click handlers!
+        $assignBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Get the selected options from the available select list
+            var $selected = $availableMS.find('option:selected');
+            
+            var values = [];
+            
+            $selected.each(function () {
+                values.push($(this).val());
+            });
+            
+            if(values.length <= 0)
+            {
+                return;
+            }
+            
+            // Prepare to assign the contacts by disabling the assignment
+            // buttons and select lists!
+            $assignBtn.attr("disabled", "disabled");
+            $unassignBtn.attr("disabled", "disabled");
+            $availableMS.attr("disabled", "disabled");
+            $assignedMS.attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $assignBtn.parent().prepend(spinner);
+            
+            // Now let's assign the contacts!!!
+            var myParams = {
+                name: 'assign',
+                value: values,
+                aid: arenaManagementView.params.id,
+                output: 'json'
+            };
+            
+            $.ajax({
+                url: arenaManagementView.endpoints.contact.updateRecord,
+                data: myParams,
+                type: 'POST',
+                dataType: 'json',
+                success: function () {
+                    // Move the contacts to the assigned list
+                    $selected.each(function () {
+                        $assignedMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
+                        $assignedS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
+                        $(this).remove();
+                    });
+                    
+                    // Clear any selections
+                    $availableMS.val('');
+                    $assignedMS.val('');
+                    
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $assignBtn.parent().find('#loading').remove();
+                    var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
+                    $assignBtn.parent().prepend(alertSuccess);
+                },
+                error: function(xhr, status, errorThrown) {
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $assignBtn.removeAttr("disabled");
+                    
+                    $assignBtn.parent().find('#loading').remove();
+                    
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to assign the contacts",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });            
+        });
+        
+        $unassignBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Get the selected options from the available select list
+            var $selected = $assignedMS.find('option:selected');
+            
+            var values = [];
+            
+            $selected.each(function () {
+                values.push($(this).val());
+            });
+            
+            if(values.length <= 0)
+            {
+                return;
+            }
+            
+            // Prepare to assign the contacts by disabling the assignment
+            // buttons and select lists!
+            $assignBtn.attr("disabled", "disabled");
+            $unassignBtn.attr("disabled", "disabled");
+            $availableMS.attr("disabled", "disabled");
+            $assignedMS.attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $unassignBtn.append(spinner);
+            
+            // Now let's assign the contacts!!!
+            var myParams = {
+                name: 'unassign',
+                value: values,
+                aid: arenaManagementView.params.id,
+                output: 'json'
+            };
+            
+            $.ajax({
+                url: arenaManagementView.endpoints.contact.updateRecord,
+                data: myParams,
+                type: 'POST',
+                dataType: 'json',
+                success: function () {
+                    // Move the contacts to the assigned list
+                    $selected.each(function () {
+                        $availableMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
+                        $assignedS.find('<option value="' + $(this).val() + '">' + $(this).text() + '</option>').remove();
+                        $(this).remove();
+                    });
+                    
+                    // Clear any selections
+                    $availableMS.val('');
+                    $assignedMS.val('');
+                    
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $unassignBtn.find('#loading').remove();
+                    var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
+                    $unassignBtn.parent.prepend(alertSuccess);
+                },
+                error: function(xhr, status, errorThrown) {
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $unassignBtn.removeAttr("disabled");
+                    
+                    $unassignBtn.find('#loading').remove();
+                    
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to unassign the contacts",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });            
+        });
+        
+        $newBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            
+        });
+        
+        $deleteBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            
+        });
+        
+        $saveBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            
+        });
+        
+        $cancelBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            
+        });
         
         // Setup the select lists!
         

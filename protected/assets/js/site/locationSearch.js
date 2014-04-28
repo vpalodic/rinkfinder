@@ -344,15 +344,34 @@
 
         if(this.geocodedAddr === '')
         {
-            output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+            if (typeof marker.address_line2 !== 'undefined' && marker.address_line2 !== null && marker.address_line2.length > 0)
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+                    "&daddr=" + escape(marker.address_line1 + ', ' + marker.address_line2 + ',' + marker.city_state_zip) + '&saddr=' + 
+                    escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + '">Driving Directions</a>';
+            }
+            else
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
                     "&daddr=" + escape(marker.address_line1 + ', ' + marker.city_state_zip) + '&saddr=' + 
                     escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + '">Driving Directions</a>';
+            }
+            
         }
         else
         {
-            output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+            if (typeof marker.address_line2 !== 'undefined' && marker.address_line2 !== null && marker.address_line2.length > 0)
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+                    "&daddr=" + escape(marker.address_line1 + ', ' + marker.address_line2 + ',' + marker.city_state_zip) + '&saddr=' + 
+                    escape(this.geocodedAddr) + '">Driving Directions</a>';
+            }
+            else
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
                     "&daddr=" + escape(marker.address_line1 + ', ' + marker.city_state_zip) + '&saddr=' + 
                     escape(this.geocodedAddr) + '">Driving Directions</a>';
+            }            
         }
         
         output += "<address>" + marker.address_line1 + "<br />";
@@ -472,15 +491,33 @@
         
         if(this.geocodedAddr === '')
         {
-            output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+            if (typeof marker.address_line2 !== 'undefined' && marker.address_line2 !== null && marker.address_line2.length > 0)
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+                    "&daddr=" + escape(marker.address_line1 + ', ' + marker.address_line2 + ',' + marker.city_state_zip) + '&saddr=' + 
+                    escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + '">Driving Directions</a>';
+            }
+            else
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
                     "&daddr=" + escape(marker.address_line1 + ', ' + marker.city_state_zip) + '&saddr=' + 
                     escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + '">Driving Directions</a>';
+            }
         }
         else
         {
-            output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+            if (typeof marker.address_line2 !== 'undefined' && marker.address_line2 !== null && marker.address_line2.length > 0)
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
+                    "&daddr=" + escape(marker.address_line1 + ', ' + marker.address_line2 + ',' + marker.city_state_zip) + '&saddr=' + 
+                    escape(this.geocodedAddr) + '">Driving Directions</a>';
+            }
+            else
+            {
+                output += '<a target="_blank" href="http://maps.google.com/?q=' + escape(this.centerpoint.lat() + ',' + this.centerpoint.lng()) + 
                     "&daddr=" + escape(marker.address_line1 + ', ' + marker.city_state_zip) + '&saddr=' + 
                     escape(this.geocodedAddr) + '">Driving Directions</a>';
+            }            
         }
         
         output += "<address>";

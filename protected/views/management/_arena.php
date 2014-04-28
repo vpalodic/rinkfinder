@@ -265,6 +265,15 @@
                                         Geocoding
                                     </td>
                                     <td>
+                                    <?php if(isset($model->address_line2) && !empty($model->address_line2)) : ?>
+                                        <a id="Arena_directions" target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($model->address_line1 . ', ' . $model->address_line2 . ', ' . $model->city . ', ' . $model->state . ' ' . $model->zip); ?>">
+                                            Driving Directions
+                                        </a><br />
+                                    <?php elseif(isset($model->address_line1) && isset($model->city_state_zip)) : ?>
+                                        <a id="Arena_directions" target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($model->address_line1 . ', ' . $model->city . ', ' . $model->state . ' ' . $model->zip); ?>">
+                                            Driving Directions
+                                        </a><br />
+                                    <?php endif; ?>
                                         <button id="Arena_geocode_btn"
                                                 type="button"
                                                 class="btn btn-success">
@@ -414,10 +423,8 @@
     <?php
     // We are going to grab four lists of contacts for the list views
     // We only need the contact name and id, we don't need anything else
-    $activeAvailableContacts = Contact::getAvailable($model->id, 1);
-    $inactiveAvailableContacts = Contact::getAvailable($model->id, 0);
-    $activeAssignedContacts = Contact::getAssigned($model->id, 1);
-    $inactiveAssignedContacts = Contact::getAssigned($model->id, 0);
+    $availableContacts = Contact::getAvailable($model->id, 0);
+    $assignedContacts = Contact::getAssigned($model->id, 0);
     ?>
     <div id="contactsTabPane" class="tab-pane fade">
         <div id="contactManagementView" class="panel panel-primary">
@@ -429,60 +436,36 @@
             <div class="panel-body">
                 <div class="row-fluid">
                     <div class="span6">
-                        <strong>Available Active Contacts</strong><br />
-                        <select id="availableActiveContactsSelect"
+                        <strong>Available Contacts</strong><br />
+                        <select id="availableContactsMSelect"
                                 multiple
                                 class="span12">
-                            <?php foreach($activeAvailableContacts as $aavc) : ?>
+                            <?php foreach($availableContacts as $aavc) : ?>
                             <option value="<?php echo $aavc['id']; ?>">
-                                <?php echo $aavc['last_name'] . ', ' . $aavc['first_name']; ?>
+                                <?php echo $aavc['last_name'] . ', ' . $aavc['first_name'] . ' - ' . $aavc['email'] . ($aavc['active'] == 1 ? ' (Active)' : ' (Inactive)'); ?>
                             </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="span6">
-                        <strong>Assigned Active Contacts</strong><br />
-                        <select id="assignedActiveContactsSelect"
-                                class="span12">
-                            <?php foreach($activeAssignedContacts as $aac) : ?>
-                            <option value="<?php echo $aac['id']; ?>">
-                                <?php echo $aac['last_name'] . ', ' . $aac['first_name']; ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="row-fluid">
-                    <div class="span6">
-                        <strong>Available Inactive Contacts</strong><br />
-                        <select id="availableInactiveContactsSelect"
+                        <strong>Assigned Contacts</strong><br />
+                        <select id="assignedContactsMSelect"
                                 multiple
                                 class="span12">
-                            <?php foreach($inactiveAvailableContacts as $iavc) : ?>
-                            <option value="<?php echo $iavc['id']; ?>">
-                                <?php echo $iavc['last_name'] . ', ' . $iavc['first_name']; ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="span6">
-                        <strong>Assigned Inactive Contacts</strong><br />
-                        <select id="assignedInactiveContactsSelect"
-                                class="span12">
-                            <?php foreach($inactiveAssignedContacts as $iac) : ?>
-                            <option value="<?php echo $iac['id']; ?>">
-                                <?php echo $iac['last_name'] . ', ' . $iac['first_name']; ?>
+                            <?php foreach($assignedContacts as $aac) : ?>
+                            <option value="<?php echo $aac['id']; ?>">
+                                <?php echo $aac['last_name'] . ', ' . $aac['first_name'] . ' - ' . $aac['email'] . ($aac['active'] == 1 ? ' (Active)' : ' (Inactive)'); ?>
                             </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 <div class="row-fluid">
-                    <div class="span6">
-                        <strong>Actions</strong><br />
+                    <div class="span12">
+                        <strong>Assignment Actions</strong><br />
                         <div class="well">
                             <div class="row-fluid">
-                                <div class="span3">
+                                <div class="span6">
                                     <button class="btn btn-block btn-large btn-success"
                                             type="button"
                                             data-toggle="tooltip"
@@ -492,7 +475,7 @@
                                         <span>Assign</span>
                                     </button>
                                 </div>
-                                <div class="span3">
+                                <div class="span6">
                                     <button class="btn btn-block btn-large btn-warning"
                                             type="button"
                                             data-toggle="tooltip"
@@ -502,7 +485,29 @@
                                         <span>Unassign</span>
                                     </button>
                                 </div>
-                                <div class="span3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Select a contact to edit</strong><br />
+                        <select id="assignedContactsSelect"
+                                class="span12">
+                            <?php foreach($assignedContacts as $aac) : ?>
+                            <option value="<?php echo $aac['id']; ?>">
+                                <?php echo $aac['last_name'] . ', ' . $aac['first_name'] . ' - ' . $aac['email'] . ($aac['active'] == 1 ? ' (Active)' : ' (Inactive)'); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Contact Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span6">
                                     <button class="btn btn-block btn-large btn-primary"
                                             type="button"
                                             data-toggle="tooltip"
@@ -512,7 +517,7 @@
                                         <span>New</span>
                                     </button>
                                 </div>
-                                <div class="span3">
+                                <div class="span6">
                                     <button class="btn btn-block btn-large btn-danger"
                                             type="button"
                                             data-toggle="tooltip"
@@ -525,7 +530,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="span6">
+                    <div class="span8 offset2">
                         <div id="contactDetails">
                             
                         </div>

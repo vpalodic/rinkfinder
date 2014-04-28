@@ -137,15 +137,22 @@ class Contact extends RinkfinderActiveRecord
     {
         $sql = 'SELECT * '
                 . 'FROM contact c '
-                . 'WHERE c.active = :active '
-                . 'AND c.id NOT IN (SELECT aca.contact_id '
+                . 'WHERE c.id NOT IN (SELECT aca.contact_id '
                 . '                 FROM arena_contact_assignment aca '
-                . '                 WHERE aca.arena_id = :aid) '
-                . 'ORDER BY c.last_name ASC, c.first_name ASC';
+                . '                 WHERE aca.arena_id = :aid) ';
+        
+        if($active = 1) {
+            $sql .= 'AND c.active = :active ';
+        }
+        
+        $sql .= 'ORDER BY c.last_name ASC, c.first_name ASC';
         
         $command = Yii::app()->db->createCommand($sql);
         
-        $command->bindParam(':active', $active, PDO::PARAM_INT);
+        if($active = 1) {
+            $command->bindValue(':active', $active, PDO::PARAM_INT);
+        }
+        
         $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
         
         $ret = $command->queryAll(true);
@@ -162,15 +169,22 @@ class Contact extends RinkfinderActiveRecord
     {
         $sql = 'SELECT * '
                 . 'FROM contact c '
-                . 'WHERE c.active = :active '
-                . 'AND c.id IN (SELECT aca.contact_id '
+                . 'WHERE c.id IN (SELECT aca.contact_id '
                 . '                 FROM arena_contact_assignment aca '
-                . '                 WHERE aca.arena_id = :aid) '
-                . 'ORDER BY c.last_name ASC, c.first_name ASC';
+                . '                 WHERE aca.arena_id = :aid) ';
+        
+        if($active = 1) {
+            $sql .= 'AND c.active = :active ';
+        }
+        
+        $sql .= 'ORDER BY c.last_name ASC, c.first_name ASC';
         
         $command = Yii::app()->db->createCommand($sql);
         
-        $command->bindParam(':active', $active, PDO::PARAM_INT);
+        if($active = 1) {
+            $command->bindValue(':active', $active, PDO::PARAM_INT);
+        }
+        
         $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
         
         $ret = $command->queryAll(true);

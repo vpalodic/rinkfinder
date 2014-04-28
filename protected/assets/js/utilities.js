@@ -153,14 +153,15 @@
                 
                 // We have a possible HTML response, so let's check to see if it is the error
                 // page. If it is, we will simply grab the content and nothing else
-                var $content = $(xhr.responseText).find(("#content"));
+                try {
+                    var $content = $(xhr.responseText).find(("#content"));
                 
-                if ($content.length > 0)
-                {
-                    htmlOutput += "<pre>Error: <strong>" + $content.html() + "</pre></strong>";
+                    if ($content.length > 0)
+                    {
+                        htmlOutput += "<pre>Error: <strong>" + $content.html() + "</pre></strong>";
+                    }
                 }
-                else
-                {
+                catch (err) {
                     htmlOutput += "<pre>Error: <strong>" + xhr.responseText + "</pre></strong>";
                 }
             }
