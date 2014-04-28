@@ -5,8 +5,8 @@
 
 <?php
 $this->breadcrumbs=array(
-	'Users'=>array('index'),
-	$model->fullName=>array('view','id'=>$model->id),
+	'Users' => array('index'),
+	$model->fullName=>array('view', 'id'=>$model->id),
 	'Update',
 );
 
@@ -18,6 +18,6 @@ $this->menu=array(
 );
 ?>
 
-    <h1>Update User <?php echo $model->id; ?></h1>
+<h2 class="sectionHeader"><?php echo $model->fullName; ?></h2>
 
-<?php $this->renderPartial('_form', array('model'=>$model)); ?>
+<?php $this->renderPartial('_form', array('model' => $model, 'profile' => $profile)); ?>

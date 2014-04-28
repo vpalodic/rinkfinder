@@ -22,6 +22,8 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/wysiwyg-color.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-wysihtml5.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
         } elseif ($this->includeCss) {
@@ -30,6 +32,8 @@
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-datetimepicker.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/wysiwyg-color.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-wysihtml5.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.min.css');
         }
@@ -49,6 +53,10 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
@@ -66,6 +74,10 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
@@ -172,18 +184,14 @@
                             </a>
                             <ul class="dropdown-menu" id="dropdownUser" aria-labelledby="dropdownUser" role="menu">
                                 <li class="nav-header">Profile</li>
-                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'profile' && Yii::app()->controller->action->id === 'view') echo ' class="active"'; ?>>
-                                    <a tabindex="-1" href="<?php echo $this->createUrl('/profile/view', array('id' => Yii::app()->user->id)); ?>">
-                                        <i class="fa fa-lg fa-list-ul fa-fw"></i> View Profile
+                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'user' && Yii::app()->controller->action->id === 'view') echo ' class="active"'; ?>>
+                                    <a tabindex="-1" href="<?php echo $this->createUrl('/user/view', array('id' => Yii::app()->user->id)); ?>">
+                                        <i class="fa fa-lg fa-edit fa-fw"></i> Account
                                     </a>
-                                </li>
-                                <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'profile' && Yii::app()->controller->action->id === 'update') echo ' class="active"'; ?>>
-                                    <a tabindex="-1" href="<?php echo $this->createUrl('/profile/update', array('id' => Yii::app()->user->id)); ?>">
-                                        <i class="fa fa-lg fa-pencil fa-fw"></i> Edit Profile</a>
                                 </li>
                                 <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'user' && Yii::app()->controller->action->id === 'changePassword') echo ' class="active"'; ?>>
                                     <a tabindex="-1" href="<?php echo $this->createUrl('/user/changePassword', array('id' => Yii::app()->user->id)); ?>">
-                                        <i class="fa fa-lg fa-edit fa-fw"></i> Change Password
+                                        <i class="fa fa-lg fa-pencil fa-fw"></i> Change Password
                                     </a>
                                 </li>
                                 <li class="divider"></li>

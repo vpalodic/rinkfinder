@@ -5,21 +5,11 @@
 
     $this->pageTitle = Yii::app()->name . ' - Change Password';
     $this->breadcrumbs = array(
-        'Users' => array('user/index', 'id' => $model->id),
-        CHtml::encode($model->fullName) => array('profile/view', 'id' => $model->id),
+        CHtml::encode($model->fullName) => array('user/view', 'id' => $model->id),
         'Change Password',
     );
     
-    $this->menu = array(
-        array('label' => 'List User', 'url' => array('index')),
-        array('label' => 'Create User', 'url' => array('create')),
-        array('label' => 'Update User', 'url' => array('update', 'id'=>$model->id)),
-        array('label' => 'Delete User', 'url' => '#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),
-        array('label' => 'Manage User', 'url' => array('admin')),
-);
 ?>
-
-<h2 class="sectionHeader">Change Password</h2>
 
 <?php
     $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
@@ -31,7 +21,6 @@
 
 <p>
     Please fill out the following form with your new password.
-    <br />
 </p>
 
 <div class="form">

@@ -129,6 +129,56 @@ class Contact extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns an array of contacts not assigned to the passed in arena
+     * @return array[] the array of contacts
+     * @throws CDbException
+     */
+    public static function getAvailable($aid, $active = 1)
+    {
+        $sql = 'SELECT * '
+                . 'FROM contact c '
+                . 'WHERE c.active = :active '
+                . 'AND c.id NOT IN (SELECT aca.contact_id '
+                . '                 FROM arena_contact_assignment aca '
+                . '                 WHERE aca.arena_id = :aid) '
+                . 'ORDER BY c.last_name ASC, c.first_name ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':active', $active, PDO::PARAM_INT);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns an array of contact statuses
+     * @return array[] the array of contact statuses
+     * @throws CDbException
+     */
+    public static function getAssigned($aid, $active = 1)
+    {
+        $sql = 'SELECT * '
+                . 'FROM contact c '
+                . 'WHERE c.active = :active '
+                . 'AND c.id IN (SELECT aca.contact_id '
+                . '                 FROM arena_contact_assignment aca '
+                . '                 WHERE aca.arena_id = :aid) '
+                . 'ORDER BY c.last_name ASC, c.first_name ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindParam(':active', $active, PDO::PARAM_INT);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
+    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */

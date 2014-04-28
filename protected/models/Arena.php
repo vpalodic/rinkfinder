@@ -46,7 +46,7 @@ class Arena extends RinkfinderActiveRecord
     /**
      * @var string $oldTags
      */
-    private $oldTags;
+    public $oldTags;
     
     /**
      * @return string the associated database table name
@@ -256,7 +256,7 @@ class Arena extends RinkfinderActiveRecord
             'fax' => 'Fax',
             'fax_ext' => 'Fax Ext',
             'logo' => 'Logo',
-            'url' => 'Url',
+            'url' => 'Home Page',
             'notes' => 'Notes',
             'status_id' => 'Status',
             'lock_version' => 'Lock Version',
@@ -565,6 +565,31 @@ class Arena extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns an array of arena statuses
+     * @return array[] the array of arena statuses
+     * @throws CDbException
+     */
+    public static function getActiveStatusList()
+    {
+        $sql = 'SELECT id AS value, display_name AS text FROM arena_status WHERE active = 1 ORDER BY display_order';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns the display_name of the Arena status
+     * @return string
+     * @throws CDbException
+     */
+    public function getStatusAlias()
+    {
+        $sql = 'SELECT display_name FROM arena_status WHERE id = :sid';
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':sid', (integer)$this->status_id, PDO::PARAM_INT);
+        return $command->queryScalar();
+    }
+    
+    /**
      * Returns an array of attributes that are in the summary view
      * @return string[] the array of attributes
      */
@@ -820,7 +845,7 @@ class Arena extends RinkfinderActiveRecord
     /**
      * Normalizes the user-entered tags.
      */
-    public function normalizeTags($attribute, $params)
+    public function normalizeTags($attribute = null, $params = null)
     {
         $this->tags = Tag::array2string(array_unique(Tag::string2array($this->tags)));
     }

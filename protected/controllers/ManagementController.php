@@ -244,6 +244,194 @@ class ManagementController extends Controller
         }
     }
     
+    protected function handleArenaView($id, $outputFormat)
+    {
+        // Validate we have a valid Arena ID and if we don't throw a
+        // 404 not found error!
+        if($id === null || $id < 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        $model = null;
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        
+        $data = null;
+        
+        // During the process of retrieving the arena model, we validate
+        // that the user is authorized to view / update this arena!
+
+        // Try and get the data!
+        try {
+            // First validate the user is authorized
+            $model = $this->loadArenaModel($id, $outputFormat, false);
+            
+            if(!$model->isUserAssigned($uid)) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
+
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        $params = array(
+            'endpoints' => array(
+                'arena' => array(
+                    'new' => Yii::app()->createUrl('/arena/create'),
+                    'update' => Yii::app()->createUrl('/arena/updateAttribute')
+                ),
+                'contact' => array(
+                    'new' => Yii::app()->createUrl('/contact/create'),
+                    'update' => Yii::app()->createUrl('/contact/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/contact/view')
+                )
+            ),
+            'data' => array(
+                'id' => $model->id,
+                'output' => 'html'
+            )
+        );
+            
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => array(
+                            'model' => $model,
+                            'params' => $params
+                        )
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('model' => $model, 'params' => $params), "details", "arena");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            $this->pageTitle = Yii::app()->name . ' - Account & Profile!';
+            $this->breadcrumbs = array(
+                'Management' => array('/management/index'),
+                'Facilities' => array('/management/index'),
+                $model->name,
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_arena",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 0
+                        ));
+            } else {
+                $this->registerManagementScripts();
+        
+                if(defined('YII_DEBUG')) {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/management/arenaManagementView.js', CClientScript::POS_END);
+                } else {
+                    Yii::app()->clientScript->registerScriptFile($path . '/js/user/arenaManagementView.min.js', CClientScript::POS_END);                        
+                }
+        
+                $this->render(
+                        "_arena",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 1
+                        ));
+            }
+        }
+    }
+    
     protected function handleEventRequestView($id, $outputFormat)
     {
         // We need to ensure that both an Arena ID and Event ID are passed in
@@ -1237,5 +1425,38 @@ class ManagementController extends Controller
             }
         }
     }
-    
+
+    /**
+     * Returns the Arena data model based on the primary key given in the GET variable.
+     * If the data model is not found, an HTTP exception will be raised.
+     * @param integer $id the ID of the model to be loaded
+     * @return Arena the loaded model
+     * @throws CHttpException
+     */
+    public function loadArenaModel($id, $outputFormat = 'html', $with = false)
+    {
+        if($with === true) {
+            $model = Arena::model()->with('locations', 'contacts')->findByPk($id);
+        } else {
+            $model = Arena::model()->findByPk($id);
+        }
+        
+        if($model === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(404, 'Facility not found');
+            }
+
+            $this->sendResponseHeaders(404, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Facility not found',
+                    )
+            );
+            Yii::app()->end();
+        }
+        return $model;
+    }
+
 }

@@ -16,15 +16,15 @@
             <?php endif; ?>
         </div>
         <div class="span8">
-            <h2 id="arenaHeader"><?php echo CHtml::encode($data['arena_name']); ?>
+            <h2 id="arenaHeader"><?php echo isset($data['arena_name']) ? CHtml::encode($data['arena_name']) : ''; ?>
                 <br />
-                <small class="text-muted">
-                    <address>
-                        <?php echo $data['address_line1']; ?><br />
+                <address>
+                    <small class="text-muted">
+                        <?php echo isset($data['address_line1']) ? $data['address_line1'] : ''; ?><br />
                         <?php if(isset($data['address_line2']) && !empty($data['address_line2'])) {
                             echo $data['address_line2'] . '<br />';
                         } ?>
-                        <?php echo $data['city_state_zip'] . '<br />'; ?>
+                        <?php echo (isset($data['city_state_zip']) ? $data['city_state_zip'] : '') . '<br />'; ?>
                         <?php if(isset($data['phone']) && !empty($data['phone'])) {
                             echo '<abbr title="Phone">P:</abbr> ' . RinkfinderActiveRecord::format_telephone($data['phone']);
                             if(isset($data['ext']) && !empty($data['ext'])) {
@@ -44,14 +44,14 @@
                         <?php if(isset($data['home_url']) && !empty($data['home_url'])) {
                             echo  '<abbr title="Home Page">H:</abbr> <a target="_blank" href="' . $data['home_url'] . '">' . 'Home Page' . '</a><br />';
                         } ?>
-                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($data['address_line1'] . ', ' . $data['city_state_zip']); ?>">
+                        <a target="_blank" href="http://maps.google.com/maps?daddr=<?php echo (isset($data['address_line1']) && isset($data['city_state_zip']) ? urlencode($data['address_line1'] . ', ' . $data['city_state_zip']) : ''); ?>">
                             Driving Directions
                         </a>
-                    </address>
-                </small>
+                    </small>
+                </address>
             </h2>
-            <a class="searchable" style="display: none;" data-for="<?php echo "#arenaListItem" . preg_replace("/[^A-Za-z0-9]/", "", $data['arena_name']) . $data['id']; ?>">
-                <?php echo $data['tags']; ?>
+            <a class="searchable" style="display: none;" data-for="<?php echo "#arenaListItem" . (isset($data['arena_name']) && isset($data['id']) ? preg_replace("/[^A-Za-z0-9]/", "", $data['arena_name']) . $data['id'] : ''); ?>">
+                <?php echo isset($data['tags']) ? $data['tags'] : ''; ?>
             </a>
         </div>
     </div>
@@ -60,6 +60,7 @@
     <div class="page-container">
         <div class="span3">
             <h5>Contacts</h5>
+            <?php if(isset($data['contacts'])) : ?>
             <?php foreach($data['contacts'] as $contact) : ?>
             <address>
                 <?php if($contact['contact_type'] == "Primary") : ?>
@@ -88,12 +89,14 @@
                 } ?>
             </address>
             <?php endforeach; ?>
+            <?php endif; ?>
         </div>
         <div class="span6">
-            <?php echo $data['description']; ?>
+            <?php echo isset($data['description']) ? $data['description'] : ''; ?>
         </div>
         <div class="span3">
             <h5>Venues</h5>
+            <?php if(isset($data['locations'])) : ?>
             <?php foreach($data['locations'] as $location) : ?>
             <strong><?php echo $location['location_name']; ?></strong><br />
             <abbr title="Venue Type">T:</abbr> <?php echo $location['location_type_display_name']; ?><br />
@@ -116,13 +119,14 @@
                 echo  '<abbr title="Venue Notes">N:</abbr> ' . $location['location_notes'] . '<br />';
             } ?>
             <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 <div class="row-fluid">
     <div class="page-container">
         <div class="span6 offset3">
-            <br /><p><?php echo $data['notes']; ?></p>
+            <br /><p><?php echo isset($data['notes']) ? $data['notes'] : ''; ?></p>
         </div>
     </div>
 </div>
@@ -143,7 +147,7 @@
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
             . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
-            . 'arenaView.endpoints.calendar ="' . $data['events_json_url'] . '";'
+            . 'arenaView.endpoints.calendar ="' . (isset($data['events_json_url']) ? $data['events_json_url'] : '') . '";'
             . 'arenaView.start_date = "' . $start_date . '";'
             . 'arenaView.$calendar = $("#eventsCalendar");'
             . 'arenaView.onReady();',
@@ -184,7 +188,7 @@ $(document).ready(function () {
         var interval = setInterval(function () {
             if (typeof arenaView !== "undefined") {
                 clearInterval(interval);
-                arenaView.endpoints.calendar ="<?php echo $data['events_json_url']; ?>";
+                arenaView.endpoints.calendar ="<?php echo (isset($data['events_json_url']) ? $data['events_json_url'] : ''); ?>";
                 arenaView.start_date = "<?php echo $start_date; ?>";
                 arenaView.$calendar = $("#eventsCalendar");
                 arenaView.onReady();
@@ -195,7 +199,7 @@ $(document).ready(function () {
     }
     else
     {
-        arenaView.endpoints.calendar ="<?php echo $data['events_json_url']; ?>";
+        arenaView.endpoints.calendar ="<?php echo (isset($data['events_json_url']) ? $data['events_json_url'] : ''); ?>";
         arenaView.start_date = "<?php echo $start_date; ?>";
         arenaView.$calendar = $("#eventsCalendar");
         arenaView.onReady();

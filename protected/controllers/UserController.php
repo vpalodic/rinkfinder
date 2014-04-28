@@ -15,7 +15,8 @@ class UserController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-//            'postOnly + delete', // we only allow deletion via POST request
+            'ajaxOnly + updateAttribute',
+            'postOnly + delete updateAttribute', // we only allow deletion via POST request
         );
     }
 
@@ -30,10 +31,10 @@ class UserController extends Controller
             array(
                 'allow',
                 'actions' => array(
-                    'index',
                     'view',
                     'create',
                     'update',
+                    'updateAttribute',
                     'changePassword',
                 ),
                 'users' => array('@'),
@@ -43,6 +44,7 @@ class UserController extends Controller
                 'actions' => array(
                     'admin',
                     'delete',
+                    'index',
                 ),
                 'roles' => array('ApplicationAdministrator'),
             ),
@@ -59,21 +61,64 @@ class UserController extends Controller
      */
     public function actionView($id)
     {
+        Yii::trace("In actionView.", "application.controllers.UserController");
+        
+        // Publish and register our jQuery plugin
+        $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+        
+        if(defined('YII_DEBUG')) {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/user/userAccountProfile.js', CClientScript::POS_END);
+        } else {
+            Yii::app()->clientScript->registerScriptFile($path . '/js/user/userAccountProfile.min.js', CClientScript::POS_END);
+            
+        }
+        
         $model = $this->loadModel($id);
             
-        if(Yii::app()->user->checkAccess('viewUser', array('user' => $model))) {
-            $this->render(
-                    'view',
-                    array(
-                        'model' => $model,
-                    )
-            );
-        } else {
+        if(!Yii::app()->user->checkAccess('viewUser', array('user' => $model))) {
             throw new CHttpException(
                     403,
                     'Permission denied. You are not authorized to perform this action.'
             );
         }
+        
+        $this->registerUserScripts();
+        $this->includeCss = true;
+        $this->navigation = true;
+
+        $doReady = 1;
+        $newRecord = 0;
+        
+        if(Yii::app()->request->isAjaxRequest) {
+            $doReady = 0;
+        }
+
+        $this->pageTitle = Yii::app()->name . ' - Account & Profile!';
+        $this->breadcrumbs = array(
+            $model->fullName,
+        );
+        
+        $params = array(
+            'endpoints' => array(
+                'new' => Yii::app()->createUrl('user/create'),
+                'update' => Yii::app()->createUrl('user/updateAttribute')
+            ),
+            'data' => array(
+                'id' => $model->id,
+                'output' => 'html'
+            )
+        );
+
+        $this->render(
+                'view',
+                array(
+                    'model' => $model,
+                    'path' => $path,
+                    'params' => $params,
+                    'doReady' => $doReady,
+                    'newRecord' => $newRecord
+                )
+        );
     }
 
     /**
@@ -81,7 +126,7 @@ class UserController extends Controller
      * If creation is successful, the form will be reset so that another user
      * can be added
      * @param string $role the name of the user type to create
-     * @param string $arenaId the ID of the Arena this new use will be assigned to.
+     * @param string $arenaId the ID of the Arena this new user will be assigned to.
      */
     public function actionCreate($role, $arenaId = null)
     {
@@ -207,22 +252,32 @@ class UserController extends Controller
     }
 
     /**
-     * Updates a particular model.
-     * If update is successful, the browser will be redirected to the 'view' page.
+     * Updates a user's model. Well, actually just displays the user's profile
+     * as the update is done on a per field basis and via ajax / json
      * @param integer $id the ID of the model to be updated
      */
     public function actionUpdate($id)
     {
         $model = $this->loadModel($id);
+        $profile = $model->profile;
 
         if(Yii::app()->user->checkAccess('updateUser', array('user' => $model))) {
-            // Uncomment the following line if AJAX validation is needed
-            //$this->performAjaxValidation($model);
-
+            if(isset($_POST['ajax']) && $_POST['ajax'] === 'user-form') {
+                echo CActiveForm::validate(array($model, $profile));
+                Yii::app()->end();
+            }
             if(isset($_POST['User'])) {
                 $model->attributes = $_POST['User'];
-                if($model->save()) {
-                    $this->redirect(array('view','id'=>$model->id));
+                $profile->attributes = ((isset($_POST['Profile']) ? $_POST['Profile'] : array()));
+                
+                if($model->validate() && $profile->validate()) {
+                    if($model->save() && $profile->save()) {
+                        $this->redirect(array(
+                            'view',
+                            'id' => $model->id,
+                            )
+                        );
+                    }
                 }
             }
 
@@ -230,6 +285,7 @@ class UserController extends Controller
                     'update',
                     array(
                         'model' => $model,
+                        'profile' => $profile
                     )
             );
         } else {
@@ -240,6 +296,230 @@ class UserController extends Controller
         }
     }
 
+    public function actionUpdateAttribute()
+    {
+        Yii::trace("In actionUpdateAttribute.", "application.controllers.UserController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only update via a POST and AJAX request!
+        $id = isset($_POST['id']) && is_numeric($_POST['id']) && $_POST['id'] > 0 ? (integer)$_POST['id'] : 0;
+        $pk = isset($_POST['pk']) && is_string($_POST['pk']) ? $_POST['pk'] : null;
+        
+        // Verify we have a valid ID!
+        if($id <= 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Parameters look good so now verify that the user model exists!
+        $model = $this->loadModel($id, $outputFormat);
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->checkAccess('updateUser', array('user' => $model))) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // We need to grab and validate the rest of our parameters from the request body
+        // We will update one attribute at a time!
+            
+        // Grab the remaining parameters!
+        $action = $pk;
+        $name = isset($_POST['name']) ? $_POST['name'] : null;
+        $value = isset($_POST['value']) ? $_POST['value'] : null;
+
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+
+        // Validate our remaining parameters!
+        if($name === null || $action === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+            
+        // The $action will either be 'user' or 'profile' and it determines
+        // which model we are going to update!
+        $updateModel = null;
+        
+        if($action === 'user') {
+            $updateModel = $model;
+        } elseif($action === 'profile') {
+            $updateModel = $model->profile;
+        } else {
+            // Unknown action so send an error response!
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Unknown action request.');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Unknown action request.'
+                )
+            );
+            Yii::app()->end();
+        }
+
+        // Ok, we have what appear to be valid parameters and so
+        // it is time to validate and then update the value!
+        $updateModel->$name = $value;
+
+        $valid = $updateModel->validate(array($name));
+            
+        if(!$valid) {
+            $errors = $updateModel->getErrors($name);
+
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                $output = '';
+
+                foreach($errors as $error) {
+                    if($output == '') {
+                        $output = $error;
+                    } else {
+                        $output .= '<br>' . $error;
+                    }
+                }
+                throw new CHttpException(400, $output);
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => json_encode($errors),
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // The attribute is valid and so we should save it!!
+        try {
+            // We don't blindly save it even though we validated that
+            // the user is a restricted manager. We could do another
+            // check to see if the user is assigned to the arena but,
+            // we are going to do that check during the update!
+            // So, we will know if the user is valid if our update query
+            // affects one row. If it affects zero rows, then the user
+            // wasn't authorized and we will throw a 403 error!
+            if($value == null) {
+                $value = new CDbExpression('NULL');
+            }
+            
+            $attributes = array(
+                $name => $value,
+                'updated_by_id' => $uid,
+                'updated_on' => new CDbExpression('NOW()')
+            );
+
+            if(!$updateModel->saveAttributes($attributes)) {
+                $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            }                    
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, "Internal Server Error");
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+    
     /**
      * Deletes a particular model.
      * If deletion is successful, the browser will be redirected to the 'admin' page.
@@ -297,7 +577,7 @@ class UserController extends Controller
                     )
             );
         } elseif(!Yii::app()->user->isGuest) {
-            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
+            $this->redirect(array('user/view', 'id' => Yii::app()->user->id));
         } else {
             throw new CHttpException(
                     403,
@@ -358,7 +638,7 @@ class UserController extends Controller
                             $message
                     );
                     
-                    $this->redirect(array('profile/view', 'id' => $model->id));
+                    $this->redirect(array('user/view', 'id' => $model->id));
                 }
             }
 
@@ -383,15 +663,24 @@ class UserController extends Controller
      * @return User the loaded model
      * @throws CHttpException
      */
-    public function loadModel($id)
+    public function loadModel($id, $outputFormat = 'html')
     {
         $model = User::model()->with(array('profile' => array('together' => true)))->findByPk($id);
         
         if($model === null) {
-            throw new CHttpException(
-                    404,
-                    'The requested page does not exist.'
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(404, 'User not found');
+            }
+
+            $this->sendResponseHeaders(404, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'User not found',
+                    )
             );
+            Yii::app()->end();
         }
         return $model;
     }

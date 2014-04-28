@@ -28,6 +28,16 @@ class RbamController extends CController {
 	* @var array support for metadata extension
 	*/
 
+    /**
+     * @property boolean controls if the main layout file loads custom CSS files
+     */
+    public $includeCss = true;
+
+    /**
+     * @property boolean controls if the main layout file should include navigation
+     */
+    public $navigation = true;
+
 	/**
 	* @property CAuthManager The auth manager component
 	*/

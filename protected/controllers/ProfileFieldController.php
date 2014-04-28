@@ -3,23 +3,23 @@
 class ProfileFieldController extends Controller
 {
 
-	/**
-	 * @var CActiveRecord the currently loaded data model instance.
-	 */
-	private $_model;
-	private static $_widgets = array();
-	public $defaultAction = 'admin';
+    /**
+     * @var CActiveRecord the currently loaded data model instance.
+     */
+    private $_model;
+    private static $_widgets = array();
+    public $defaultAction = 'admin';
 
-	/**
-	 * @return array action filters
-	 */
-	public function filters()
-	{
-		return CMap::mergeArray(parent::filters(),
-								array('accessControl', // perform access control for CRUD operations
-									  )
-								);
-	}
+    /**
+     * @return array action filters
+     */
+    public function filters()
+    {
+        return CMap::mergeArray(parent::filters(),
+                array('accessControl', // perform access control for CRUD operations
+            )
+        );
+    }
 
     /**
      * Specifies the access control rules.
@@ -29,10 +29,6 @@ class ProfileFieldController extends Controller
     public function accessRules()
     {
         return array(
-            /*array('allow',
-                'actions'=>array('*'),
-                'users'=>array('*'),
-            ),*/
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
                 'actions'=>array('create','update','view','admin','delete'),
                 'roles'=>array('SiteAdministrator'),
@@ -43,56 +39,56 @@ class ProfileFieldController extends Controller
         );
     }
 
-	/**
-	 * Displays a particular model.
-	 */
-	public function actionView()
-	{
-		$this->render('view',
-					  array('model' => $this->loadModel(),));
-	}
+    /**
+     * Displays a particular model.
+     */
+    public function actionView()
+    {
+        $this->render('view',
+                array('model' => $this->loadModel(),));
+    }
 
-	/**
-	 * Register Script
-	 */
-	public function registerScript()
-	{
-		$basePath = Yii::getPathOfAlias('application.views.assets');
-		$baseUrl = Yii::app()->getAssetManager()->publish($basePath);
-		$cs = Yii::app()->getClientScript();
-		$cs->registerCoreScript('jquery');
-		$cs->registerCssFile($baseUrl . '/css/redmond/jquery-ui.css');
-		$cs->registerCssFile($baseUrl . '/css/style.css');
-		$cs->registerScriptFile($baseUrl . '/js/jquery-ui.min.js');
-//		$cs->registerScriptFile($baseUrl . '/js/form.js');
-		$cs->registerScriptFile($baseUrl . '/js/jquery.json.js');
+    /**
+     * Register Script
+     */
+    public function registerScript()
+    {
+        $basePath = Yii::getPathOfAlias('application.views.assets');
+        $baseUrl = Yii::app()->getAssetManager()->publish($basePath);
+        $cs = Yii::app()->getClientScript();
+        $cs->registerCoreScript('jquery');
+        $cs->registerCssFile($baseUrl . '/css/redmond/jquery-ui.css');
+        $cs->registerCssFile($baseUrl . '/css/style.css');
+        $cs->registerScriptFile($baseUrl . '/js/jquery-ui.min.js');
+        //$cs->registerScriptFile($baseUrl . '/js/form.js');
+        $cs->registerScriptFile($baseUrl . '/js/jquery.json.js');
 
-		$widgets = self::getWidgets();
+        $widgets = self::getWidgets();
 
-		$wgByTypes = ProfileField::itemAlias('field_type');
+        $wgByTypes = ProfileField::itemAlias('field_type');
 
-		foreach($wgByTypes as $k => $v) {
-			$wgByTypes[$k] = array();
-		}
+        foreach($wgByTypes as $k => $v) {
+            $wgByTypes[$k] = array();
+        }
 
-		foreach($widgets[1] as $widget) {
-			if(isset($widget['fieldType']) && count($widget['fieldType'])) {
-				foreach($widget['fieldType'] as $type) {
-					array_push($wgByTypes[$type], $widget['name']);
-				}
-			}
-		}
+        foreach($widgets[1] as $widget) {
+            if(isset($widget['fieldType']) && count($widget['fieldType'])) {
+                foreach($widget['fieldType'] as $type) {
+                    array_push($wgByTypes[$type], $widget['name']);
+                }
+            }
+        }
 
-		$js = "
-			var name = $('#name'),
-			value = $('#value'),
-			allFields = $([]).add(name).add(value),
-			tips = $('.validateTips');
+        $js = "
+            var name = $('#name'),
+            value = $('#value'),
+            allFields = $([]).add(name).add(value),
+            tips = $('.validateTips');
 
-			var listWidgets = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($widgets[0])) . "');
-			var widgets = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($widgets[1])) . "');
-			var wgByType = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($wgByTypes)) . "');
-			var fieldType = {'INTEGER': { 'hide': ['match',
+            var listWidgets = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($widgets[0])) . "');
+            var widgets = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($widgets[1])) . "');
+            var wgByType = jQuery.parseJSON('" . str_replace("'", "\'", CJavaScript::jsonEncode($wgByTypes)) . "');
+            var fieldType = {'INTEGER': { 'hide': ['match',
 												   'other_validator',
 												   'widgetparams'
 												  ],

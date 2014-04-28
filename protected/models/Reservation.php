@@ -9,6 +9,9 @@
  * @property integer $arena_id
  * @property integer $event_id
  * @property integer $for_id
+ * @property integer $for_name
+ * @property integer $for_email
+ * @property integer $for_phone
  * @property string $notes
  * @property integer $status_id
  * @property integer $lock_version
@@ -49,7 +52,7 @@ class Reservation extends RinkfinderActiveRecord
 			array('notes', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, source_id, arena_id, event_id, for_id, notes, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+			array('id, source_id, arena_id, event_id, for_id, for_name, for_email, for_phone, notes, status_id, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -81,7 +84,10 @@ class Reservation extends RinkfinderActiveRecord
 			'source_id' => 'Source',
 			'arena_id' => 'Arena',
 			'event_id' => 'Event',
-			'for_id' => 'For',
+			'for_id' => 'For ID',
+			'for_name' => 'For Name',
+			'for_email' => 'For Email',
+			'for_phone' => 'For Phone',
 			'notes' => 'Notes',
 			'status_id' => 'Status',
 			'lock_version' => 'Lock Version',

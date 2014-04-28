@@ -1,7 +1,6 @@
 <?php
     /**
      * This doubles as both a view/edit form for existing records
-     * and as a form for new records. 
      * 
      * @var $this ManagementController
      * @var $model EventRequest
@@ -66,7 +65,7 @@
                     <div class="row-fluid">
                         <div class="span3">
                             <button class="btn btn-block btn-large btn-primary has-spinner" type="button" data-toggle="tooltip"
-                                    accesskey=""data-original-title="Send message to requester" id="message">
+                                    data-original-title="Send message to requester" id="message">
                                 <i class="fa fa-lg fa-envelope"></i> <br />
                                 <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Message</span>

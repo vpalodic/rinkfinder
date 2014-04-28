@@ -251,7 +251,6 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
-<!-- Terms of use Instructions Modal Dialog -->
 <div id="termsOfUseModal" class="modal hide fade container" tabindex="-1" 
      role="dialog" aria-labelledby="termsOfUseModalLabel" 
      aria-hidden="true" data-backdrop="static" data-max-height="500" >
@@ -267,8 +266,7 @@
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
-</div><!-- Mapping Instructions Modal Dialog -->
-<!-- Settings Instructions Modal Dialog -->
+</div>
 <div id="privacyPolicyModal" class="modal hide fade container" tabindex="-1" 
      role="dialog" aria-labelledby="privacyPolicyModalLabel" 
      aria-hidden="true" data-backdrop="static" data-max-height="500" >
@@ -284,7 +282,7 @@
         <i class="icon-remove-sign"></i> Close
     </button>
   </div>
-</div><!-- Settings Instructions Modal Dialog -->
+</div>
 <?php endif; ?>
 <script type="text/javascript">
 $(document).ready(function () {

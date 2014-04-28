@@ -24,12 +24,12 @@ class Controller extends CController
     public $breadcrumbs = array();
 
     /**
-     * @var boolean controls if the main layout file loads custom CSS files
+     * @property boolean controls if the main layout file loads custom CSS files
      */
     public $includeCss = true;
 
     /**
-     * @var boolean controls if the main layout file should include navigation
+     * @property boolean controls if the main layout file should include navigation
      */
     public $navigation = true;
 

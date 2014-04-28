@@ -187,7 +187,7 @@ class RinkfinderWebUser extends CWebUser
         // Check our cached roles!
         $roles = $this->roles;
             
-        if(is_array($roles)) {
+        if(is_array($roles) && count($roles) > 0) {
             foreach($roles as $role) {
                 if($role == 'Administrator') {
                     return true;
@@ -215,7 +215,7 @@ class RinkfinderWebUser extends CWebUser
         // Check our cached roles!
         $roles = $this->roles;
         
-        if(is_array($roles)) {
+        if(is_array($roles) && count($roles) > 0) {
             foreach($roles as $role) {
                 if($role == 'Administrator' || $role == 'ApplicationAdministrator') {
                     return true;
@@ -249,7 +249,7 @@ class RinkfinderWebUser extends CWebUser
         // Check our cached roles!
         $roles = $this->roles;
         
-        if(is_array($roles)) {
+        if(is_array($roles) && count($roles) > 0) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||
@@ -286,7 +286,7 @@ class RinkfinderWebUser extends CWebUser
         // Check our cached roles!
         $roles = $this->roles;
         
-        if(is_array($roles)) {
+        if(is_array($roles) && count($roles) > 0) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||
@@ -325,7 +325,7 @@ class RinkfinderWebUser extends CWebUser
         // Check our cached roles!
         $roles = $this->roles;
         
-        if(is_array($roles)) {
+        if(is_array($roles) && count($roles) > 0) {
             foreach($roles as $role) {
                 if($role == 'Administrator' ||
                         $role == 'ApplicationAdministrator' ||

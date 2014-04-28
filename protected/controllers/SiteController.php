@@ -171,7 +171,7 @@ class SiteController extends Controller
         
         // If user is already logged in, send them to their profile page!!!
         if(!Yii::app()->user->isGuest) {
-            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
+            $this->redirect(array('user/view', 'id' => Yii::app()->user->id));
         } else {
             // collect user input data
             if(isset($_POST['User'])) {
@@ -507,7 +507,7 @@ class SiteController extends Controller
 
         // If user is already logged in, send them to their profile page!!!
         if(!Yii::app()->user->isGuest) {
-            $this->redirect(array('profile/view', 'id' => Yii::app()->user->id));
+            $this->redirect(array('user/view', 'id' => Yii::app()->user->id));
         } else {
             // collect user input data
             if(isset($_POST['LoginForm']))

@@ -46,25 +46,37 @@
                     )
             );
         ?>
+        
         <?php
-            echo $form->passwordFieldControlGroup(
-                    $model,
-                    'passwordSave',
-                    array(
-                        'span' => 5,
-                        'maxlength' => 48,
-                    )
-            );
-        ?>
-        <?php
-            echo $form->passwordFieldControlGroup(
-                    $model,
-                    'passwordRepeat',
-                    array(
-                        'span' => 5,
-                        'maxlength' => 48,
-                    )
-            );
+            if ($model->isNewRecord) {
+                echo $form->passwordFieldControlGroup(
+                        $model,
+                        'passwordSave',
+                        array(
+                            'span' => 5,
+                            'maxlength' => 48,
+                        )
+                );
+                
+                echo $form->passwordFieldControlGroup(
+                        $model,
+                        'passwordRepeat',
+                        array(
+                            'span' => 5,
+                            'maxlength' => 48,
+                        )
+                );
+            } else {
+                echo '<div class="control-group">'
+                . '<label class="control-label" for="User_password">'
+                        . 'Password'
+                        . '</label>'
+                        . '<div class="controls">'
+                        . '<div id="User_password">'
+                        . '<i class="fa fa-fw fa-pencil"></i> <a href="' . Yii::app()->createUrl('user/changePassword', array('id' => $model->id)) . '">Change Password</a>'
+                        . '</div>'
+                        . '</div></div>';                
+            }
         ?>
         <?php
             echo $form->emailFieldControlGroup(
@@ -79,16 +91,18 @@
             );
         ?>
         <?php
-            echo $form->dropDownListControlGroup(
-                    $model,
-                    'status_id',
-                    $model->itemAlias('UserStatus'),
-                    array(
-                        'span' => 5,
-                        'rel' => 'tooltip',
-                        'title' => 'Please select a status for the account'
-                    )
-            );
+            if(Yii::app()->user->isArenaManager()) {
+                echo $form->dropDownListControlGroup(
+                        $model,
+                        'status_id',
+                        $model->itemAlias('UserStatus'),
+                        array(
+                            'span' => 5,
+                            'rel' => 'tooltip',
+                            'title' => 'Please select a status for the account'
+                        )
+                );
+            }
         ?>
         <h3 class="sectionSubHeader">
             Profile Information:
@@ -123,33 +137,28 @@
                                     'span' => 5
                                 )
                             );
+                    } elseif($field->varname == 'birth_day') {
+                        echo '<div class="control-group">'
+                        . '<label class="control-label" for="Profile_birth_day">'
+                                . 'Birthday'
+                                . '</label>'
+                                . '<div class="controls">'
+                                . '<div id="Profile_birth_day_picker" class="input-append">'
+                                . '<input data-format="MM/dd/yyyy" value="' . $profile->birth_day . '" id="Profile_birth_day" name="Profile[birth_day]" type="text" />'
+                                . '<span class="add-on"><i data-time-icon="icon-time" data-date-icon="icon-calendar"></i></span>'
+                                . '</div>'
+                                . '<p id="Profile_birth_day_em_" style="display:none" class="help-block"></p>'
+                                . '</div></div>';
                     } elseif($field->varname == "phone") {
-                        $widget = $this->widget(
-                                'yiiwheels.widgets.maskinput.WhMaskInput',
-                                array(
-                                    'model' => $profile,
-                                    'attribute' => $field->varname,
-                                    'mask' => '(000) 000-0000',
-                                    'htmlOptions' => array(
-                                        'class' => 'span5',
-                                    ),
-                                ),
-                                true
-                        );
-                        
-                        echo '<div class="control-group">';
-                        echo $form->labelEx(
-                                $profile,
-                                $field->varname,
-                                array(
-                                    'class' => 'control-label',
-                                )
-                             );
-                        echo '<div class="controls">';
-                        echo $widget;
-                        echo $form->error($profile, $field->varname);
-                        echo '</div>';
-                        echo '</div>';
+                        echo '<div class="control-group">' .
+                            '<label class="control-label required" for="Profile_phone">' .
+                                'Phone Number <span class="required">*</span>' .
+                            '</label>' .
+                            '<div class="controls">' .
+                                '<input class="span5" id="Profile_phone" name="Profile[phone]" value="' . $profile->phone . '" type="text" maxlength="14" />' .
+                                '<p id="Profile_phone_em_" style="display:none" class="help-block"></p>' .
+                            '</div>' .
+                        '</div>';
                     }  elseif($field->varname == "state") {
                         $widget = $this->widget(
                                 'yiiwheels.widgets.formhelpers.WhStates',
@@ -219,3 +228,27 @@
     ?>
     <?php $this->endWidget(); ?>
 </div><!-- form -->
+<script type="text/javascript">
+$(document).ready(function () {
+    var $phone = $("#Profile_phone");
+    
+    $phone.inputmask({
+        mask: "(999) 999-9999",
+        autoUnmask: true,
+        showTooltip: true
+    });
+    
+    $.fn.datetimepicker.defaults = {
+        maskInput: true,           // disables the text input mask
+        pick12HourFormat: true,   // enables the 12-hour format time picker
+        pickSeconds: false,         // disables seconds in the time picker
+        startDate: moment().subtract('years', 115).startOf('day').toDate(),      // set a minimum date
+        endDate: moment().subtract('years', 13).endOf('day').toDate()  // set a maximum date
+    };
+        
+    $('#Profile_birth_day_picker').datetimepicker({
+        pickDate: true,
+        pickTime: false
+    });
+});
+</script>

@@ -44,7 +44,7 @@
                 var $editables = $("#eventRequestView.panel.panel-primary .editable");
                 
                 $editables.editable('destroy');
-            })
+            });
         }
     };
     

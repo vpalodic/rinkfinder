@@ -77,15 +77,19 @@ $this->menu=array(
                                       "Not visited"
                         )',
                     ),
-/*                    array(
+                    array(
                         'name' => 'last_visited_from',
                         'type'=>'raw',
-                    ),*/
+                        'value' => '((isset($data->last_visited_from) && $data->last_visited_from != "") ? 
+                                      $data->last_visited_from :
+                                      "Not visited"
+                        )'
+                    ),
                     array(
                         'name' => 'created_on',
                         'value' => 'date_format(date_create_from_format("Y-m-d H:i:s", $data->created_on), "m-d-Y H:i:s")',
                     ),
-/*                    array(
+                    array(
                         'name' => 'created_by_id',
                         'type'=>'raw',
                         'value' => 'TbHtml::link(
@@ -110,7 +114,7 @@ $this->menu=array(
                                 "id" => $data->updated_by_id
                             )
                         )',
-                    ),*/
+                    ),
                 ),
             )
     );

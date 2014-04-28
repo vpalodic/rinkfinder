@@ -1,6 +1,3 @@
-<?php
-?>
-
 <div class="row-fluid">
     <form id="searchForm" class="form" method="get" action="<?php echo $this->createUrl('site/eventSearch'); ?>">
         <div class="well well-small">
@@ -260,7 +257,7 @@ $(document).ready(function () {
                 eventSearch.$search = $(".my-calendar-list");
                 eventSearch.onReady();
             } else if (console && console.log) {
-                console.log("Loading eventSearch.js");
+                console.log("Loading... " + scriptName);
             }
         }, 500);
     }

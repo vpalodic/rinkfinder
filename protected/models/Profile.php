@@ -117,6 +117,7 @@ class Profile extends RinkfinderActiveRecord
                     'type' => 'date',
                     'dateFormat' => 'MM/dd/yyyy',
                     'allowEmpty' => true,
+                    'on' => 'insert'
                 );
 				
                 if($field->error_message) {
@@ -124,6 +125,20 @@ class Profile extends RinkfinderActiveRecord
                 }
 				
                 array_push($rules, $field_rule);
+                
+                $field_rule = array(
+                    $field->varname,
+                    'type',
+                    'type' => 'date',
+                    'dateFormat' => 'yyyy-MM-dd',
+                    'allowEmpty' => true,
+                    'on' => 'update'
+                );
+				
+                if($field->error_message) {
+                    $field_rule['message'] = $field->error_message;
+                }
+				
             }
             if($field->match) {
                 $field_rule = array($field->varname, 'match', 'pattern' => $field->match);
