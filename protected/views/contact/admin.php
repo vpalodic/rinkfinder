@@ -50,12 +50,6 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 		'id',
 		'first_name',
 		'last_name',
-		'address_line1',
-		'address_line2',
-		'city',
-		/*
-		'state',
-		'zip',
 		'phone',
 		'ext',
 		'fax',
@@ -67,7 +61,6 @@ or <b>=</b>) at the beginning of each of your search values to specify how the c
 		'created_on',
 		'updated_by_id',
 		'updated_on',
-		*/
 		array(
 			'class'=>'bootstrap.widgets.TbButtonColumn',
 		),

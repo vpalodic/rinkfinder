@@ -415,7 +415,7 @@ class UserController extends Controller
                     if($output == '') {
                         $output = $error;
                     } else {
-                        $output .= '<br>' . $error;
+                        $output .= "\n" . $error;
                     }
                 }
                 throw new CHttpException(400, $output);

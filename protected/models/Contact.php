@@ -7,17 +7,13 @@
  * @property integer $id
  * @property string $first_name
  * @property string $last_name
- * @property string $address_line1
- * @property string $address_line2
- * @property string $city
- * @property string $state
- * @property string $zip
  * @property string $phone
  * @property string $ext
  * @property string $fax
  * @property string $fax_ext
  * @property string $email
  * @property integer $active
+ * @property integer $primary_contact
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -31,33 +27,47 @@
  */
 class Contact extends RinkfinderActiveRecord
 {
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'contact';
-	}
+    public $primary_contact = 0;
+    
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'contact';
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
-			array('first_name, last_name, address_line1, city, state, zip, phone, email, created_on, updated_on', 'required'),
-			array('active, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly'=>true),
-			array('first_name, last_name, address_line1, address_line2, city, email', 'length', 'max'=>128),
-			array('state', 'length', 'max'=>2),
-			array('zip', 'length', 'max'=>5),
-			array('phone, ext, fax, fax_ext', 'length', 'max'=>10),
-			// The following rule is used by search().
-			// @todo Please remove those attributes that should not be searched.
-			array('id, first_name, last_name, address_line1, address_line2, city, state, zip, phone, ext, fax, fax_ext, email, active, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
-		);
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        return array(
+            array('first_name, last_name, phone, email', 'required'),
+            array('active, ext, fax_ext, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
+            array('first_name, last_name', 'length', 'max' => 128),
+            array(
+                'email',
+                'length',
+                'max' => 128,
+                'min' => 6,
+                'message' => "Invalid email (length between 6 and 128 characters).",
+            ),
+            array(
+                'email',
+                'unique',
+                'message' => "Email address already exists.",
+            ),
+            array(
+                'email',
+                'email'
+            ),
+            array('phone, ext, fax, fax_ext', 'length', 'max' => 10),
+            array('id, first_name, last_name, phone, ext, fax, fax_ext, email, active, lock_version, created_by_id, created_on, updated_by_id, updated_on', 'safe', 'on'=>'search'),
+        );
+    }
 
 	/**
 	 * @return array relational rules.
@@ -141,7 +151,7 @@ class Contact extends RinkfinderActiveRecord
                 . '                 FROM arena_contact_assignment aca '
                 . '                 WHERE aca.arena_id = :aid) ';
         
-        if($active = 1) {
+        if($active == 1) {
             $sql .= 'AND c.active = :active ';
         }
         
@@ -149,7 +159,7 @@ class Contact extends RinkfinderActiveRecord
         
         $command = Yii::app()->db->createCommand($sql);
         
-        if($active = 1) {
+        if($active == 1) {
             $command->bindValue(':active', $active, PDO::PARAM_INT);
         }
         
@@ -173,7 +183,7 @@ class Contact extends RinkfinderActiveRecord
                 . '                 FROM arena_contact_assignment aca '
                 . '                 WHERE aca.arena_id = :aid) ';
         
-        if($active = 1) {
+        if($active == 1) {
             $sql .= 'AND c.active = :active ';
         }
         
@@ -181,7 +191,7 @@ class Contact extends RinkfinderActiveRecord
         
         $command = Yii::app()->db->createCommand($sql);
         
-        if($active = 1) {
+        if($active == 1) {
             $command->bindValue(':active', $active, PDO::PARAM_INT);
         }
         
@@ -541,5 +551,149 @@ class Contact extends RinkfinderActiveRecord
         
         // Ok, lets return this stuff!!
         return $ret;
+    }
+    
+    /**
+     * Returns true if the contact was made the primary contact
+     * @param integer $uid The user making the update.
+     * @param integer[] $aids The array of arens to be a primary of.
+     * @return boolean true if the primary assignment succeeded.
+     * @throws CDbException
+     */
+    public function makePrimaryContact($uid, $aids) {
+        $count = count($aids);
+        
+        if($count <= 0) {
+            return false;
+        }
+        
+        if(!is_array($aids)) {
+            $aids = array($aids);
+        }
+        
+        $sql = 'UPDATE arena_contact_assignment aca '
+                . 'SET aca.primary_contact = IF(aca.contact_id = :cid, 1, 0),'
+                . 'aca.updated_by_id = :uid, '
+                . 'aca.updated_on = NOW() '
+                . 'WHERE aca.arena_id IN ( ';
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $sql .= ':aid' . $i . ')';
+            } else {
+                $sql .= ':aid' . $i . ', ';
+            }
+        }
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':cid', (integer)$this->id, PDO::PARAM_INT);
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':aid' . $i, (integer)$aids[$i], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->execute();
+            
+            $transaction->commit();
+            
+            return true;
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+    }
+    
+    /**
+     * Returns true if the contact was made the secondary contact
+     * @param integer $uid The user making the update.
+     * @param integer[] $aids The array of arens to be a secondary of.
+     * @return boolean true if the secondary assignment succeeded.
+     * @throws CDbException
+     */
+    public function makeSecondaryContact($uid, $aids) {
+        $count = count($aids);
+        
+        if($count <= 0) {
+            return false;
+        }
+        
+        if(!is_array($aids)) {
+            $aids = array($aids);
+        }
+        
+        $sql = 'UPDATE arena_contact_assignment aca '
+                . 'SET aca.primary_contact = 0,'
+                . 'aca.updated_by_id = :uid, '
+                . 'aca.updated_on = NOW() '
+                . 'WHERE aca.contact_id = :cid AND aca.arena_id IN ( ';
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $sql .= ':aid' . $i . ')';
+            } else {
+                $sql .= ':aid' . $i . ', ';
+            }
+        }
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':cid', (integer)$this->id, PDO::PARAM_INT);
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':aid' . $i, (integer)$aids[$i], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->execute();
+            
+            $transaction->commit();
+            
+            return true;
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
     }
 }

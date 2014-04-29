@@ -421,7 +421,7 @@
         </div>
     </div>
     <?php
-    // We are going to grab four lists of contacts for the list views
+    // We are going to grab two lists of contacts for the list views
     // We only need the contact name and id, we don't need anything else
     $availableContacts = Contact::getAvailable($model->id, 0);
     $assignedContacts = Contact::getAssigned($model->id, 0);
@@ -465,8 +465,8 @@
                         <strong>Assignment Actions</strong><br />
                         <div class="well">
                             <div class="row-fluid">
-                                <div class="span6">
-                                    <button class="btn btn-block btn-large btn-success"
+                                <div class="span3 offset3">
+                                    <button class="btn btn-block btn-success"
                                             type="button"
                                             data-toggle="tooltip"
                                             data-original-title="Assign contact to this facility"
@@ -475,8 +475,8 @@
                                         <span>Assign</span>
                                     </button>
                                 </div>
-                                <div class="span6">
-                                    <button class="btn btn-block btn-large btn-warning"
+                                <div class="span3">
+                                    <button class="btn btn-block btn-warning"
                                             type="button"
                                             data-toggle="tooltip"
                                             data-original-title="Unassign contact from this facility"
@@ -494,6 +494,7 @@
                         <strong>Select a contact to edit</strong><br />
                         <select id="assignedContactsSelect"
                                 class="span12">
+                            <option value="none"></option>
                             <?php foreach($assignedContacts as $aac) : ?>
                             <option value="<?php echo $aac['id']; ?>">
                                 <?php echo $aac['last_name'] . ', ' . $aac['first_name'] . ' - ' . $aac['email'] . ($aac['active'] == 1 ? ' (Active)' : ' (Inactive)'); ?>
@@ -507,8 +508,8 @@
                         <strong>Contact Actions</strong><br />
                         <div class="well">
                             <div class="row-fluid">
-                                <div class="span6">
-                                    <button class="btn btn-block btn-large btn-primary"
+                                <div class="span3 offset3">
+                                    <button class="btn btn-block btn-primary"
                                             type="button"
                                             data-toggle="tooltip"
                                             data-original-title="Create a new contact"
@@ -517,13 +518,13 @@
                                         <span>New</span>
                                     </button>
                                 </div>
-                                <div class="span6">
-                                    <button class="btn btn-block btn-large btn-danger"
+                                <div class="span3">
+                                    <button class="btn btn-block btn-danger"
                                             type="button"
                                             data-toggle="tooltip"
                                             data-original-title="Delete this contact"
                                             id="deleteContactButton">
-                                        <i class="fa fa-lg fa-check"></i> <br />
+                                        <i class="fa fa-lg fa-minus-square"></i> <br />
                                         <span>Delete</span>
                                     </button>
                                 </div>
@@ -556,11 +557,92 @@
                 </div>
             </div>
         </div>
-        
     </div>
+    <?php
+    // We are going to grab a single list for the list view
+    // We only need the location name and id, we don't need anything else
+    $locations = Location::getAvailable($model->id);
+    $locationsStatuses = Location::getStatusesList();
+    $locationsTypes = Location::getTypesList();
+    ?>
     <div id="locationsTabPane" class="tab-pane fade">
-        
+        <div id="locationManagementView" class="panel panel-primary">
+            <div class="panel-heading">
+                <h3>
+                    Venues
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Select a venue to edit</strong><br />
+                        <select id="locationsSelect"
+                                class="span12">
+                            <option value="none"></option>
+                            <?php foreach($locations as $location) : ?>
+                            <option value="<?php echo $location['id']; ?>">
+                                <?php echo $location['name'] . ' - ' . $location['type'] . ' (' . $location['status'] . ')'; ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Venue Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span3 offset3">
+                                    <button class="btn btn-block btn-primary"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Create a new venue"
+                                            id="newLocationButton">
+                                        <i class="fa fa-lg fa-plus-square"></i> <br />
+                                        <span>New</span>
+                                    </button>
+                                </div>
+                                <div class="span3">
+                                    <button class="btn btn-block btn-danger"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Delete this venue"
+                                            id="deleteLocationButton">
+                                        <i class="fa fa-lg fa-minus-square"></i> <br />
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="span8 offset2">
+                        <div id="locationDetails">
+                            
+                        </div>
+                        <div id="newLocationButtons">
+                            <button id="saveLocationButton"
+                                    class="btn btn-large btn-primary"
+                                    type="button"
+                                    data-toggle="tooltip"
+                                    data-original-title="Save the new venue">
+                                <i class="fa fa-lg fa-fw fa-check"></i>
+                                <span>Save</span>
+                            </button>
+                            <button id="cancelLocationButton"
+                                    class="btn btn-large pull-right"
+                                    type="button"
+                                    data-toggle="tooltip"
+                                    data-original-title="Cancel adding a new venue">
+                                <i class="fa fa-lg fa-fw fa-times"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
     <div id="eventsTabPane" class="tab-pane fade">
         
     </div>
@@ -584,10 +666,17 @@
             . 'arenaManagementView.endpoints.contact.newRecord = "' . $params['endpoints']['contact']['new'] . '";'
             . 'arenaManagementView.endpoints.contact.updateRecord = "' . $params['endpoints']['contact']['update'] . '";'
             . 'arenaManagementView.endpoints.contact.viewRecord = "' . $params['endpoints']['contact']['view'] . '";'
+            . 'arenaManagementView.endpoints.contact.deleteRecord = "' . $params['endpoints']['contact']['delete'] . '";'
+            . 'arenaManagementView.endpoints.location.newRecord = "' . $params['endpoints']['location']['new'] . '";'
+            . 'arenaManagementView.endpoints.location.updateRecord = "' . $params['endpoints']['location']['update'] . '";'
+            . 'arenaManagementView.endpoints.location.viewRecord = "' . $params['endpoints']['location']['view'] . '";'
+            . 'arenaManagementView.endpoints.location.deleteRecord = "' . $params['endpoints']['location']['delete'] . '";'
             . 'arenaManagementView.params = ' . json_encode($params['data']) . ';'
             . 'arenaManagementView.arena = ' . json_encode($model->attributes) . ';'
-            . 'arenaManagementView.locations = ' . json_encode($model->locations) . ';'
-            . 'arenaManagementView.contacts = ' . json_encode($model->contacts) . ';'
+            . 'arenaManagementView.locations = ' . json_encode($locations) . ';'
+            . 'arenaManagementView.locationTypes = ' . json_encode($locationsTypes) . ';'
+            . 'arenaManagementView.locationStatuses = ' . json_encode($locationsStatuses) . ';'
+            . 'arenaManagementView.contacts = ' . json_encode($assignedContacts) . ';'
             //. 'arenaManagementView.events = ' . json_encode($model->events) . ';'
             //. 'arenaManagementView.managers = ' . json_encode($model->managers) . ';'
             . 'arenaManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
@@ -642,10 +731,17 @@ $(document).ready(function() {
                 arenaManagementView.endpoints.contact.newRecord = "<?php echo $params['endpoints']['contact']['new']; ?>";
                 arenaManagementView.endpoints.contact.updateRecord = "<?php echo $params['endpoints']['contact']['update']; ?>";
                 arenaManagementView.endpoints.contact.viewRecord = "<?php echo $params['endpoints']['contact']['view']; ?>";
+                arenaManagementView.endpoints.contact.deleteRecord = "<?php echo $params['endpoints']['contact']['delete']; ?>";
+                arenaManagementView.endpoints.location.newRecord = "<?php echo $params['endpoints']['location']['new']; ?>";
+                arenaManagementView.endpoints.location.updateRecord = "<?php echo $params['endpoints']['location']['update']; ?>";
+                arenaManagementView.endpoints.location.viewRecord = "<?php echo $params['endpoints']['location']['view']; ?>";
+                arenaManagementView.endpoints.location.deleteRecord = "<?php echo $params['endpoints']['location']['delete']; ?>";
                 arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
                 arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
-                arenaManagementView.locations = <?php echo json_encode($model->locations); ?>;
-                arenaManagementView.contacts = <?php echo json_encode($model->contacts); ?>;
+                arenaManagementView.locations = <?php echo json_encode($locations); ?>;
+                arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
+                arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
+                arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
                 arenaManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
                 arenaManagementView.statusList = <?php echo json_encode(Arena::getActiveStatusList()); ?>;
                 arenaManagementView.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;
@@ -664,10 +760,17 @@ $(document).ready(function() {
         arenaManagementView.endpoints.contact.newRecord = "<?php echo $params['endpoints']['contact']['new']; ?>";
         arenaManagementView.endpoints.contact.updateRecord = "<?php echo $params['endpoints']['contact']['update']; ?>";
         arenaManagementView.endpoints.contact.viewRecord = "<?php echo $params['endpoints']['contact']['view']; ?>";
+        arenaManagementView.endpoints.contact.deleteRecord = "<?php echo $params['endpoints']['contact']['delete']; ?>";
+        arenaManagementView.endpoints.location.newRecord = "<?php echo $params['endpoints']['location']['new']; ?>";
+        arenaManagementView.endpoints.location.updateRecord = "<?php echo $params['endpoints']['location']['update']; ?>";
+        arenaManagementView.endpoints.location.viewRecord = "<?php echo $params['endpoints']['location']['view']; ?>";
+        arenaManagementView.endpoints.location.deleteRecord = "<?php echo $params['endpoints']['location']['delete']; ?>";
         arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
         arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
-        arenaManagementView.locations = <?php echo json_encode($model->locations); ?>;
-        arenaManagementView.contacts = <?php echo json_encode($model->contacts); ?>;
+        arenaManagementView.locations = <?php echo json_encode($locations); ?>;
+        arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
+        arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
+        arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
         arenaManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
         arenaManagementView.statusList = <?php echo json_encode(Arena::getActiveStatusList()); ?>;
         arenaManagementView.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;

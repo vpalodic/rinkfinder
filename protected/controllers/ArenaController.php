@@ -77,7 +77,7 @@ class ArenaController extends Controller
      */
     public function actionView($id)
     {
-        Yii::trace("In actionIndex.", "application.controllers.ArenaController");
+        Yii::trace("In actionView.", "application.controllers.ArenaController");
         
         // Default to HTML output!
         $outputFormat = "html";
@@ -409,7 +409,7 @@ class ArenaController extends Controller
                     if($output == '') {
                         $output = $error;
                     } else {
-                        $output .= '<br>' . $error;
+                        $output .= "\n" . $error;
                     }
                 }
                 throw new CHttpException(400, $output);
@@ -429,11 +429,8 @@ class ArenaController extends Controller
         // The attribute is valid and so we should save it!!
         try {
             // We don't blindly save it even though we validated that
-            // the user is a restricted manager. We could do another
-            // check to see if the user is assigned to the arena but,
-            // we are going to do that check during the update!
-            // So, we will know if the user is valid if our update query
-            // affects one row. If it affects zero rows, then the user
+            // the user is a restricted manager and they are assigned to
+            // the arena. If it affects zero rows, then the user
             // wasn't authorized and we will throw a 403 error!
             if($value == null) {
                 $value = new CDbExpression('NULL');

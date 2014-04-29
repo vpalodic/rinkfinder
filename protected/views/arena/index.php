@@ -84,7 +84,7 @@
                                         <?php endif; ?>
                                         <?php if(isset($contact['contact_phone']) && !empty($contact['contact_phone'])) {
                                             echo '<abbr title="Phone">P:</abbr> ' . RinkfinderActiveRecord::format_telephone($contact['contact_phone']);
-                                            if(isset($contact['contact_ext']) && !empty($contacted['contact_ext'])) {
+                                            if(isset($contact['contact_ext']) && !empty($contact['contact_ext'])) {
                                                 echo ' <abbr title="Extension">E:</abbr> ' . $contact['contact_ext'] . '<br />';
                                             } else {
                                                 echo '<br />';
@@ -93,7 +93,7 @@
                                         <?php if(isset($contact['contact_fax']) && !empty($contact['contact_fax'])) {
                                             echo '<abbr title="Fax">F:</abbr> ' . RinkfinderActiveRecord::format_telephone($contact['contact_fax']);
                                             if(isset($contact['contact_fax_ext']) && !empty($contact['contact_fax_ext'])) {
-                                                echo ' <abbr title="Fax Extension">E:</abbr> ' . $record['contact_fax_ext'] . '<br />';
+                                                echo ' <abbr title="Fax Extension">E:</abbr> ' . $contact['contact_fax_ext'] . '<br />';
                                             } else {
                                                 echo '<br />';
                                             }

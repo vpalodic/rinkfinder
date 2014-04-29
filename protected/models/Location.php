@@ -19,7 +19,9 @@
  * @property integer $resurfacer_id
  * @property string $notes
  * @property integer $type_id
+ * @property string $type
  * @property integer $status_id
+ * @property string $status
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -29,13 +31,15 @@
  * The followings are the available model relations:
  * @property Event[] $events
  * @property Arena $arena
- * @property LocationType $type
- * @property LocationStatus $status
+ * @property LocationType $ltype
+ * @property LocationStatus $lstatus
  * @property User $createdBy
  * @property User $updatedBy
  */
 class Location extends RinkfinderActiveRecord
 {
+    public $type = '';
+    public $status = '';
     /**
      * @var string $oldTags
      */
@@ -80,8 +84,8 @@ class Location extends RinkfinderActiveRecord
 		return array(
 			'events' => array(self::HAS_MANY, 'Event', 'location_id'),
 			'arena' => array(self::BELONGS_TO, 'Arena', 'arena_id'),
-			'type' => array(self::BELONGS_TO, 'LocationType', 'type_id'),
-			'status' => array(self::BELONGS_TO, 'LocationStatus', 'status_id'),
+			'ltype' => array(self::BELONGS_TO, 'LocationType', 'type_id'),
+			'lstatus' => array(self::BELONGS_TO, 'LocationStatus', 'status_id'),
 			'createdBy' => array(self::BELONGS_TO, 'User', 'created_by_id'),
 			'updatedBy' => array(self::BELONGS_TO, 'User', 'updated_by_id'),
 		);
@@ -130,6 +134,20 @@ class Location extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns an array of location types
+     * @return array[] the array of location types
+     * @throws CDbException
+     */
+    public static function getTypesList()
+    {
+        $sql = 'SELECT id AS value, display_name AS text '
+                . 'FROM location_type '
+                . 'WHERE active = 1';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of location statuses
      * @return array[] the array of location statuses
      * @throws CDbException
@@ -139,6 +157,45 @@ class Location extends RinkfinderActiveRecord
         $sql = 'SELECT * FROM location_status';
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of location statuses
+     * @return array[] the array of location statuses
+     * @throws CDbException
+     */
+    public static function getStatusesList()
+    {
+        $sql = 'SELECT id AS value, display_name AS text '
+                . 'FROM location_status '
+                . 'WHERE active = 1';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of contacts not assigned to the passed in arena
+     * @return array[] the array of contacts
+     * @throws CDbException
+     */
+    public static function getAvailable($aid)
+    {
+        $sql = 'SELECT l.*, s.display_name AS status, t.display_name AS type '
+                . 'FROM location l '
+                . 'INNER JOIN location_status s '
+                . 'ON l.status_id = s.id '
+                . 'INNER JOIN location_type t '
+                . 'ON l.type_id = t.id '
+                . 'WHERE l.arena_id = :aid '
+                . 'ORDER BY l.name ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
     }
     
     /**
@@ -303,7 +360,7 @@ class Location extends RinkfinderActiveRecord
     }
 
     /**
-     * Tags the record with the Arena's name, event type, and event name.
+     * Tags the record with the Arena's name, location type, and location name.
      * @throws CDbException
      */
     public function autoTag()
@@ -315,7 +372,7 @@ class Location extends RinkfinderActiveRecord
         }
         
         $tags[] = $this->arena->name;
-        $tags[] = $this->type->display_name;
+        $tags[] = $this->ltype->display_name;
         
         $this->tags = Tag::array2string(array_unique($tags));
     }

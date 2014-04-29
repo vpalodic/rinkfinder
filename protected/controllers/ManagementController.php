@@ -351,14 +351,22 @@ class ManagementController extends Controller
                     'update' => Yii::app()->createUrl('/arena/updateAttribute')
                 ),
                 'contact' => array(
-                    'new' => Yii::app()->createUrl('/contact/create'),
+                    'new' => Yii::app()->createUrl('/contact/createContact'),
                     'update' => Yii::app()->createUrl('/contact/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/contact/view')
+                    'view' => Yii::app()->createUrl('/contact/view'),
+                    'delete' => Yii::app()->createUrl('/contact/deleteContact')
+                ),
+                'location' => array(
+                    'new' => Yii::app()->createUrl('/location/createLocation'),
+                    'update' => Yii::app()->createUrl('/location/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/location/view'),
+                    'delete' => Yii::app()->createUrl('/location/deleteLocation')
                 )
             ),
             'data' => array(
                 'id' => $model->id,
-                'output' => 'html'
+                'output' => 'html',
+                'aid' => $model->id
             )
         );
             

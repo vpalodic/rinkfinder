@@ -31,7 +31,7 @@
             var footerButtons = '';
             var closeButton = '<button class="btn btn-large" data-dismiss="' +
                 'modal" type="button" aria-hidden="true" id="close"><i class="' +
-                'icon-remove-sign"></i> Close</button>';
+                'fa fa-fw fa-lg fa-times"></i> Close</button>';
             
             if (typeof buttons === 'string')
             {
@@ -86,7 +86,7 @@
                 {
                     that.nextModalId = 0;
                 }
-            })
+            });
             return $modal;
         }
     };
