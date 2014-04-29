@@ -13,7 +13,8 @@
         addReservation: "/server/endpoint",
         acknowledgeRecord: "/server/endpoint",
         acceptRecord: "/server/endpoint",
-        rejectRecord: "/server/endpoint"
+        rejectRecord: "/server/endpoint",
+        deleteRecord: "/server/endpoint"
     };
     
     _eventRequest.data = {};
@@ -76,6 +77,7 @@
         _eventRequest.setupRequesterPhone();
         _eventRequest.setupNotes();
         _eventRequest.setupMessageButton();
+        _eventRequest.setupDeleteButton();
         
         if(_eventRequest.data.parms.acknowledged == false) {
             _eventRequest.setupAcknowledgeButton();
@@ -510,12 +512,10 @@
                             "been notified via e-mail that their request " +
                             "has been accepted.<br />Please be sure to respond " +
                             "to any other pending requests.<br />To remove this " +
-                            "event from the search results, you may either create a " +
-                            "reservation for this event or update the status to closed." +
+                            "event from the search results, you may update the event status to closed." +
                             "<br />You may use the Message button to contact the requester if " +
                             "you need to.<br />"
                     );
-
                 },
                 error: function(xhr, status, errorThrown) {
                     $buttons.prop('disabled', false);
@@ -671,6 +671,10 @@
     };
     
     _eventRequest.addReservationButton = function ($parent) {
+        // for now we are just going to return as we will implement this
+        // in a future release...
+        return;
+        
         var button = '<button class="btn btn-block btn-large btn-success" ' +
                 'type="button" data-toggle="tooltip" data-original-title="' +
                 'Create a reservation for this request" id="createReservation' +
@@ -714,7 +718,7 @@
             var $thatModal = $modal;
 
              $.ajax({                        
-                url: _eventRequest.data.endpoint.addReservation,
+                url: _eventRequest.endpoints.addReservation,
                 type: "POST",
                 dataType: "html",
                 data: newParms,
@@ -769,6 +773,128 @@
                 }
             });
         });
+    };
+    
+    _eventRequest.setupDeleteButton = function () {
+        $("#deleteRequest").on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var newParms = {
+                output: 'html',
+                id: _eventRequest.data.item.fields.id.value,
+                pk: _eventRequest.data.item.fields.id.value,
+                eid: _eventRequest.data.parms.eid,
+                aid: _eventRequest.data.parms.aid
+            };
+
+            var $modal = _eventRequest.createDeleteModal();
+            
+            $modal.modal({
+                loading: false,
+                replace: false,
+                modalOverflow: false
+            });
+
+            // The modal is now in the DOM so we can hook in to the button
+            // clicks. Specifically, we only care about the 'yes' button.
+            $('button#yes').on('click', function (e) {
+                // They clicked yes and so now we must delete the event request!!!
+                var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
+                $buttons.prop('disabled', true);
+                // We must disable everything and put up our spinner...
+                var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+                // Prepare to delete the request.
+                $('#deleteRequest').attr("disabled", "disabled");
+            
+                // Show we are busy by appending the spinner to the assign button
+                $('#deleteRequest').parent().prepend(spinner);
+                
+                $.ajax({
+                    url: _eventRequest.endpoints.deleteRecord,
+                    type: "POST",
+                    dataType: "html",
+                    data: newParms,
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            window.setTimeout(function () {
+                                // Enable the buttons
+                                $buttons.prop('disabled', false);
+                                utilities.ajaxError.show(
+                                    "Delete Event Request",
+                                    "Failed to retrieve data",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                                );
+                            }, 1000);
+                            return;
+                        }
+                        
+                        var $panel = $('#eventRequestView').find('.panel-body');
+                        
+                        var $message = $('<h1 class="text-success">The request has been deleted!</h1>');
+                        
+                        $message.hide();
+                        
+                        $panel.fadeOut(250, function () {
+                            $panel.empty();
+                            $panel.append($message);
+                            $panel.fadeIn(250, function () {
+                                $message.fadeIn(250);
+                            });
+                        });
+                    },
+                    error: function(xhr, status, errorThrown) {
+                        // Enable the buttons
+                        $buttons.prop('disabled', false);
+                        $('#deleteRequest').parent().find('#loading').remove();
+                         
+                        window.setTimeout(function () {
+                            utilities.ajaxError.show(
+                                "Delete Event Request",
+                                "Failed to retrieve data",
+                                xhr,
+                                status,
+                                errorThrown
+                        );
+                        }, 1000);
+                    }
+                });
+            });
+        });
+    };
+    
+    _eventRequest.createDeleteModal = function () {
+        var modalBody = '<div id="deleteModal" class="well"><h3>Are you sure you want to ' +
+            'permanently delete this item?</h3><p class="lead text-error">This operation ' +
+            'cannot be undone and will also delete this item from any related ' +
+            'items. For example, deleting a location / venue will also delete ' +
+            'any events associated with that location / venue.</p></div>';
+    
+        var modalFooter = '<button class="btn btn-large btn-danger" data-dismiss="' +
+                'modal" type="button" aria-hidden="true" id="yes"><i class="' +
+                'fa fa-fw fa-lg fa-check"></i> Yes</button>' +
+                '<button class="btn btn-large" data-dismiss="' +
+                'modal" type="button" aria-hidden="true" id="close"><i class="' +
+                'fa fa-fw fa-lg fa-times"></i> No</button>';
+
+        return utilities.modal.add('Confirm Action', modalBody, modalFooter, false, false);
     };
     
 }( window._eventRequest = window._eventRequest || {}, jQuery ));

@@ -990,8 +990,12 @@ class EventRequest extends RinkfinderActiveRecord
             'eventRequest/update',
         );
         
+        $deleteParms = array(
+            'eventRequest/deleteEventRequest',
+        );
+        
         $reservationParms = array(
-            'reservation/create',
+            'reservation/createReservation',
         );
         
         $typeParms = array(
@@ -1163,6 +1167,7 @@ class EventRequest extends RinkfinderActiveRecord
         
         $ret['item']['fields'] = $fields;
         $ret['endpoint']['update'] = CHtml::normalizeUrl($updateParms);
+        $ret['endpoint']['delete'] = CHtml::normalizeUrl($deleteParms);
         $ret['endpoint']['type'] = CHtml::normalizeUrl($typeParms);
         $ret['endpoint']['status'] = CHtml::normalizeUrl($statusParms);
         $ret['endpoint']['addReservation'] = CHtml::normalizeUrl($reservationParms);
@@ -1808,7 +1813,7 @@ class EventRequest extends RinkfinderActiveRecord
      * @param integer $lid The optional location id to event was generated from.
      * @return boolean True if the email was successfully send.
      */
-    public static function sendNewEmailNotifications($requesterName, $requesterEmail, $requesterPhone, $requestType, $id, $eid, $aid)
+    public static function sendNewEmailNotifications($requesterName, $requesterEmail, $requesterPhone, $notes, $requestType, $id, $eid, $aid)
     {
         // We need to pull the full event and arena information!
         $event = Event::model()->with (
@@ -1829,6 +1834,7 @@ class EventRequest extends RinkfinderActiveRecord
         $data['requester']['name'] = $requesterName;
         $data['requester']['email'] = $requesterEmail;
         $data['requester']['phone'] = $requesterPhone;
+        $data['notes'] = $notes;
         $data['requestType'] = $requestType;
         $data['event'] = $event;
         $data['eventUrl'] = Yii::app()->createAbsoluteUrl(

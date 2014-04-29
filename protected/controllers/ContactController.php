@@ -103,9 +103,6 @@ class ContactController extends Controller
                 
                 $model = Contact::model()->findBySql($sql, array(':id' => $id, ':aid' => $aid));
                 
-                $attributes = $model->attributes;
-                $attributes['primary_contact'] = $model->primary_contact;
-                                
                 if($model === null) {
                     if($outputFormat == "html" || $outputFormat == "xml") {
                         throw new CHttpException(404, 'Contact not found');
@@ -121,6 +118,9 @@ class ContactController extends Controller
                     );
                     Yii::app()->end();
                 }
+                
+                $attributes = $model->attributes;
+                $attributes['primary_contact'] = $model->primary_contact;
             } else {
                 $model = $this->loadModel($id, $outputFormat);
                 
@@ -498,7 +498,7 @@ class ContactController extends Controller
         $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
         
         if($id == 0) {
-            // Work around an editable side-effect after adding a new contact.
+            // Work around an editable side-effect after adding a new record.
             $id = $pk;
         }
         

@@ -347,8 +347,10 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'arena' => array(
-                    'new' => Yii::app()->createUrl('/arena/create'),
-                    'update' => Yii::app()->createUrl('/arena/updateAttribute')
+                    'new' => Yii::app()->createUrl('/arena/createArena'),
+                    'update' => Yii::app()->createUrl('/arena/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/arena/viewArena'),
+                    'delete' => Yii::app()->createUrl('/arena/deleteArena')
                 ),
                 'contact' => array(
                     'new' => Yii::app()->createUrl('/contact/createContact'),
@@ -361,6 +363,30 @@ class ManagementController extends Controller
                     'update' => Yii::app()->createUrl('/location/updateAttribute'),
                     'view' => Yii::app()->createUrl('/location/view'),
                     'delete' => Yii::app()->createUrl('/location/deleteLocation')
+                ),
+                'event' => array(
+                    'new' => Yii::app()->createUrl('/event/createEvent'),
+                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/event/view'),
+                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                ),
+                'eventRequest' => array(
+                    'new' => Yii::app()->createUrl('/eventRequest/createEventRequest'),
+                    'update' => Yii::app()->createUrl('/eventRequest/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/eventRequest/view'),
+                    'delete' => Yii::app()->createUrl('/eventRequest/deleteEventRequest')
+                ),
+                'reservation' => array(
+                    'new' => Yii::app()->createUrl('/reservation/createReservation'),
+                    'update' => Yii::app()->createUrl('/reservation/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/reservation/view'),
+                    'delete' => Yii::app()->createUrl('/reservation/deleteReservation')
+                ),
+                'user' => array(
+                    'new' => Yii::app()->createUrl('/user/createUser'),
+                    'update' => Yii::app()->createUrl('/user/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/user/view'),
+                    'delete' => Yii::app()->createUrl('/user/deleteUser')
                 )
             ),
             'data' => array(

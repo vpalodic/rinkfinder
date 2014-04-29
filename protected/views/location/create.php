@@ -5,7 +5,7 @@
 
 <?php
 $this->breadcrumbs=array(
-	'Locations'=>array('index'),
+	'Venues'=>array('index'),
 	'Create',
 );
 
@@ -15,6 +15,6 @@ $this->menu=array(
 );
 ?>
 
-<h1>Create Location</h1>
+<h1>Create Venue</h1>
 
 <?php $this->renderPartial('_form', array('model'=>$model)); ?>

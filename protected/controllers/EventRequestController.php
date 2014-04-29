@@ -15,8 +15,8 @@ class EventRequestController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'ajaxOnly + type status',
-            'postOnly + delete purchase info',
+            'ajaxOnly + type status deleteEventRequest',
+            'postOnly + delete purchase info deleteEventRequest',
         );
     }
 
@@ -102,6 +102,7 @@ class EventRequestController extends Controller
         $requester_name = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
         $requester_email = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
         $requester_phone = isset($_POST['requester_phone']) ? $_POST['requester_phone'] : null;
+        $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
         $aid = isset($_REQUEST['aid']) ? $_REQUEST['aid'] : null;
         $eid = isset($_REQUEST['eid']) ? $_REQUEST['eid'] : null;
         $type_id = EventRequestType::model()->find('name = "PURCHASE"')->id;
@@ -134,6 +135,7 @@ class EventRequestController extends Controller
             $model->requester_name = $requester_name;
             $model->requester_email = $requester_email;
             $model->requester_phone = $requester_phone;
+            $model->notes = $notes;
             $model->type_id = $type_id;
             
             // validate and save the model!!
@@ -143,7 +145,7 @@ class EventRequestController extends Controller
                 throw new CHttpException(500, "Failed to save the request");
             }
             
-            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, "Reserve / Purchase", $model->id, $eid, $aid);
+            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, $notes, "Reserve / Purchase", $model->id, $eid, $aid);
             
             // log any e-mail failures!
             if($emailsSent !== true) {
@@ -240,6 +242,7 @@ class EventRequestController extends Controller
         $requester_name = isset($_POST['requester_name']) ? $_POST['requester_name'] : null;
         $requester_email = isset($_POST['requester_email']) ? $_POST['requester_email'] : null;
         $requester_phone = isset($_POST['requester_phone']) ? $_POST['requester_phone'] : null;
+        $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
         $aid = isset($_REQUEST['aid']) ? $_REQUEST['aid'] : null;
         $eid = isset($_REQUEST['eid']) ? $_REQUEST['eid'] : null;
         $type_id = EventRequestType::model()->find('name = "INFORMATION"')->id;
@@ -267,9 +270,12 @@ class EventRequestController extends Controller
             
             $model->event_id = $eid;
             $model->requester_id = $requester_id;
+            $model->created_by_id = $requester_id;
+            $model->updated_by_id = $requester_id;
             $model->requester_name = $requester_name;
             $model->requester_email = $requester_email;
             $model->requester_phone = $requester_phone;
+            $model->notes = $notes;
             $model->type_id = $type_id;
             
             // validate and save the model!!
@@ -279,7 +285,7 @@ class EventRequestController extends Controller
                 throw new CHttpException(500, "Failed to save the request");
             }
             
-            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, "Information", $model->id, $eid, $aid);
+            $emailsSent = EventRequest::sendNewEmailNotifications($requester_name, $requester_email, $requester_phone, $notes, "Information", $model->id, $eid, $aid);
             
             // log any e-mail failures!
             if($emailsSent !== true) {
@@ -795,6 +801,140 @@ class EventRequestController extends Controller
         }
     }
 
+    /**
+     * Deletes a particular model.
+     * If delete is successful, there is no output, otherwise we output an error.
+     */
+    public function actionDeleteEventRequest()
+    {
+        Yii::trace("In actionDeleteEventRequest.", "application.controllers.EventRequestController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only delete via a POST and AJAX request!
+        $id = isset($_POST['id']) && is_numeric($_POST['id']) && $_POST['id'] > 0 ? (integer)$_POST['id'] : 0;
+        $pk = isset($_POST['pk']) && is_numeric($_POST['pk']) && $_POST['pk'] > 0 ? (integer)$_POST['pk'] : 0;
+        $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        $eid = isset($_POST['eid']) && is_numeric($_POST['eid']) && $_POST['eid'] > 0 ? (integer)$_POST['eid'] : 0;
+        
+        // Verify we have a valid ID!
+        if($aid <= 0 || $eid <= 0 || $id <= 0 || $pk <= 0 || $id !== $pk) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Load the Arena model and ensure that the user is assigned to it!
+        $arena = $this->loadArenaModel($aid, $outputFormat);
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403);
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        try {
+            $model = $this->loadModel($id, $outputFormat);
+            
+            if(!$model->delete()) {
+                $output = 'Failed to delete the record as the update was either unauthorized or because too many rows would be updated.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, "Internal Server Error");
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
 	/**
 	 * Deletes a particular model.
 	 * If deletion is successful, the browser will be redirected to the 'admin' page.
@@ -842,33 +982,107 @@ class EventRequestController extends Controller
 		));
 	}
 
-	/**
-	 * Returns the data model based on the primary key given in the GET variable.
-	 * If the data model is not found, an HTTP exception will be raised.
-	 * @param integer $id the ID of the model to be loaded
-	 * @return EventRequest the loaded model
-	 * @throws CHttpException
-	 */
-	public function loadModel($id)
-	{
-		$model=EventRequest::model()->findByPk($id);
-		if ($model===null) {
-			throw new CHttpException(404,'The requested page does not exist.');
-		}
-		return $model;
-	}
+    /**
+     * Returns the data model based on the primary key given in the GET variable.
+     * If the data model is not found, an HTTP exception will be raised.
+     * @param integer $id the ID of the model to be loaded
+     * @return EventRequest the loaded model
+     * @throws CHttpException
+     */
+    public function loadModel($id, $outputFormat = 'html')
+    {
+        $model = EventRequest::model()->findByPk($id);
+        
+        if($model === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(404, 'Facility not found');
+            }
 
-	/**
-	 * Performs the AJAX validation.
-	 * @param EventRequest $model the model to be validated
-	 */
-	protected function performAjaxValidation($model)
-	{
-		if (isset($_POST['ajax']) && $_POST['ajax']==='event-request-form') {
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
-	}
+            $this->sendResponseHeaders(404, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Facility not found',
+                    )
+            );
+            Yii::app()->end();
+        }
+    }
+
+    /**
+     * Returns the data model based on the primary key given in the GET variable.
+     * If the data model is not found, an HTTP exception will be raised.
+     * @param integer $id the ID of the model to be loaded
+     * @return Arena the loaded model
+     * @throws CHttpException
+     */
+    public function loadArenaModel($id, $outputFormat = 'html', $with = false)
+    {
+        if($with === true) {
+            $model = Arena::model()->with('locations', 'contacts')->findByPk($id);
+        } else {
+            $model = Arena::model()->findByPk($id);
+        }
+        
+        if($model === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(404, 'Facility not found');
+            }
+
+            $this->sendResponseHeaders(404, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Facility not found',
+                    )
+            );
+            Yii::app()->end();
+        }
+        return $model;
+    }
+
+    /**
+     * Returns the data model based on the primary key given in the GET variable.
+     * If the data model is not found, an HTTP exception will be raised.
+     * @param integer $id the ID of the model to be loaded
+     * @return Event the loaded model
+     * @throws CHttpException
+     */
+    public function loadEventModel($id, $outputFormat = 'html')
+    {
+        $model = Event::model()->findByPk($id);
+        
+        if($model === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(404, 'Event not found');
+            }
+
+            $this->sendResponseHeaders(404, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Event not found',
+                    )
+            );
+            Yii::app()->end();
+        }
+        return $model;
+    }
+
+    /**
+     * Performs the AJAX validation.
+     * @param EventRequest $model the model to be validated
+     */
+    protected function performAjaxValidation($model)
+    {
+        if(isset($_POST['ajax']) && $_POST['ajax'] === 'event-request-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
+        }
+    }
         
     protected function handleAction($params)
     {

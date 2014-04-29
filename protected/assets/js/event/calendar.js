@@ -164,11 +164,16 @@
         var modalBody = '' +
             '<form id="requestModalForm" class="well"><div class="row-fluid">' +
             '<div><label>Full Name</label>' +
-            '<input id="requesterName" name="requester_name" class="span12" placeholder="Your full name" type="text" />' +
-            '<label>Email Address</label><input id="requesterEmail" name="requester_email" class="span12" placeholder=' +
-            '"Your email address" type="text" /> <label>Phone Number</label>' +
-            '<input id="requesterPhone" name="requester_phone" class="span12" placeholder="Your ten digit phone number" type="text" />' +
-            '</div><button class="btn btn-primary pull-right" type="submit"><i class="fa fa-fw fa-upload"></i> <span>Send</span></button>' +
+            '<input id="requesterName" name="requester_name" class="span12" ' +
+            'placeholder="Your full name" type="text" /><label>Email Address' +
+            '</label><input id="requesterEmail" name="requester_email" class=' +
+            '"span12" placeholder="Your email address" type="text" /> <label>' +
+            'Phone Number</label><input id="requesterPhone" name="requester_' +
+            'phone" class="span12" placeholder="Your ten digit phone number" ' +
+            'type="text" /><label>Message</label><textarea id="Notes" ' +
+            'name="notes" rows="6" class="span12" placeholder="Enter a message">' +
+            '</textarea></div><button class="btn btn-primary pull-right" type="' +
+            'submit"><i class="fa fa-fw fa-upload"></i> <span>Send</span></button>' +
             '</div></form>';
     
         return modalBody;
@@ -178,11 +183,11 @@
         // get all the inputs into an array.
         var $inputs = $('#requestModalForm :input');
         var that = this;
-
-        // not sure if you wanted this, but I thought I'd add it.
+        
         // get an associative array of just the values.
         var values = {};
         var validCount = 0;
+
         $inputs.each(function() {
             if (this.name !== "" && $(this).val() !== null && $(this).val() !== "")
             {
@@ -220,7 +225,7 @@
                             return false;
                         }
                     }
-                    else
+                    else if (this.name === "requester_name")
                     {
                         if(value.length <= 2)
                         {
@@ -229,6 +234,10 @@
                         
                         values[this.name] = value;
                         validCount++;
+                    }
+                    else
+                    {
+                        values[this.name] = value;
                     }
                 }
             }

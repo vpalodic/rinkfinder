@@ -20,10 +20,10 @@ class EventController extends Controller
     public function filters()
     {
         return array(
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-            'arenaContext + create admin uploadEvents', // check to ensure proper arena context
-            'ajaxOnly + uploadEventsFileDelete uploadEventsProcessCSV type status', // we only delete and process files via ajax!
+            'accessControl',
+            'postOnly + delete deleteEvent updateAttribute createEvent',
+            'arenaContext + create admin uploadEvents',
+            'ajaxOnly + deleteEvent updateAttribute createEvent uploadEventsFileDelete uploadEventsProcessCSV type status',
         );
     }
 
@@ -53,7 +53,10 @@ class EventController extends Controller
                 'allow', // allow authenticated user to perform 'create' and 'update' actions
                 'actions' => array(
                     'create',
+                    'createEvent',
+                    'deleteEvent',
                     'update',
+                    'updateAttribute',
                     'uploadEvents',
                     'uploadEventsFile',
                     'uploadEventsFileDelete',
@@ -69,8 +72,8 @@ class EventController extends Controller
                     'admin',
                     'delete'
                 ),                
-                'users' => array(
-                    'admin'
+                'roles' => array(
+                    'ApplicationAdministrator'
                 ),
             ),
             array(

@@ -5,7 +5,7 @@
 
 <?php
 $this->breadcrumbs=array(
-	'Locations',
+	'Venues',
 );
 
 $this->menu=array(

@@ -13,6 +13,10 @@
                     Someone will be contacting you soon regarding your request. <br /><br />
                     Here are the details for the event that your request is based off of: <br />
                 </p>
+                <h3>Your Message:</h3>
+                <p>
+                    <?php echo $notes; ?>
+                </p>
                 <h3>Event Details:</h3>
                 <p>
                     <ul>
@@ -43,7 +47,7 @@
                             Event End: <b><?php $date = DateTime::createFromFormat("Y-m-d H:i:s", $event->end_date . " " . $event->end_time); echo $date->format("m/d/Y h:i:s A"); ?></b>
                         </li>
                         <li>
-                            Event Link: <b><a href="<?php echo $eventUrl; ?>"><?php echo $eventUrl; ?></a></b>
+                            Event Link: <b><a href="<?php echo $eventUrl; ?>">Click here!</a></b>
                         </li>
                         <li>
                             Facility Link: <b><a href="<?php echo $arenaUrl; ?>"><?php echo $event->arena->name; ?></a></b>

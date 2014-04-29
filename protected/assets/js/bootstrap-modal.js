@@ -209,7 +209,7 @@
             var prop = this.options.height ? 'height' : 'max-height';
             var value = this.options.height || this.options.maxHeight;
 
-            if (value) {
+            if (value && this.$element) {
                 this.$element.find('.modal-body')
                     .css('overflow', '')
                     .css(prop, '');

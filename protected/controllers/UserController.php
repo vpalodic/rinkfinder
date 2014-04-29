@@ -15,8 +15,8 @@ class UserController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'ajaxOnly + updateAttribute',
-            'postOnly + delete updateAttribute', // we only allow deletion via POST request
+            'ajaxOnly + updateAttribute createUser deleteUser',
+            'postOnly + delete updateAttribute createUser deleteUser', // we only allow deletion via POST request
         );
     }
 

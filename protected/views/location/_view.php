@@ -33,7 +33,6 @@
 	<?php echo CHtml::encode($data->length); ?>
 	<br />
 
-	<?php /*
 	<b><?php echo CHtml::encode($data->getAttributeLabel('width')); ?>:</b>
 	<?php echo CHtml::encode($data->width); ?>
 	<br />
@@ -89,7 +88,4 @@
 	<b><?php echo CHtml::encode($data->getAttributeLabel('updated_on')); ?>:</b>
 	<?php echo CHtml::encode($data->updated_on); ?>
 	<br />
-
-	*/ ?>
-
 </div>

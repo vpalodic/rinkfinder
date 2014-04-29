@@ -30,6 +30,11 @@
                         </li>
                     </ul>
                 </p>
+                <h3>Requester Message:</h3>
+                <p>
+                    <?php echo $notes; ?>
+                </p>
+                <h3>Event Details:</h3>
                 <h3>Event Details:</h3>
                 <p>
                     <ul>

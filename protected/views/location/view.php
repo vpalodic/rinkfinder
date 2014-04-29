@@ -5,7 +5,7 @@
 
 <?php
 $this->breadcrumbs=array(
-	'Locations'=>array('index'),
+	'Venues'=>array('index'),
 	$model->name,
 );
 
@@ -18,7 +18,7 @@ $this->menu=array(
 );
 ?>
 
-<h1>View Location #<?php echo $model->id; ?></h1>
+<h1>View Venue #<?php echo $model->id; ?></h1>
 
 <?php $this->widget('zii.widgets.CDetailView',array(
     'htmlOptions' => array(

@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
-        if(defined('YII_DEBUG') && $this->includeCss) {
+        if(defined('YII_DEBUG') && $this->includeCss && Yii::app()->user->isRestrictedArenaManager()) {
             Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.css');
-        } elseif ($this->includeCss) {
+        } elseif ($this->includeCss && Yii::app()->user->isRestrictedArenaManager()) {
             Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.min.css');
         }
     ?>
@@ -53,10 +53,12 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.js', CClientScript::POS_END);
+            if(Yii::app()->user->isRestrictedArenaManager()) {
+                Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.js', CClientScript::POS_END);
+            }
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.js', CClientScript::POS_END);
@@ -74,10 +76,12 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.min.js', CClientScript::POS_END);
+            if(Yii::app()->user->isRestrictedArenaManager()) {
+                Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.min.js', CClientScript::POS_END);
+                Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/wysihtml5.min.js', CClientScript::POS_END);
+            }
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.inputmask.bundle.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);

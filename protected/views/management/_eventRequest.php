@@ -63,7 +63,7 @@
                 <strong>Actions</strong><br />
                 <div class="well">
                     <div class="row-fluid">
-                        <div class="span3">
+                        <div class="span2">
                             <button class="btn btn-block btn-large btn-primary has-spinner" type="button" data-toggle="tooltip"
                                     data-original-title="Send message to requester" id="message">
                                 <i class="fa fa-lg fa-envelope"></i> <br />
@@ -81,7 +81,7 @@
                         </div>
                         <?php if(isset($data['item']['fields']['acknowledger']['button']['enabled']) && 
                                 $data['item']['fields']['acknowledger']['button']['enabled'] == true) : ?>
-                        <div class="span3">
+                        <div class="span2">
                             <button class="btn btn-block btn-large btn-warning has-spinner" type="button" data-toggle="tooltip"
                                         data-original-title="Acknowledge this request"
                                         id="<?php echo $data['item']['fields']['acknowledger']['button']['name']; ?>">
@@ -93,7 +93,7 @@
                         <?php endif; ?>
                         <?php if(isset($data['item']['fields']['accepter']['button']['enabled']) && 
                                 $data['item']['fields']['accepter']['button']['enabled'] == true) : ?>
-                        <div class="span3">
+                        <div class="span2">
                             <button class="btn btn-block btn-large btn-success has-spinner" type="button" data-toggle="tooltip"
                                     data-original-title="Accept this request"
                                     id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
@@ -104,7 +104,7 @@
                         </div>
                         <?php elseif(!isset($data['item']['fields']['rejector']['value']) ||
                                 empty($data['item']['fields']['rejector']['value'])) : ?>
-                        <div class="span3">
+                        <div class="span2">
                             <button class="btn btn-block btn-large btn-success has-spinner" type="button" data-toggle="tooltip"
                                     data-original-title="Create a reservation for this request"
                                     id="createReservation">
@@ -116,7 +116,7 @@
                         <?php endif; ?>
                         <?php if(isset($data['item']['fields']['rejector']['button']['enabled']) && 
                                 $data['item']['fields']['rejector']['button']['enabled'] == true) : ?>
-                        <div class="span3">
+                        <div class="span2">
                             <button class="btn btn-block btn-large btn-danger has-spinner"
                                     type="button" data-toggle="tooltip" data-original-title="Reject this request"
                                     id="<?php echo $data['item']['fields']['rejector']['button']['name']; ?>">
@@ -135,6 +135,13 @@
                             </a>
                         </div>
                         <?php endif; ?>
+                        <div class="span2">
+                            <button class="btn btn-block btn-large btn-warning" type="button" data-toggle="tooltip"
+                                    data-original-title="Delete this request" id="deleteRequest">
+                                <i class="fa fa-lg fa-fw fa-times"></i> <br />
+                                <span>Delete</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <img class="img-circle"
@@ -456,6 +463,8 @@ $(document).ready(function() {
     _eventRequest.endpoints.acknowledgeRecord = "<?php echo $data['endpoint']['update']; ?>";
     _eventRequest.endpoints.acceptRecord = "<?php echo $data['endpoint']['update']; ?>";
     _eventRequest.endpoints.rejectRecord = "<?php echo $data['endpoint']['update']; ?>";
+    _eventRequest.endpoints.deleteRecord = "<?php echo $data['endpoint']['delete']; ?>";
+    _eventRequest.endpoints.addReservation = "<?php echo $data['endpoint']['addReservation']; ?>";
     _eventRequest.userId = <?php echo Yii::app()->user->id; ?>;
     _eventRequest.userName = "<?php echo Yii::app()->user->fullName; ?>";
     _eventRequest.onReady();
