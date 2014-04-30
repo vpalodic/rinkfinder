@@ -531,6 +531,8 @@
                             </div>
                         </div>
                     </div>
+                </div>                    
+                <div class="row-fluid">
                     <div class="span8 offset2">
                         <div id="contactDetails">
                             
@@ -615,6 +617,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row-fluid">
                     <div class="span8 offset2">
                         <div id="locationDetails">
                             
@@ -644,7 +648,118 @@
     </div>
     
     <div id="eventsTabPane" class="tab-pane fade">
-        
+        <div id="eventManagementView" class="panel panel-primary">
+            <div class="panel-heading">
+                <h3>
+                    Events
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Event Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span4">
+                                    <button class="btn btn-block btn-success"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Import Events"
+                                            id="importEventButton">
+                                        <i class="fa fa-lg fa-upload"></i> <br />
+                                        <span>Import</span>
+                                    </button>
+                                </div>
+                                <div class="span4">
+                                    <button class="btn btn-block btn-primary"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Create a new event"
+                                            id="newEventButton">
+                                        <i class="fa fa-lg fa-plus-square"></i> <br />
+                                        <span>New</span>
+                                    </button>
+                                </div>
+                                <div class="span4">
+                                    <button class="btn btn-block btn-danger"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Delete this event"
+                                            id="deleteEventButton">
+                                        <i class="fa fa-lg fa-minus-square"></i> <br />
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Event Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span4">
+                                    <button class="btn btn-block btn-success"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Import Events"
+                                            id="importEventButton">
+                                        <i class="fa fa-lg fa-upload"></i> <br />
+                                        <span>Import</span>
+                                    </button>
+                                </div>
+                                <div class="span4">
+                                    <button class="btn btn-block btn-primary"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Create a new event"
+                                            id="newEventButton">
+                                        <i class="fa fa-lg fa-plus-square"></i> <br />
+                                        <span>New</span>
+                                    </button>
+                                </div>
+                                <div class="span4">
+                                    <button class="btn btn-block btn-danger"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Delete this event"
+                                            id="deleteEventButton">
+                                        <i class="fa fa-lg fa-minus-square"></i> <br />
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span8 offset2">
+                        <div id="eventDetails">
+                            
+                        </div>
+                        <div id="newEventButtons">
+                            <button id="saveEventButton"
+                                    class="btn btn-large btn-primary"
+                                    type="button"
+                                    data-toggle="tooltip"
+                                    data-original-title="Save the new event">
+                                <i class="fa fa-lg fa-fw fa-check"></i>
+                                <span>Save</span>
+                            </button>
+                            <button id="cancelEventButton"
+                                    class="btn btn-large pull-right"
+                                    type="button"
+                                    data-toggle="tooltip"
+                                    data-original-title="Cancel adding a new event">
+                                <i class="fa fa-lg fa-fw fa-times"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 <?php if(Yii::app()->user->isArenaManager()) : ?>

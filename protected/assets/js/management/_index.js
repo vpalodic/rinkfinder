@@ -141,12 +141,14 @@
             
             var $target = $(e.target);
             
-            console.log($target.attr("href"));
+            //console.log($target.attr("href"));
             
             _index.handleLinkClick($target.attr("href"));
         });
         
-        $("#" + _index.data.model + "Footable").footable();
+        $("#" + _index.data.model + "Footable").footable({
+            addRowToggle: false
+        });
     
         $("#" + _index.data.model + "Footable").footable().on('footable_filtering', function (e) {
             var selected = $('#tableFilterStatus').find(':selected').text();

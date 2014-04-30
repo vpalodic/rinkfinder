@@ -424,8 +424,7 @@ class ManagementController extends Controller
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
             $this->pageTitle = Yii::app()->name . ' - Account & Profile!';
             $this->breadcrumbs = array(
-                'Management' => array('/management/index'),
-                'Facilities' => array('/management/index'),
+                'Management' => array('/site/management'),
                 $model->name,
             );
 

@@ -265,6 +265,12 @@ class Location extends RinkfinderActiveRecord
                 'type' => 'alpha',
                 'hide' => 'all'
             ),
+            'description' => array(
+                'name' => 'description',
+                'display' => 'Description',
+                'type' => 'alpha',
+                'hide' => 'all'
+            ),
             'notes' => array(
                 'name' => 'notes',
                 'display' => 'Notes',

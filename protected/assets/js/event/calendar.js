@@ -91,6 +91,11 @@
                 
                 if(params === false)
                 {
+                    if($("button[type=submit]").attr("disabled") !== "disabled")
+                    {
+                        $("button[type=submit]").attr("disabled", "disabled");
+                    }
+                    
                     return;
                 }
                 
@@ -112,6 +117,9 @@
                 }
                 
                 // We have got our valid parameters,
+                // add a timestamp to the note!
+                params.notes = moment().format("MM/DD/YYYY h:mm:ss A") + " by " + params.requester_name + ":\r\n\r\n" + params.notes + "\r\n\r\n";
+                
                 var spinner = '<div id="loading"' +
                 '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
                 'alt="Loading..." /></div>'; 

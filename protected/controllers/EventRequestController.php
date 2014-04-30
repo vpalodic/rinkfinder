@@ -35,7 +35,7 @@ class EventRequestController extends Controller
             ),
             array(
                 'allow',
-                'actions' => array('create', 'update'),
+                'actions' => array('create', 'update', 'deleteEventRequest'),
                 'users' => array('@'),
             ),
             array('allow',
@@ -135,7 +135,7 @@ class EventRequestController extends Controller
             $model->requester_name = $requester_name;
             $model->requester_email = $requester_email;
             $model->requester_phone = $requester_phone;
-            $model->notes = $notes;
+            $model->notes = ($notes == '' ? null : $notes . "\r\n\r\n");
             $model->type_id = $type_id;
             
             // validate and save the model!!
@@ -275,7 +275,7 @@ class EventRequestController extends Controller
             $model->requester_name = $requester_name;
             $model->requester_email = $requester_email;
             $model->requester_phone = $requester_phone;
-            $model->notes = $notes;
+            $model->notes = ($notes == '' ? null : $notes . "\r\n\r\n");
             $model->type_id = $type_id;
             
             // validate and save the model!!
@@ -687,8 +687,16 @@ class EventRequestController extends Controller
             
             // Ok, we have what appear to be valid parameters and so
             // it is time to validate and then update the value!
-            $model = new EventRequest();
-            $model->$name = $value;
+            
+            $model = $this->loadModel($id, $outputFormat);
+            
+            if($name == 'notes') {
+                $orig = ($model->$name ? $model->$name : '');
+                $value = $orig . $value;
+                $model->$name = $value;
+            } else {
+                $model->$name = $value;
+            }
             
             $valid = $model->validate(array($name));
             
@@ -1008,6 +1016,8 @@ class EventRequestController extends Controller
             );
             Yii::app()->end();
         }
+        
+        return $model;
     }
 
     /**

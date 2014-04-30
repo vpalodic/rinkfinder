@@ -123,7 +123,7 @@
                 // We hide the editable, set the history, and then clear the value
                 // of the editable!
                 $(this).data('editable').hide();
-                $("#notesHistory").text(newValue);
+                $("#notesHistory").text($("#notesHistory").text() + newValue);
                 $(this).data('editable').input.$input.val('');
                 newValue = '';
             
@@ -136,7 +136,7 @@
                    return 'This field is required';
                 }
                 
-                var oldNotes = $("#notesHistory").text();
+                var oldNotes = ''; //$("#notesHistory").text();
                 oldNotes += moment().format("MM/DD/YYYY h:mm:ss A") + " by " + _eventRequest.userName + ":\r\n\r\n";
                 oldNotes += value + "\r\n\r\n";
                 return {newValue: oldNotes};
@@ -217,6 +217,16 @@
             // Disable the buttons!
             var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
+            // We must disable everything and put up our spinner...
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Prepare to delete the request.
+            $('#deleteRequest').attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $('#deleteRequest').parent().prepend(spinner);
             
             var newParms = {
                 action: 'reject',
@@ -278,6 +288,8 @@
                     _eventRequest.data.parms.acknowledged = true;
                     
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
                     
                     $("#rejector_id").toggleClass('active');
                         
@@ -305,6 +317,8 @@
                 error: function(xhr, status, errorThrown) {
                     // Enable the buttons
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
 
                     $("#rejector_id").toggleClass('active');
 
@@ -342,6 +356,16 @@
             // Disable the buttons!
             var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
+            // We must disable everything and put up our spinner...
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Prepare to delete the request.
+            $('#deleteRequest').attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $('#deleteRequest').parent().prepend(spinner);
 
             // Ok, we will submit the data to the server
             $("#acknowledger_id").toggleClass('active');
@@ -384,6 +408,7 @@
                     
                     // Enable the buttons
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
                     
                     $("#acknowledger_id").toggleClass('active');
                     
@@ -405,6 +430,7 @@
                 },
                 error: function(xhr, status, errorThrown) {
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
 
                     $("#acknowledger_id").toggleClass('active');
                     //utilities.loadingScreen.hide();
@@ -443,6 +469,16 @@
             // Disable the buttons!
             var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
+            // We must disable everything and put up our spinner...
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Prepare to delete the request.
+            $('#deleteRequest').attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $('#deleteRequest').parent().prepend(spinner);
 
             // Ok, we will submit the data to the server
             $("#accepter_id").toggleClass('active');
@@ -485,6 +521,7 @@
                     _eventRequest.data.parms.accepted = true;
                     
                     var $parent = $("#accepter_id").parent();
+                    $('#deleteRequest').parent().find("#loading").remove();
                     
                     // Enable the buttons
                     $buttons.prop('disabled', false);
@@ -519,6 +556,7 @@
                 },
                 error: function(xhr, status, errorThrown) {
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
 
                     $("#accepter_id").toggleClass('active');
 
@@ -581,6 +619,16 @@
             // Disable the buttons!
             var $buttons = $("#eventRequestView.panel.panel-primary button.btn-block");
             $buttons.prop('disabled', true);
+            // We must disable everything and put up our spinner...
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Prepare to delete the request.
+            $('#deleteRequest').attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $('#deleteRequest').parent().prepend(spinner);
             
             var newParms = {
                 action: 'message',
@@ -640,6 +688,8 @@
 
                     // Enable the buttons
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
 
                     $("#message").toggleClass('active');
 
@@ -655,6 +705,8 @@
                 error: function(xhr, status, errorThrown) {
                     // Enable the buttons
                     $buttons.prop('disabled', false);
+                    $('#deleteRequest').prop('disabled', false);
+                    $('#deleteRequest').parent().find("#loading").remove();
 
                     $("#message").toggleClass('active');
 

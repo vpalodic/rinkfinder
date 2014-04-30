@@ -225,7 +225,7 @@ class Contact extends RinkfinderActiveRecord
                 'display' => 'Last Name',
                 'type' => 'alpha',
             ),
-            'address_line1' => array(
+/*            'address_line1' => array(
                 'name' => 'address_line1',
                 'display' => 'Address Line 1',
                 'type' => 'alpha',
@@ -254,7 +254,7 @@ class Contact extends RinkfinderActiveRecord
                 'display' => 'Zip',
                 'type' => 'numeric',
                 'hide' => 'all'
-            ),
+            ),*/
             'phone' => array(
                 'name' => 'phone',
                 'display' => 'Phone',
@@ -474,11 +474,6 @@ class Contact extends RinkfinderActiveRecord
         $sql = "SELECT c.id, "
                 . "c.first_name, "
                 . "c.last_name, "
-                . "c.address_line1, "
-                . "c.address_line2, "
-                . "c.city, "
-                . "c.state, "
-                . "c.zip, "
                 . "c.phone, "
                 . "c.ext, "
                 . "c.fax, "

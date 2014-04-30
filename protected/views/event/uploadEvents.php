@@ -12,7 +12,7 @@
     $this->pageTitle = Yii::app()->name . ' - Upload Events';
     $this->breadcrumbs = array(
         'Management' => array('/site/management'),
-        CHtml::encode($arenaName) => array('/arena/managementview', 'id' => $arenaId),
+        CHtml::encode($arenaName) => array('/management/Arena', 'id' => $arenaId),
         'Upload Events'
     );
 ?>

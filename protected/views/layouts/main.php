@@ -65,6 +65,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.js', CClientScript::POS_BEGIN);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.min.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.min.js', CClientScript::POS_HEAD);
@@ -88,6 +89,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_BEGIN);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.min.js', CClientScript::POS_BEGIN);
         }
     ?>
     <link rel="shortcut icon" href="<?php echo Yii::app()->request->baseUrl; ?>/images/favicon.ico">

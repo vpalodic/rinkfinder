@@ -155,6 +155,12 @@
         $('#Arena_logo').editable({
             params: arenaManagementView.params,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var $img = $('#Arena_logo_img');
                 var $parent = $img.parent();
                 var $newImg = $('<img id="Arena_logo_img" class="img-circle" src="' + newValue + '" alt="Facility Logo" />');
@@ -559,7 +565,38 @@
                 data: myParams,
                 type: 'POST',
                 dataType: 'html',
-                success: function () {
+                success: function(result, status, xhr) {
+                    // Its possible we will get a session timeout so check for it!
+                    var myjsonObj = false;
+                    try
+                    {
+                        myjsonObj = JSON.parse(result);
+                    }
+                    catch (err)
+                    {
+                        myjsonObj = false;
+                    }
+
+                    if (myjsonObj !== false)
+                    {
+                        window.setTimeout(function () {
+                            $availableMS.removeAttr("disabled");
+                            $assignedMS.removeAttr("disabled");
+                            $assignBtn.removeAttr("disabled");
+
+                            $assignBtn.parent().find('#loading').remove();
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to assign the contact",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                            );
+                        }, 1000);
+
+                        return;
+                    }
+                    
                     // Move the contacts to the assigned list
                     $selected.each(function () {
                         $assignedMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
@@ -639,7 +676,38 @@
                 data: myParams,
                 type: 'POST',
                 dataType: 'html',
-                success: function () {
+                success: function(result, status, xhr) {
+                    // Its possible we will get a session timeout so check for it!
+                    var myjsonObj = false;
+                    try
+                    {
+                        myjsonObj = JSON.parse(result);
+                    }
+                    catch (err)
+                    {
+                        myjsonObj = false;
+                    }
+
+                    if (myjsonObj !== false)
+                    {
+                        window.setTimeout(function () {
+                            $availableMS.removeAttr("disabled");
+                            $assignedMS.removeAttr("disabled");
+                            $unassignBtn.removeAttr("disabled");
+
+                            $unassignBtn.parent().find('#loading').remove();
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to unassign the contact",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                            );
+                        }, 1000);
+
+                        return;
+                    }
+                    
                     // Move the contacts to the available list
                     $selected.each(function () {
                         $availableMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
@@ -753,7 +821,42 @@
                     data: myParams,
                     type: 'POST',
                     dataType: 'html',
-                    success: function () {
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            window.setTimeout(function () {
+                                // Clear any selections
+                                $availableMS.val('');
+                                $assignedMS.val('');
+                    
+                                $availableMS.removeAttr("disabled");
+                                $assignedMS.removeAttr("disabled");
+                                $assignedS.removeAttr("disabled");
+                                $newBtn.removeAttr("disabled");
+                                $deleteBtn.parent().find('#loading').remove();
+                                utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to delete the contact",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                                );
+                            }, 1000);
+
+                            return;
+                        }
+                    
                         // Remove the contact from the assigned list
                         $assignedMS.find('option[value="' + contactId + '"]').remove();
                         $assignedS.find('option[value="' + contactId + '"]').remove();
@@ -876,6 +979,9 @@
                    } else if(data && data.errors){ 
                        //server-side validation error, response like {"errors": {"username": "username already exist"} }
                        config.error.call(this, data.errors);
+                   } else if(data && data.error){ 
+                       //server-side validation error, response like {"errors": {"username": "username already exist"} }
+                       config.error.call(this, data.error);
                    }
                },
                error: function(errors) {
@@ -943,6 +1049,12 @@
         $('#Contact_first_name').editable({
             params: params,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Contact_active, #Contact_last_name, #Contact_email').editable('getValue');
                 
                 // This is a bit risky as the user may select a different
@@ -975,6 +1087,12 @@
         $('#Contact_last_name').editable({
             params: params,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Contact_active, #Contact_first_name, #Contact_email').editable('getValue');
                 
                 // This is a bit risky as the user may select a different
@@ -1015,6 +1133,12 @@
                 text: 'Active'
             }],
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Contact_first_name, #Contact_last_name, #Contact_email').editable('getValue');
                 
                 // This is a bit risky as the user may select a different
@@ -1059,6 +1183,12 @@
         $('#Contact_email').editable({
             params: params,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Contact_active, #Contact_first_name, #Contact_last_name').editable('getValue');
                 
                 // This is a bit risky as the user may select a different
@@ -1250,7 +1380,7 @@
                 arenaManagementView.endpoints.contact.updateRecord + '" ' +
                 'data-pk="' + contact.id + '" data-value="' + (contact.ext ? contact.ext : '') + '" ' +
                 'title="Phone extension" class="contact-editable">' +
-                (contact.ext ? contact.ext : 'Empty') + '</a></td></tr>';
+                (contact.ext ? contact.ext : '') + '</a></td></tr>';
         
         contactView += '<tr><td style="width:33%">Fax</td><td>' +
                 '<a href="#" id="Contact_fax" data-name="fax" ' +
@@ -1258,7 +1388,7 @@
                 arenaManagementView.endpoints.contact.updateRecord + '" ' +
                 'data-pk="' + contact.id + '" data-value="' + (contact.fax ? contact.fax : '') + '" ' +
                 'title="Ten digit fax number" class="contact-editable">' +
-                (contact.fax ? contact.fax : 'Empty') + '</a></td></tr>';
+                (contact.fax ? contact.fax : '') + '</a></td></tr>';
        
         contactView += '<tr><td style="width:33%">Fax Extension</td><td>' +
                 '<a href="#" id="Contact_fax_ext" data-name="fax_ext" ' +
@@ -1266,7 +1396,7 @@
                 arenaManagementView.endpoints.contact.updateRecord + '" ' +
                 'data-pk="' + contact.id + '" data-value="' + (contact.fax_ext ? contact.fax_ext : '') + '" ' +
                 'title="Fax extension" class="contact-editable">' +
-                (contact.fax_ext ? contact.fax_ext : 'Empty') + '</a></td></tr></tbody></table>';
+                (contact.fax_ext ? contact.fax_ext : '') + '</a></td></tr></tbody></table>';
         
         // Ok, now we can fade-out the current view, and then fade in our new
         // view!
@@ -1540,6 +1670,39 @@
             type: 'GET',
             dataType: 'json',
             success: function(result, status, xhr) {
+                // Its possible we will get a session timeout so check for it!
+                if (result.error && result.error === "LOGIN_REQUIRED")
+                {
+                    window.setTimeout(function () {
+                        $availableMS.removeAttr("disabled");
+                        $assignedMS.removeAttr("disabled");
+                        $assignedS.removeAttr("disabled");
+                        $newBtn.removeAttr("disabled");
+                        $deleteBtn.removeAttr("disabled");
+
+                        if($availableMS.val() > 0)
+                        {
+                            $assignBtn.removeAttr("disabled");
+                        }
+
+                        if($assignedMS.val() > 0)
+                        {
+                            $unassignBtn.removeAttr("disabled");
+                        }
+
+                        $assignedS.parent().find('#loading').remove();
+                        utilities.ajaxError.show(
+                                "Error",
+                                "Failed to load the contact",
+                                xhr,
+                                "error",
+                                "Login Required"
+                        );
+                    }, 1000);
+
+                    return;
+                }
+                    
                 // Contact has been loaded!
                 myParams.output = 'html';
                 
@@ -1695,7 +1858,36 @@
                     data: myParams,
                     type: 'POST',
                     dataType: 'html',
-                    success: function () {
+                    success: function(result, status, xhr) {
+                        // Its possible we will get a session timeout so check for it!
+                        var myjsonObj = false;
+                        try
+                        {
+                            myjsonObj = JSON.parse(result);
+                        }
+                        catch (err)
+                        {
+                            myjsonObj = false;
+                        }
+
+                        if (myjsonObj !== false)
+                        {
+                            window.setTimeout(function () {
+                                $locationS.removeAttr("disabled");
+                                $newBtn.removeAttr("disabled");
+                                $deleteBtn.removeAttr("disabled");
+                                utilities.ajaxError.show(
+                                        "Error",
+                                        "Failed to delete the venue",
+                                        xhr,
+                                        "error",
+                                        "Login Required"
+                                );
+                            }, 1000);
+
+                            return;
+                        }
+                    
                         // Remove the location from the list
                         $locationS.find('option[value="' + locationId + '"]').remove();
                         $locationS.val('none').trigger('change');
@@ -1789,6 +1981,9 @@
                    } else if(data && data.errors){ 
                        //server-side validation error, response like {"errors": {"username": "username already exist"} }
                        config.error.call(this, data.errors);
+                   } else if(data && data.error){ 
+                       //server-side validation error, response like {"errors": {"username": "username already exist"} }
+                       config.error.call(this, data.error);
                    }
                },
                error: function(errors) {
@@ -1843,6 +2038,12 @@
         $('#Location_name').editable({
             params: params,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var strStatus = $('#Location_status_id').text();
                 var strType = $('#Location_type_id').text();
                 
@@ -1875,6 +2076,12 @@
             showbuttons: false,
             source: arenaManagementView.locationStatuses,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Location_name').editable('getValue');
                 var strStatus = $('#Location_status_id').text();
                 var strType = $('#Location_type_id').text();
@@ -1904,6 +2111,12 @@
             showbuttons: false,
             source: arenaManagementView.locationTypes,
             success: function(response, newValue) {
+                if (typeof response !== 'undefined' && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired."
+                }
+            
                 var vals = $('#Location_name').editable('getValue');
                 var strStatus = $('#Location_status_id').text();
                 var strType = $('#Location_type_id').text();
@@ -2008,9 +2221,9 @@
                 '<a href="#" id="Location_external_id" data-name="external_id" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + location.external_id + '" ' +
+                'data-pk="' + location.id + '" data-value="' + (location.external_id ? location.external_id : '') + '" ' +
                 'title="Your Venue ID" class="location-editable">' +
-                location.external_id + '</a></td></tr>';
+                (location.external_id ? location.external_id : '') + '</a></td></tr>';
         
         locationView += '<tr><td style="width:33%">Tags</td><td>' +
                 '<a href="#" id="Location_tags" data-name="tags" ' +
@@ -2048,7 +2261,7 @@
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.length ? location.length : '') + '" ' +
                 'title="Venue length in feet" class="location-editable">' +
-                (location.length ? location.length : 'Empty') + '</a></td></tr>';
+                (location.length ? location.length : '') + '</a></td></tr>';
         
         locationView += '<tr><td style="width:33%">Width (ft)</td><td>' +
                 '<a href="#" id="Location_width" data-name="width" ' +
@@ -2056,7 +2269,7 @@
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.width ? location.width : '') + '" ' +
                 'title="Venue width in feet" class="location-editable">' +
-                (location.width ? location.width : 'Empty') + '</a></td></tr>';
+                (location.width ? location.width : '') + '</a></td></tr>';
         
         locationView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
                 '<a href="#" id="Location_radius" data-name="radius" ' +
@@ -2064,7 +2277,7 @@
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.radius ? location.radius : '') + '" ' +
                 'title="Venue readius in feet" class="location-editable">' +
-                (location.radius ? location.radius : 'Empty') + '</a></td></tr>';
+                (location.radius ? location.radius : '') + '</a></td></tr>';
         
         locationView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
                 '<a href="#" id="Location_seating" data-name="seating" ' +
@@ -2072,7 +2285,7 @@
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.seating ? location.seating : '') + '" ' +
                 'title="Venue seating capacity" class="location-editable">' +
-                (location.seating ? location.seating : 'Empty') + '</a></td></tr>';
+                (location.seating ? location.seating : '') + '</a></td></tr>';
 
         locationView += '</tbody></table>';
         
@@ -2082,21 +2295,21 @@
 
         locationView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
                 'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_description_edit">' +
-                '<span>[edit]</span></a></td><td><a href="#" id="Location_description" data-name="description" ' +
+                '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.description ? location.description : '') + '" ' +
                 'title="Venue Description" class="location-editable">' +
-                (location.description ? location.description : 'Empty') + '</a></td></tr>';
+                (location.description ? location.description : '') + '</div></td></tr>';
         
         locationView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
                 'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_notes_edit">' +
-                '<span>[edit]</span></a></td><td><a href="#" id="Location_notes" data-name="notes" ' +
+                '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
                 'data-pk="' + location.id + '" data-value="' + (location.notes ? location.notes : '') + '" ' +
                 'title="Venue Notes" class="location-editable">' +
-                (location.notes ? location.notes : 'Empty') + '</a></td></tr>';
+                (location.notes ? location.notes : '') + '</div></td></tr>';
         
         locationView += '</tbody></table>';
         
@@ -2231,17 +2444,17 @@
 
         locationView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
                 'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_description_edit">' +
-                '<span>[edit]</span></a></td><td><a href="#" id="Location_description" data-name="description" ' +
+                '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
                 'data-type="wysihtml5" data-toggle="manual" data-mode="inline" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Description" class="location-editable"></a></td></tr>';
+                'title="Venue Description" class="location-editable"></div></td></tr>';
         
         locationView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
                 'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_notes_edit">' +
-                '<span>[edit]</span></a></td><td><a href="#" id="Location_notes" data-name="notes" ' +
+                '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-toggle="manual" data-mode="inline" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Notes" class="location-editable"></a></td></tr>';
+                'title="Venue Notes" class="location-editable"></div></td></tr>';
         
         locationView += '</tbody></table>';
         
@@ -2348,6 +2561,25 @@
             type: 'GET',
             dataType: 'json',
             success: function(result, status, xhr) {
+                // Its possible we will get a session timeout so check for it!
+                if (result.error && result.error === "LOGIN_REQUIRED")
+                {
+                    window.setTimeout(function () {
+                        $locationS.removeAttr("disabled");
+                        $newBtn.removeAttr("disabled");
+                        $deleteBtn.removeAttr("disabled");
+                        utilities.ajaxError.show(
+                                "Error",
+                                "Failed to load the venue",
+                                xhr,
+                                "error",
+                                "Login Required"
+                        );
+                    }, 1000);
+
+                    return;
+                }
+                    
                 // Location has been loaded!
                 myParams.output = 'html';
                 
@@ -2362,7 +2594,7 @@
                 
                 utilities.ajaxError.show(
                         "Error",
-                        "Failed to load the contact",
+                        "Failed to load the venue",
                         xhr,
                         status,
                         errorThrown

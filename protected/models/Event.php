@@ -974,8 +974,8 @@ class Event extends RinkfinderActiveRecord
             
             $ret['items'][$i]['endpoint'] = CHtml::normalizeUrl(array(
                     'management/view',
-                    'model' => 'Event',
-                    'id' => $ret['items'][$i]['id'],
+                    'model' => 'Arena',
+                    'id' => $ret['items'][$i]['arena_id'],
                 )
             );
             
@@ -990,8 +990,8 @@ class Event extends RinkfinderActiveRecord
             if(is_numeric($ret['items'][$i]['location_id'])) {
                 $ret['items'][$i]['endpoint3'] = CHtml::normalizeUrl(array(
                         'management/view',
-                        'model' => 'Location',
-                        'id' => $ret['items'][$i]['location_id'],
+                        'model' => 'Arena',
+                        'id' => $ret['items'][$i]['arena_id'],
                     )
                 );
             }            
@@ -1013,6 +1013,8 @@ class Event extends RinkfinderActiveRecord
                             'management/view',
                             'model' => 'EventRequest',
                             'id' => $temp[$j],
+                            'aid' => $ret['items'][$i]['arena_id'],
+                            'eid' => $ret['items'][$i]['id']
                         )
                     );
                 }
