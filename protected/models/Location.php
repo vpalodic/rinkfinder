@@ -617,6 +617,7 @@ class Location extends RinkfinderActiveRecord
                     'management/view',
                     'model' => 'Location',
                     'id' => $ret['items'][$i]['id'],
+                    'aid' => $ret['items'][$i]['arena_id']
                 )
             );
             

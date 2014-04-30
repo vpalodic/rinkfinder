@@ -11,54 +11,41 @@
 
 <h2 class="sectionHeader">Management Dashboard</h2>
 <div id="managementContainer">
-    <div id="countsContainer" class="row-fluid accordion">
-        <div id="countsAccordionHeader" class="accordion-heading">
-            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
-               data-parent="countsContainer" href="#countsCollapse">
-                <h3 id="countsHeader">
-                    <i class="fa fa-list fa-lg"></i> Summary
-                </h3>
-            </a>
-            <br />
-        </div>
-        <div class="well well-small" style="display: inline-block;
-             overflow: auto; cursor: pointer">
-            <div id="reportrangeAll">
-                <span>
-                    <button id="reportrangeRefreshButton" class="btn btn-success">
-                        <i class="fa fa-refresh fa-lg"></i>
-                    </button>
-                </span>
-                <span id="reportrange">
-                    <i class="fa fa-calendar fa-lg"></i>
-                    <span id="reportrangeDate">
-                        <?php echo date("F j, Y", strtotime('-29 day')); ?> - 
-                        <?php echo date("F j, Y", strtotime('+29 day')); ?>
+    <div id="eventsContainer" class="row-fluid accordion">
+        <div class="accordion-heading">
+            <div class="well well-small" style="display: inline-block;
+                 overflow: auto; cursor: pointer">
+                <div id="reportrangeAll">
+                    <span id="reportrange">
+                        <i class="fa fa-calendar fa-lg"></i>
+                        <span id="reportrangeDate">
+                            <?php echo date("F j, Y", strtotime('-29 day')); ?> - 
+                            <?php echo date("F j, Y", strtotime('+29 day')); ?>
+                        </span>
+                        <b class="caret"></b>                    
                     </span>
-                    <b class="caret"></b>                    
-                </span>
-            </div> 
+                </div> 
+            </div>
+            <br />
+            <button id="reportrangeRefreshButton" class="btn btn-success">
+                <i class="fa fa-refresh fa-lg"></i>
+            </button>
+            <div id="eventsBadge" style="display: inline-block;">
+            </div>
+            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
+               data-parent="eventsContainer" href="#eventsCollapse"
+               style="display: inline-block;">
+                <h5 id="eventsHeader">Events</h5>
+            </a>
         </div>
-        <div id="countsCollapse" class="accordion-body collapse in">
+        <div id="eventsCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
-                <div class="row-fluid">
-                    <div id="requestsContainer" class="span4 accordion">
-                        <div class="accordion-heading">
-                            <div id="requestsBadge" style="display: inline-block;">
-                            </div>
-                            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
-                               data-parent="requestsContainer" href="#requestsCollapse"
-                               style="display: inline-block;">
-                                <h5 id="requestsHeader">Requests</h5>
-                            </a>
-                        </div>
-                        <div id="requestsCollapse" class="accordion-body collapse in">
-                            <div class="accordion-inner">
-                                <div id="requestsWell" class="well well-large">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div id="eventsWell" class="well well-small">
+                </div>
+            </div>
+        </div>
+    </div>
+<!--                <div class="row-fluid">
                     <div id="reservationsContainer" class="span4 accordion">
                         <div class="accordion-heading">
                             <div id="reservationsBadge" style="display: inline-block;">
@@ -72,42 +59,6 @@
                         <div id="reservationsCollapse" class="accordion-body collapse in">
                             <div class="accordion-inner">
                                 <div id="reservationsWell" class="well well-large">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="eventsContainer" class="span4 accordion">
-                        <div class="accordion-heading">
-                            <div id="eventsBadge" style="display: inline-block;">
-                            </div>
-                            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
-                               data-parent="eventsContainer" href="#eventsCollapse"
-                               style="display: inline-block;">
-                                <h5 id="eventsHeader">Events</h5>
-                            </a>
-                        </div>
-                        <div id="eventsCollapse" class="accordion-body collapse in">
-                            <div class="accordion-inner">
-                                <div id="eventsWell" class="well well-large">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row-fluid">
-                    <div id="arenasContainer" class="span4 accordion">
-                        <div class="accordion-heading">
-                            <div id="arenasBadge" style="display: inline-block;">
-                            </div>
-                            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
-                               data-parent="arenasContainer" href="#arenasCollapse"
-                               style="display: inline-block;">
-                                <h5 id="arenasHeader">Arenas</h5>
-                            </a>
-                        </div>
-                        <div id="arenasCollapse" class="accordion-body collapse in">
-                            <div class="accordion-inner">
-                                <div id="arenasWell" class="well well-large">
                                 </div>
                             </div>
                         </div>
@@ -146,24 +97,50 @@
                             </div>
                         </div>
                     </div>
+                </div> -->
+
+    <div id="requestsContainer" class="row-fluid accordion">
+        <div class="accordion-heading">
+            <button id="refreshRequestsButton" class="btn btn-success">
+                <i class="fa fa-refresh fa-lg"></i>
+            </button>
+            <div id="requestsBadge" style="display: inline-block;">
+            </div>
+            <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
+               data-parent="requestsContainer" href="#requestsCollapse"
+               style="display: inline-block;">
+                <h5 id="requestsHeader">Requests</h5>
+            </a>
+        </div>
+        <div id="requestsCollapse" class="accordion-body collapse in">
+            <div class="accordion-inner">
+                <div id="requestsWell" class="well well-small">
                 </div>
             </div>
         </div>
     </div>
-    <div id="operationsContainer" class="row-fluid accordion">
+
+    <div id="arenasContainer" class="row-fluid accordion">
         <div class="accordion-heading">
+            <button id="refreshArenasButton" class="btn btn-success">
+                <i class="fa fa-refresh fa-lg"></i>
+            </button>
+            <div id="arenasBadge" style="display: inline-block;">
+            </div>
             <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
-               data-parent="operationsContainer" href="#operationsCollapse">
-                <h3 id="operationsHeader">
-                    <i class="fa fa-list fa-lg"></i> Operations
-                </h3>
+               data-parent="arenasContainer" href="#arenasCollapse"
+               style="display: inline-block;">
+                <h5 id="arenasHeader">Arenas</h5>
             </a>
         </div>
-        <div id="operationsCollapse" class="accordion-body collapse in">
+        <div id="arenasCollapse" class="accordion-body collapse in">
             <div class="accordion-inner">
+                <div id="arenasWell" class="well well-small">
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <?php
@@ -188,7 +165,7 @@
             . 'management.dialogBox = "managementDataModal";'
             . 'management.editDialogBox = "managementEditDataModal";'
             . 'management.mainContainer = "managementContainer";'
-            . 'management.getCounts();'
+            . 'management.getEvents();'
             . '$(window).on("load",function(){ '
             . 'if( $(this).width() < 767 ) '
             . '{'

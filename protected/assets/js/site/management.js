@@ -245,7 +245,7 @@
         }
     };
     
-    management.getCounts = function () {
+    management.getEvents = function () {
         if (this.isLoading)
         {
             return;
@@ -262,9 +262,132 @@
             type: "GET",
             dataType: "json",
             data: {
-                model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                model: ["events"],
                 from: management.fromDate.format('YYYY-MM-DD'),
                 to: management.toDate.format('YYYY-MM-DD')
+            },
+            success: function(result, status, xhr) {
+                if (result.success === false)
+                {
+                    $spinner.toggleClass('fa-spin');
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        'Login Required'
+                    );
+                    return;
+                }
+
+                that.processCounts(result, status, xhr);
+                
+                window.setTimeout(function () {
+                    $spinner.toggleClass('fa-spin');
+                    that.isLoading = false;
+                },
+                1000
+                );
+        
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        errorThrown
+                        );
+                $spinner.toggleClass('fa-spin');
+                that.isLoading = false;
+            }
+        });
+
+        return true;
+    };
+    
+    management.getRequests = function () {
+        if (this.isLoading)
+        {
+            return;
+        }
+        
+        this.isLoading = true;
+        var that = this;
+        
+        var $spinner = $("#reportrangeRefreshButton i");
+        $spinner.toggleClass('fa-spin');
+
+        $.ajax({                        
+            url: that.endpoints.counts,
+            type: "GET",
+            dataType: "json",
+            data: {
+                //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                model: ["requests"]
+//                from: management.fromDate.format('YYYY-MM-DD'),
+//                to: management.toDate.format('YYYY-MM-DD')
+            },
+            success: function(result, status, xhr) {
+                if (result.success === false)
+                {
+                    $spinner.toggleClass('fa-spin');
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        'Login Required'
+                    );
+                    return;
+                }
+
+                that.processCounts(result, status, xhr);
+                
+                window.setTimeout(function () {
+                    $spinner.toggleClass('fa-spin');
+                    that.isLoading = false;
+                },
+                1000
+                );
+        
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        errorThrown
+                        );
+                $spinner.toggleClass('fa-spin');
+                that.isLoading = false;
+            }
+        });
+
+        return true;
+    };
+    
+    management.getArenas = function () {
+        if (this.isLoading)
+        {
+            return;
+        }
+        
+        this.isLoading = true;
+        var that = this;
+        
+        var $spinner = $("#reportrangeRefreshButton i");
+        $spinner.toggleClass('fa-spin');
+
+        $.ajax({                        
+            url: that.endpoints.counts,
+            type: "GET",
+            dataType: "json",
+            data: {
+                //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                model: ["arenas"]
             },
             success: function(result, status, xhr) {
                 if (result.success === false)
@@ -414,7 +537,7 @@
                 utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
                 management.fromDate = start;
                 management.toDate = end;
-                management.getCounts();
+                management.getEvents();
             }
         }
         );
@@ -424,8 +547,16 @@
             utilities.loadingScreen.containerId = "countsAccordionHeader";
             utilities.loadingScreen.image.enabled = true;
             utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
-            management.getCounts();
+            management.getEvents();
         });
+        
+        window.setTimeout(function () {
+            management.getArenas();
+        }, 3000);
+        
+        window.setTimeout(function () {
+            management.getRequests();
+        }, 10000);
     };
     
 }( window.management = window.management || {}, jQuery ));

@@ -2564,6 +2564,12 @@
                 // Its possible we will get a session timeout so check for it!
                 if (result.error && result.error === "LOGIN_REQUIRED")
                 {
+                    $locationS.removeAttr("disabled");
+                    $newBtn.removeAttr("disabled");
+                    $deleteBtn.removeAttr("disabled");
+                
+                    $locationS.parent().find('#loading').remove();
+                    
                     window.setTimeout(function () {
                         $locationS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");

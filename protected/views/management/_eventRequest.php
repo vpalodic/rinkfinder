@@ -358,7 +358,10 @@
                                 <?php echo $data['item']['fields']['event_id']['label']; ?>
                             </td>
                             <td>
-                                <?php echo $data['item']['fields']['event_id']['value']; ?>
+                                <?php echo '<a target="_blank" ""href="' . $this->createUrl('/management/Event', array(
+                                    'id' => $data['item']['fields']['event_id']['value'],
+                                    'aid' => $data['item']['fields']['arena_id']['value']
+                                    )) . '">' . $data['item']['fields']['event_id']['value'] . '</a>'; ?>
                             </td>
                         </tr>
                         <?php if($data['item']['fields']['event_type_id']['hidden'] == true): ?>

@@ -65,10 +65,11 @@ class ManagementController extends Controller
             Yii::app()->end();
         }
         
-        if((!isset($_GET['model']) || !is_array($_GET['model'])) ||
-                (!isset($_GET['from']) || !strtotime($_GET['from'])) || 
-                (!isset($_GET['to']) || !strtotime($_GET['to'])) ||
-                (strtotime($_GET['from']) > strtotime($_GET['to']))) {
+        $model = isset($_GET['model']) && is_array($_GET['model']) && count($_GET['model']) > 0 ? $_GET['model'] : null;
+        $from = isset($_GET['from']) && strtotime($_GET['from']) ? $_GET['from'] : null;
+        $to = isset($_GET['to']) && strtotime($_GET['to']) ? $_GET['to'] : null;
+        
+        if(is_null($model)) {
             $this->sendResponseHeaders(400, 'json');
             echo json_encode(
                     array(
@@ -79,12 +80,9 @@ class ManagementController extends Controller
             Yii::app()->end();
         }        
 
-        // Parameters are valid so save them off!
-        $model = $_GET['model'];
-        $from = $_GET['from'];
-        $to = $_GET['to'];
-        
+        // Always save the currently logged in user
         $user = Yii::app()->user->model;
+        
         $dashData = null;
         
         try {
