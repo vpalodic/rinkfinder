@@ -629,7 +629,7 @@ class ArenaController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -879,7 +879,7 @@ class ArenaController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -1008,7 +1008,7 @@ class ArenaController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -2082,7 +2082,7 @@ class ArenaController extends Controller
             }
             
             if($output == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;

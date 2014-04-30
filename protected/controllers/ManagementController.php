@@ -261,12 +261,8 @@ class ManagementController extends Controller
             Yii::app()->end();
         }
         
-        $model = null;
-        
         // Always restrict to the currently logged in user!
         $uid = Yii::app()->user->id;
-        
-        $data = null;
         
         // During the process of retrieving the arena model, we validate
         // that the user is authorized to view / update this arena!
@@ -420,9 +416,11 @@ class ManagementController extends Controller
             // We default to html!
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
-            $this->pageTitle = Yii::app()->name . ' - Account & Profile!';
+            
+            $this->pageTitle = Yii::app()->name . ' - Facility Management - ' . $model->name;
             $this->breadcrumbs = array(
                 'Management' => array('/site/management'),
+                'Facilities' => array('/management/index', 'model' => 'arena'),
                 $model->name,
             );
 
@@ -445,6 +443,407 @@ class ManagementController extends Controller
         
                 $this->render(
                         "_arena",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 1
+                        ));
+            }
+        }
+    }
+    
+    protected function handleContactView($id, $outputFormat)
+    {
+        // We do not need to ensure that we have an Arena ID as this method
+        // is for loading a contact outside of an Arena context
+        
+        // Validate we have an Contact ID
+        if($id === null || $id < 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        
+        // Try and get the data!
+        try {
+            $sql = 'SELECT c.* '
+                    . 'FROM contact c '
+                    . 'WHERE c.id = :id '
+                    . 'ORDER BY last_name ASC, first_name ASC';
+        
+
+            $model = Contact::model()->findBySql($sql, array(':id' => $id));
+            
+            if($model === null) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(404, 'Contact not found');
+                }
+
+                $this->sendResponseHeaders(404, 'json');
+                
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Contact not found',
+                        )
+                );
+                Yii::app()->end();
+            }
+
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        $params = array(
+            'endpoints' => array(
+                'contact' => array(
+                    'new' => Yii::app()->createUrl('/contact/createContact'),
+                    'update' => Yii::app()->createUrl('/contact/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/contact/view'),
+                    'delete' => Yii::app()->createUrl('/contact/deleteContact')
+                )
+            ),
+            'data' => array(
+                'id' => $model->id,
+                'get_assigned' => 1,
+                'get_available' => 1,
+                'output' => 'json'
+            )
+        );
+            
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => array(
+                            'model' => $model,
+                            'params' => $params
+                        )
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('model' => $model, 'params' => $params), "details", "contact");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Contact Management - ' . $model->first_name . ' ' . $model->last_name;
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Contacts' => array('/management/index', 'model' => 'contact'),
+                $model->first_name . ' ' . $model->last_name
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_contact",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 0
+                        ));
+            } else {
+                $this->registerManagementScripts();
+        
+                $this->render(
+                        "_contact",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 1
+                        ));
+            }
+        }
+    }
+    
+    protected function handleLocationView($id, $outputFormat)
+    {
+        // We need to ensure that we have an Arena ID
+        // We need this to ensure that the model isn't being edited/viewed out
+        // of context!
+        
+        $aid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid']) && $_GET['aid'] > 0) {
+            $aid = $_GET['aid'];
+        }
+        
+        // Validate we have an Arena ID and Location ID
+        if($id === null || $id < 0 || $aid === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        
+        // During the process of retrieving the location model, we validate
+        // that the user is authorized to view / update this location!
+
+        // Try and get the data!
+        try {
+            // First validate the user is authorized
+            $arena = $this->loadArenaModel($id, $outputFormat, false);
+            
+            if(!$arena->isUserAssigned($uid)) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
+
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
+            
+            $sql = 'SELECT l.*, a.name AS arena_name, s.display_name AS status, t.display_name AS type '
+                    . 'FROM location l '
+                    . 'INNER JOIN arena a '
+                    . 'ON l.arena_id = a.id AND l.id = :id AND a.id = :aid '
+                    . 'INNER JOIN location_status s '
+                    . 'ON l.status_id = s.id '
+                    . 'INNER JOIN location_type t '
+                    . 'ON l.type_id = t.id '
+                    . 'ORDER BY l.name ASC';
+        
+
+            $model = Location::model()->findBySql($sql, array(':id' => $id, ':aid' => $aid));
+            
+            if($model === null) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(404, 'Location not found');
+                }
+
+                $this->sendResponseHeaders(404, 'json');
+                
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Location not found',
+                        )
+                );
+                Yii::app()->end();
+            }
+
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        $params = array(
+            'endpoints' => array(
+                'location' => array(
+                    'new' => Yii::app()->createUrl('/location/createLocation'),
+                    'update' => Yii::app()->createUrl('/location/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/location/view'),
+                    'delete' => Yii::app()->createUrl('/location/deleteLocation')
+                )
+            ),
+            'data' => array(
+                'id' => $model->id,
+                'output' => 'json',
+                'aid' => $model->arena_id
+            )
+        );
+            
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => array(
+                            'model' => $model,
+                            'params' => $params
+                        )
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('model' => $model, 'params' => $params), "details", "location");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Venue Management - ' . $model->name;
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Venues' => array('/management/index', 'model' => 'location'),
+                $model->name
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_location",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => false,
+                            'path' => $path,
+                            'doReady' => 0
+                        ));
+            } else {
+                $this->registerManagementScripts();
+        
+                $this->render(
+                        "_location",
                         array(
                             'model' => $model,
                             'params' => $params,
@@ -580,6 +979,17 @@ class ManagementController extends Controller
             // We default to html!
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Event Request Management - #' . $model->id;
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Event Requests' => array('/management/index', 'model' => 'eventRequest'),
+                'Event Request #' . $model->id
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
                         "_eventRequest",
@@ -778,7 +1188,16 @@ class ManagementController extends Controller
         } else {
             // We default to html!
             // Publish and register our jQuery plugin
-            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Facility Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Facilities'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
 
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
@@ -899,6 +1318,15 @@ class ManagementController extends Controller
             // We default to html!
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            $this->pageTitle = Yii::app()->name . ' - Contact Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Contacts'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
 
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
@@ -1035,6 +1463,15 @@ class ManagementController extends Controller
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
 
+            $this->pageTitle = Yii::app()->name . ' - Event Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Events'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
                         "_index",
@@ -1170,6 +1607,15 @@ class ManagementController extends Controller
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
 
+            $this->pageTitle = Yii::app()->name . ' - Event Request Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Event Requests'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
                         "_index",
@@ -1300,6 +1746,15 @@ class ManagementController extends Controller
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
 
+            $this->pageTitle = Yii::app()->name . ' - Reservation Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Reservations'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(
                         "_index",
@@ -1424,6 +1879,15 @@ class ManagementController extends Controller
             // We default to html!
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));            
+
+            $this->pageTitle = Yii::app()->name . ' - Venue Management';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Venues'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
 
             if(Yii::app()->request->isAjaxRequest) {
                 $this->renderPartial(

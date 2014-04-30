@@ -10,9 +10,6 @@
      * @var $params []
      */
 
-?>
-
-<?php
     $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
 ?>
 

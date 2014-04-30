@@ -760,7 +760,7 @@ class EventRequestController extends Controller
                     }
                     
                     if($outputFormat == "html" || $outputFormat == "xml") {
-                        throw new CHttpException(500, "Internal Server Error");
+                        throw new CHttpException(500, $ex->getMessage());
                     }
                     
                     $errorInfo = null;
@@ -896,7 +896,7 @@ class EventRequestController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -1182,7 +1182,7 @@ class EventRequestController extends Controller
             }
                     
             if($params['output'] == "html" || $params['output'] == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;

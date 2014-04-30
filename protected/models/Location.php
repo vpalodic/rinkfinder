@@ -6,6 +6,7 @@
  * The followings are the available columns in table 'location':
  * @property integer $id
  * @property integer $arena_id
+ * @property string $arena_name
  * @property string $external_id
  * @property string $name
  * @property string $description
@@ -40,6 +41,7 @@ class Location extends RinkfinderActiveRecord
 {
     public $type = '';
     public $status = '';
+    public $arena_name = '';
     /**
      * @var string $oldTags
      */

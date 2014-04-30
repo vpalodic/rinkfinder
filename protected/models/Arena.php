@@ -2362,4 +2362,67 @@ class Arena extends RinkfinderActiveRecord
             );
         }
     }
+    
+    /**
+     * Returns an array of arenas not assigned to the passed in contact
+     * @param integer $cid The Contact ID to get the list for
+     * @param integer $$uid The User to restrict the results by
+     * @return array[] the array of contacts
+     * @throws CDbException
+     */
+    public static function getAvailableAssignedForContact($cid, $uid)
+    {
+        $sql = 'SELECT a.id, a.name, a.city, a.state, s.display_name AS status '
+                . 'FROM arena a '
+                . 'INNER JOIN arena_status s '
+                . 'ON a.status_id = s.id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id AND aua.user_id = :uid '
+                . 'WHERE a.id NOT IN (SELECT DISTINCT aca.arena_id '
+                . '                   FROM arena_contact_assignment aca '
+                . '                   WHERE aca.contact_id = :cid) ';
+        
+        $sql .= 'ORDER BY a.name ASC, a.city ASC, a.state ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':cid', (integer)$cid, PDO::PARAM_INT);
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns an array of arenas assigned to the passed in contact
+     * @param integer $cid The Contact ID to get the list for
+     * @param integer $$uid The User to restrict the results by
+     * @return array[] the array of contacts
+     * @throws CDbException
+     */
+    public static function getAssignedAssignedForContact($cid, $uid)
+    {
+        $sql = 'SELECT a.id, a.name, a.city, a.state, s.display_name AS status '
+                . 'FROM arena a '
+                . 'INNER JOIN arena_status s '
+                . 'ON a.status_id = s.id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id AND aua.user_id = :uid '
+                . 'WHERE a.id IN (SELECT DISTINCT aca.arena_id '
+                . '               FROM arena_contact_assignment aca '
+                . '               WHERE aca.contact_id = :cid) ';
+        
+        $sql .= 'ORDER BY a.name ASC, a.city ASC, a.state ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':cid', (integer)$cid, PDO::PARAM_INT);
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
 }

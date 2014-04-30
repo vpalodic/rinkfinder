@@ -75,6 +75,8 @@ class ContactController extends Controller
          // We only view via GET requests!
         $id = isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id'] > 0 ? (integer)$_GET['id'] : 0;
         $aid = isset($_GET['aid']) && is_numeric($_GET['aid']) && $_GET['aid'] > 0 ? (integer)$_GET['aid'] : 0;
+        $get_available = isset($_POST['get_available']) && is_numeric($_POST['get_available']) && $_POST['get_available'] > 0 ? (integer)$_POST['get_available'] : 0;
+        $get_assigned = isset($_POST['$get_assigned']) && is_numeric($_POST['$get_assigned']) && $_POST['$get_assigned'] > 0 ? (integer)$_POST['$get_assigned'] : 0;
         
         // Verify we have a valid ID!
         if($id <= 0) {
@@ -95,6 +97,9 @@ class ContactController extends Controller
         
         // Try and get the data!
         try {
+            $assignedArenas = null;
+            $availableArenas = null;
+            
             if($aid > 0) {
                 $sql = 'SELECT c.*, aca.primary_contact '
                         . 'FROM contact c '
@@ -125,6 +130,9 @@ class ContactController extends Controller
                 $model = $this->loadModel($id, $outputFormat);
                 
                 $attributes = $model->attributes;
+                
+                $availableArenas = Arena::getAvailableAssignedForContact($model->id, Yii::app()->user->id);
+                $assignedArenas = Arena::getAssignedAssignedForContact($model->id, Yii::app()->user->id);                
             }
             
             // Data has been retrieved or else we would have thrown an exception
@@ -136,6 +144,8 @@ class ContactController extends Controller
                             'success' => true,
                             'error' => false,
                             'data' => $attributes,
+                            'availableArenas' => $availableArenas,
+                            'assignedArenas' => $assignedArenas
                         )
                 );
                 
@@ -143,7 +153,7 @@ class ContactController extends Controller
             } elseif($outputFormat == 'xml') {
                 $this->sendResponseHeaders(200, 'xml');
             
-                $xml = Controller::generate_valid_xml_from_array($attributes, "view", "contact");
+                $xml = Controller::generate_valid_xml_from_array(array($attributes, $assignedArenas, $availableArenas), "view", "contact");
                 echo $xml;
             
                 Yii::app()->end();
@@ -175,6 +185,8 @@ class ContactController extends Controller
                                 'aid' => $aid,
                                 'doReady' => false,
                                 'path' => $path,
+                                'availableArenas' => $availableArenas,
+                                'assignedArenas' => $assignedArenas
                             ));
                 } else {
                     $this->render(
@@ -184,6 +196,8 @@ class ContactController extends Controller
                                 'aid' => $aid,
                                 'doReady' => true,
                                 'path' => $path,
+                                'availableArenas' => $availableArenas,
+                                'assignedArenas' => $assignedArenas
                             ));
                 }
             }
@@ -281,9 +295,11 @@ class ContactController extends Controller
         
         // We only update via a POST and AJAX request!
         $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        $get_available = isset($_POST['get_available']) && is_numeric($_POST['get_available']) && $_POST['get_available'] > 0 ? (integer)$_POST['get_available'] : 0;
         
-        // Verify we have a valid ID!
-        if($aid <= 0) {
+        // Verify we have a valid ID! We need either an arena ID or we need
+        // to return the available arenas to assign the contact to.
+        if($aid <= 0 && get_available <= 0) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(400, 'Invalid parameters');
             }
@@ -302,22 +318,38 @@ class ContactController extends Controller
         // Always grab the currently logged in user's ID.
         $uid = Yii::app()->user->id;
         
-        // Load the Arena model and ensure that the user is assigned to it!
-        $arena = $this->loadArenaModel($aid, $outputFormat);
+        if($aid > 0) {
+            // Load the Arena model and ensure that the user is assigned to it!
+            $arena = $this->loadArenaModel($aid, $outputFormat);
         
-        // And that the user has permission to update it!
-        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
-            if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
-            }
+            // And that the user has permission to update it!
+            if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
             
-            $this->sendResponseHeaders(403, 'json');
-            echo json_encode(array(
-                    'success' => false,
-                    'error' => 'Permission denied. You are not authorized to perform this action.'
-                )
-            );
-            Yii::app()->end();
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
+        } else {
+            if(!Yii::app()->user->isRestrictedArenaManager()) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
+            
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
         }
         
         // We need to grab and validate the rest of our parameters from the request body
@@ -366,11 +398,17 @@ class ContactController extends Controller
                 Yii::app()->end();
             }
             
-            // Ok, we have added the contact, now assign it to the arena!
-            $arena->assignContacts($uid, $model->id);
+            $availableArenas = array();
             
-            if($model->primary_contact == 1) {
-                $model->makePrimaryContact($uid, $arena->id);
+            if($aid > 0) {
+                // Ok, we have added the contact, now assign it to the arena!
+                $arena->assignContacts($uid, $model->id);
+            
+                if($model->primary_contact == 1) {
+                    $model->makePrimaryContact($uid, $arena->id);
+                }
+            } else {
+                $availableArenas = Arena::getAvailableAssignedForContact($model->id, Yii::app()->user->id);
             }
             
             if($outputFormat == "html") {
@@ -380,7 +418,8 @@ class ContactController extends Controller
                 $xmlout = array(
                     'success' => 'true',
                     'error' => 'false',
-                    'id' => $model->id
+                    'id' => $model->id,
+                    'availableArenas' => $availableArenas
                 );
                 
                 $this->sendResponseHeaders(200, 'xml');
@@ -394,7 +433,8 @@ class ContactController extends Controller
                         array(
                             'success' => true,
                             'error' => false,
-                            'id' => $model->id
+                            'id' => $model->id,
+                            'availableArenas' => $availableArenas
                         )
                 );
                 Yii::app()->end();
@@ -404,7 +444,7 @@ class ContactController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -486,9 +526,7 @@ class ContactController extends Controller
         // Default to HTML output!
         $outputFormat = "html";
         
-        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
-            $outputFormat = $_GET['output'];
-        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
             $outputFormat = $_POST['output'];
         }
         
@@ -496,6 +534,8 @@ class ContactController extends Controller
         $id = isset($_POST['id']) && is_numeric($_POST['id']) && $_POST['id'] > 0 ? (integer)$_POST['id'] : 0;
         $pk = isset($_POST['pk']) && is_numeric($_POST['pk']) && $_POST['pk'] > 0 ? (integer)$_POST['pk'] : 0;
         $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        $get_available = isset($_POST['get_available']) && is_numeric($_POST['get_available']) && $_POST['get_available'] > 0 ? (integer)$_POST['get_available'] : 0;
+        $get_assigned = isset($_POST['$get_assigned']) && is_numeric($_POST['$get_assigned']) && $_POST['$get_assigned'] > 0 ? (integer)$_POST['$get_assigned'] : 0;
         
         if($id == 0) {
             // Work around an editable side-effect after adding a new record.
@@ -503,7 +543,7 @@ class ContactController extends Controller
         }
         
         // Verify we have a valid ID!
-        if($aid <= 0 || $id <= 0 || $pk <= 0 || $id !== $pk) {
+        if($id <= 0 || $pk <= 0 || $id !== $pk) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(400, 'Invalid parameters');
             }
@@ -519,26 +559,41 @@ class ContactController extends Controller
             Yii::app()->end();
         }
         
-        
         // Always grab the currently logged in user's ID.
         $uid = Yii::app()->user->id;
         
-        // Load the Arena model and ensure that the user is assigned to it!
-        $arena = $this->loadArenaModel($aid, $outputFormat);
+        if($aid > 0) {
+            // Load the Arena model and ensure that the user is assigned to it!
+            $arena = $this->loadArenaModel($aid, $outputFormat);
         
-        // And that the user has permission to update it!
-        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
-            if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
-            }
+            // And that the user has permission to update it!
+            if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
             
-            $this->sendResponseHeaders(403, 'json');
-            echo json_encode(array(
-                    'success' => false,
-                    'error' => 'Permission denied. You are not authorized to perform this action.'
-                )
-            );
-            Yii::app()->end();
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
+        } else {
+            if(!Yii::app()->user->isRestrictedArenaManager()) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
+            
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
         }
         
         // We need to grab and validate the rest of our parameters from the request body
@@ -547,6 +602,7 @@ class ContactController extends Controller
         // Grab the remaining parameters!
         $name = isset($_POST['name']) ? $_POST['name'] : null;
         $value = isset($_POST['value']) ? $_POST['value'] : null;
+        $aids = isset($_POST['aids']) ? $_POST['aids'] : null;
 
         // Validate our remaining parameters!
         if($name === null) {
@@ -569,8 +625,12 @@ class ContactController extends Controller
         // it is time to validate and then update the value!
         if($name == 'assign' || $name == 'unassign') {
             
-            if(is_array($value) && count($value) > 0) {
+            if((is_array($value) && count($value) > 0 && $aid > 0) || (is_array($aids) && count($aids) > 0)) {
                 $valid = 1;
+                
+                if($aid <= 0 ) {
+                    $model = $this->loadModel($id, $outputFormat);
+                }
             } else {
                 if($outputFormat == "html" || $outputFormat == "xml") {
                     throw new CHttpException(400, 'Invalid parameters');
@@ -629,42 +689,82 @@ class ContactController extends Controller
             // assigned to the arena. If it affects zero rows, then the user
             // wasn't authorized and we will throw a 403 error!
             if($name == 'assign') {
-                if(!$arena->assignContacts($uid, $value)) {
-                    $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
+                if(is_array($value) && count($value) > 0 && isset($arena) && !is_null($arena)) {
+                    if(!$arena->assignContacts($uid, $value)) {
+                        $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
 
-                    if($outputFormat == "html" || $outputFormat == "xml") {
-                        throw new CHttpException(400, $output);
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, $output);
+                        }
+
+                        $this->sendResponseHeaders(400, 'json');
+
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => json_encode($output),
+                                )
+                        );
+                        Yii::app()->end();
                     }
+                } elseif (is_array($aids) && count($aids) > 0) {
+                    if(!$model->assignArenas($uid, $aids)) {
+                        $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
 
-                    $this->sendResponseHeaders(400, 'json');
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, $output);
+                        }
 
-                    echo json_encode(
-                            array(
-                                'success' => false,
-                                'error' => json_encode($output),
-                            )
-                    );
-                    Yii::app()->end();
+                        $this->sendResponseHeaders(400, 'json');
+
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => json_encode($output),
+                                )
+                        );
+                        Yii::app()->end();
+                    }
                 }
             } elseif($name == 'unassign') {
-                if(!$arena->unassignContacts($uid, $value)) {
-                    $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
+                if(is_array($value) && count($value) > 0 && isset($arena) && !is_null($arena)) {
+                    if(!$arena->unassignContacts($uid, $value)) {
+                        $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
 
-                    if($outputFormat == "html" || $outputFormat == "xml") {
-                        throw new CHttpException(400, $output);
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, $output);
+                        }
+
+                        $this->sendResponseHeaders(400, 'json');
+
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => json_encode($output),
+                                )
+                        );
+                        Yii::app()->end();
                     }
+                } elseif (is_array($aids) && count($aids) > 0) {
+                    if(!$model->unassignArenas($uid, $aids)) {
+                        $output = 'Failed to save record as the update was either unauthorized or because too many rows would be updated.';
 
-                    $this->sendResponseHeaders(400, 'json');
+                        if($outputFormat == "html" || $outputFormat == "xml") {
+                            throw new CHttpException(400, $output);
+                        }
 
-                    echo json_encode(
-                            array(
-                                'success' => false,
-                                'error' => json_encode($output),
-                            )
-                    );
-                    Yii::app()->end();
+                        $this->sendResponseHeaders(400, 'json');
+
+                        echo json_encode(
+                                array(
+                                    'success' => false,
+                                    'error' => json_encode($output),
+                                )
+                        );
+                        Yii::app()->end();
+                    }
                 }
-            } elseif($name == "primary_contact") { 
+            } elseif($name == "primary_contact"  && isset($arena) && !is_null($arena)) { 
                 // We either make the contact a primary or not
                 // If we make it the primary, all other contacts are
                 // removed as primary as there can be only one!
@@ -726,7 +826,7 @@ class ContactController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;
@@ -859,7 +959,7 @@ class ContactController extends Controller
                 throw $ex;
             }
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(500, "Internal Server Error");
+                throw new CHttpException(500, $ex->getMessage());
             }
 
             $errorInfo = null;

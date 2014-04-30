@@ -691,4 +691,156 @@ class Contact extends RinkfinderActiveRecord
             );
         }
     }
+
+    /**
+     * Returns true if the contact was assigned and false if not
+     * @param integer $uid The user making the update.
+     * @param integer[] $aids The array of arenas to assign the contact to.
+     * @return boolean true if the assignment succeeded.
+     * @throws CDbException
+     */
+    public function assignArenas($uid, $aids)
+    {
+        $count = count($aids);
+        
+        if($count <= 0) {
+            return false;
+        }
+        
+        if(!is_array($aids)) {
+            $aids = array($aids);
+        }
+        
+        $sql = 'INSERT INTO arena_contact_assignment '
+                . '(contact_id, arena_id, primary_contact, created_by_id, created_on, '
+                . 'updated_by_id, updated_on) '
+                . 'VALUES ';
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $sql .= '(:cid, :aid' . $i . ', 0, :uid, NOW(), :uid, NOW())';
+            } else {
+                $sql .= '(:cid, :aid' . $i . ', 0, :uid, NOW(), :uid, NOW()), ';
+            }
+        }
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':cid', (integer)$this->id, PDO::PARAM_INT);
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':aid' . $i, (integer)$aids[$i], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->execute();
+        
+            if($ret != $count) {
+                // Something bad happened so we will roll back the transaction
+                $transaction->rollback();
+                return false;
+            }
+            
+            $transaction->commit();
+            return true;
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+    }
+    
+    /**
+     * Returns true if the contact was unassigned and false if not
+     * @param integer $uid The user making the update.
+     * @param integer[] $aids The array of arenas to unassign the contact to.
+     * @return boolean true if the unassignment succeeded.
+     * @throws CDbException
+     */
+    public function unassignArenas($uid, $aids)
+    {
+        $count = count($aids);
+        
+        if($count <= 0) {
+            return false;
+        }
+        
+        if(!is_array($aids)) {
+            $aids = array($aids);
+        }
+        
+        $sql = 'DELETE FROM arena_contact_assignment '
+                . 'WHERE contact_id = :cid '
+                . 'AND arena_id IN ( ';
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $sql .= ':aid' . $i . ')';
+            } else {
+                $sql .= ':aid' . $i . ', ';
+            }
+        }
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':cid', (integer)$this->id, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':aid' . $i, (integer)$aids[$i], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->execute();
+        
+            if($ret != $count) {
+                // Something bad happened so we will roll back the transaction
+                $transaction->rollback();
+                return false;
+            }
+            
+            $transaction->commit();
+            return true;
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+    }
 }
