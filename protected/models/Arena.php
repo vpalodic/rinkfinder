@@ -996,7 +996,7 @@ class Arena extends RinkfinderActiveRecord
                 . "a.url, "
                 . "a.notes, "
                 . "(SELECT s.display_name FROM arena_status s WHERE s.id = a.status_id) AS status, "
-                . "(SELECT COUNT(DISTINCT aua.user_id) FROM arena_user_assignment aua WHERE aua.arena_id = a.id) AS managers, "
+                . "(SELECT COUNT(DISTINCT aua.user_id) FROM arena_user_assignment aua INNER JOIN auth_assignment aa ON aua.user_id = aa.userid AND aa.itemname IN ('Manager', 'RestrictedManager') WHERE aua.arena_id = a.id) AS managers, "
                 . "(SELECT COUNT(DISTINCT l.id) FROM location l WHERE l.arena_id = a.id) AS locations, "
                 . "(SELECT COUNT(DISTINCT aca.contact_id) FROM arena_contact_assignment aca WHERE aca.arena_id = a.id) AS contacts, "
                 . "(SELECT COUNT(DISTINCT arp.id) FROM arena_reservation_policy arp WHERE arp.arena_id = a.id) AS reservation_policies, "

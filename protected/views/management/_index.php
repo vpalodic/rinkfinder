@@ -12,13 +12,9 @@
      * 
      */
 ?>
-<?php
-    if((integer)$data['count'] == 0) {
-         echo '<h3 class="sectionSubHeader">No Records Found!</h3>';
-         Yii::app()->end();
-    }
-?>
-
+<?php if((integer)$data['count'] == 0) : ?>
+    <h3 class="sectionSubHeader">No Records Found!</h3>
+<?php else: ?>
 <form class="form-search">
     <div class="input-prepend">
         <span class="add-on">Search</span>
@@ -205,4 +201,5 @@
     _index.onReady();
 });
 </script>
+<?php endif; ?>
 <?php endif; ?>
