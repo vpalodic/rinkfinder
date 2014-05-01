@@ -23,7 +23,7 @@
                             Email Address: <b><a href="mailto:<?php echo $requester['email']; ?>"><?php echo $requester['email']; ?></a></b>
                         </li>
                         <li>
-                            Phone Number: <b><?php echo $requester['phone']; ?></b>
+                            Phone Number: <b><?php echo RinkfinderActiveRecord::format_telephone($requester['phone']); ?></b>
                         </li>
                         <li>
                             Request Type: <b><?php echo $requestType; ?></b>

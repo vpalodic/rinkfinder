@@ -16,8 +16,10 @@
 <?php
     // We are going to grab two lists of arenas for the list views
     // We need the arena name and id, along with the city, state, and status
+if(!isset($newRecord) || !$newRecord) {
     $availableArenas = Arena::getAvailableAssignedForContact($model->id, Yii::app()->user->id);
     $assignedArenas = Arena::getAssignedAssignedForContact($model->id, Yii::app()->user->id);
+}
 ?>
 <div id="contactManagementView" class="panel panel-primary">
     <div class="panel-heading">
@@ -32,11 +34,13 @@
                 <select id="availableContactsMSelect"
                         multiple
                         class="span12">
+                    <?php if(!isset($newRecord) || !$newRecord) : ?>
                     <?php foreach($availableArenas as $aav) : ?>
                     <option value="<?php echo $aav['id']; ?>">
                        <?php echo $aav['name'] . ', ' . $aav['city'] . ', ' . $aav['state'] . ' (' . $aav['status'] . ')'; ?>
                     </option>
                     <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
             <div class="span6">
@@ -44,11 +48,13 @@
                 <select id="assignedContactsMSelect"
                         multiple
                         class="span12">
+                    <?php if(!isset($newRecord) || !$newRecord) : ?>
                     <?php foreach($assignedArenas as $aa) : ?>
                     <option value="<?php echo $aa['id']; ?>">
                         <?php echo $aa['name'] . ', ' . $aa['city'] . ', ' . $aa['state'] . ' (' . $aa['status'] . ')'; ?>
                     </option>
                     <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
         </div>
@@ -87,9 +93,11 @@
                 <select id="assignedContactsSelect"
                         class="span12">
                     <option value="none"></option>
+                    <?php if(!isset($newRecord) || !$newRecord) : ?>
                     <option value="<?php echo $model->id; ?>"  selected="selected">
                         <?php echo $model->last_name . ', ' . $model->first_name . ' - ' . $model->email . ($model->active == 1 ? ' (Active)' : ' (Inactive)'); ?>
                     </option>
+                    <?php endif; ?>
                 </select>
             </div>
         </div>
@@ -161,9 +169,12 @@
             . 'contactManagementView.endpoints.contact.updateRecord = "' . $params['endpoints']['contact']['update'] . '";'
             . 'contactManagementView.endpoints.contact.viewRecord = "' . $params['endpoints']['contact']['view'] . '";'
             . 'contactManagementView.endpoints.contact.deleteRecord = "' . $params['endpoints']['contact']['delete'] . '";'
-            . 'contactManagementView.params = ' . json_encode($params['data']) . ';'
-            . 'contactManagementView.contact = ' . json_encode($model->attributes) . ';'
-            . 'contactManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
+            . 'contactManagementView.params = ' . json_encode($params['data']) . ';';
+    if(!isset($newRecord) || !$newRecord) {
+        $myScript .= 'contactManagementView.contact = ' . json_encode($model->attributes) . ';';
+    }
+    
+    $myScript .= 'contactManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
             . 'contactManagementView.Id = ' . (integer)Yii::app()->user->id . ';'
             . 'contactManagementView.Name = "' . Yii::app()->user->fullName . '";'
             . 'contactManagementView.onReady();';
@@ -213,7 +224,9 @@ $(document).ready(function() {
                 contactManagementView.endpoints.contact.viewRecord = "<?php echo $params['endpoints']['contact']['view']; ?>";
                 contactManagementView.endpoints.contact.deleteRecord = "<?php echo $params['endpoints']['contact']['delete']; ?>";
                 contactManagementView.params = <?php echo json_encode($params['data']); ?>;
+                <?php if(!isset($newRecord) || !$newRecord) : ?>
                 contactManagementView.contact = <?php echo json_encode($model->attributes); ?>;
+                <?php endif; ?>
                 contactManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
                 contactManagementView.Id = <?php echo Yii::app()->user->id; ?>;
                 contactManagementView.Name = "<?php echo Yii::app()->user->fullName; ?>";
@@ -230,7 +243,9 @@ $(document).ready(function() {
         contactManagementView.endpoints.contact.viewRecord = "<?php echo $params['endpoints']['contact']['view']; ?>";
         contactManagementView.endpoints.contact.deleteRecord = "<?php echo $params['endpoints']['contact']['delete']; ?>";
         contactManagementView.params = <?php echo json_encode($params['data']); ?>;
+        <?php if(!isset($newRecord) || !$newRecord) : ?>
         contactManagementView.contact = <?php echo json_encode($model->attributes); ?>;
+        <?php endif; ?>
         contactManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
         contactManagementView.Id = <?php echo Yii::app()->user->id; ?>;
         contactManagementView.Name = "<?php echo Yii::app()->user->fullName; ?>";

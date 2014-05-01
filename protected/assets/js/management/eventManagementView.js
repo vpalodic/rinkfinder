@@ -5,11 +5,11 @@
  * @package app.assets.js
  */
 
-(function ( locationManagementView, $, undefined ) {
+(function ( eventManagementView, $, undefined ) {
     "use strict";
     // public properties
-    locationManagementView.endpoints = {
-        location: {
+    eventManagementView.endpoints = {
+        event: {
             viewRecord: "/server/endpoint",
             updateRecord: "/server/endpoint",
             newRecord: "/server/endpoint",
@@ -17,31 +17,31 @@
         }
     };
     
-    locationManagementView.location = {};
-    locationManagementView.locationTypes = [];
-    locationManagementView.locationStatuses = [];
-    locationManagementView.params = {};
-    locationManagementView.isArenaManager = false;
-    locationManagementView.Id = 0;
-    locationManagementView.Name = '';
+    eventManagementView.event = {};
+    eventManagementView.eventTypes = [];
+    eventManagementView.eventStatuses = [];
+    eventManagementView.params = {};
+    eventManagementView.isArenaManager = false;
+    eventManagementView.Id = 0;
+    eventManagementView.Name = '';
     
-    locationManagementView.onReady = function () {
+    eventManagementView.onReady = function () {
         if (typeof $.fn.editable === "undefined")
         { 
-            locationManagementView.loadEditable();
+            eventManagementView.loadEditable();
         }
         else
         {
-            locationManagementView.setupInitialLocationView();
+            eventManagementView.setupInitialEventView();
         }
         
-        var $panel = $("#locationManagementView.panel.panel-primary");
+        var $panel = $("#eventManagementView.panel.panel-primary");
         
         if ($panel.length > 0)
         {
             $panel.on('destroyed', function () {
                 // We have been closed, so clean everything up!!!
-                var $editables = $("#locationManagementView.panel.panel-primary .editable");
+                var $editables = $("#eventManagementView.panel.panel-primary .editable");
                 
                 $editables.editable('destroy');
             });
@@ -50,7 +50,7 @@
         $('[data-toggle="tooltip"]').tooltip();
     };
     
-    locationManagementView.loadEditable = function () {
+    eventManagementView.loadEditable = function () {
         
         var scriptName = utilities.debug ? 'bootstrap-editable.js' : 'bootstrap-editable.min.js';
         
@@ -77,7 +77,7 @@
         var interval = setInterval(function () {
             if (typeof typeof $.fn.editable !== "undefined") {
                 clearInterval(interval);
-                locationManagementView.setupInitialLocationView();
+                eventManagementView.setupInitialEventView();
             } else if (console && console.log) {
                 console.log("Loading... " + scriptName);
             }
@@ -85,12 +85,12 @@
         
     };
     
-    locationManagementView.createDeleteModal = function () {
+    eventManagementView.createDeleteModal = function () {
         var modalBody = '<div id="deleteModal" class="well"><h3>Are you sure you want to ' +
             'permanently delete this item?</h3><p class="lead text-error">This operation ' +
             'cannot be undone and will also delete this item from any related ' +
-            'items. For example, deleting a location / venue will also delete ' +
-            'any events associated with that location / venue.</p></div>';
+            'items. For example, deleting a event / event will also delete ' +
+            'any events associated with that event / event.</p></div>';
     
         var modalFooter = '<button class="btn btn-large btn-danger" data-dismiss="' +
                 'modal" type="button" aria-hidden="true" id="yes"><i class="' +
@@ -102,44 +102,44 @@
         return utilities.modal.add('Confirm Action', modalBody, modalFooter, false, false);
     };
     
-    locationManagementView.setupInitialLocationView = function () {
+    eventManagementView.setupInitialEventView = function () {
         // Disable all buttons except the New button 
         // and hide the save / cancel buttons
         var that = this;
-        var $newBtn = $('#newLocationButton');
-        var $deleteBtn = $('#deleteLocationButton');
-        var $saveBtn = $('#saveLocationButton');
-        var $cancelBtn = $('#cancelLocationButton');
-        var $locationS = $('#locationsSelect');
+        var $newBtn = $('#newEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        var $saveBtn = $('#saveEventButton');
+        var $cancelBtn = $('#cancelEventButton');
+        var $eventS = $('#eventsSelect');
         
         $deleteBtn.attr("disabled", "disabled");
         $saveBtn.attr("disabled", "disabled").hide();
         $cancelBtn.attr("disabled", "disabled").hide();
         
         // Setup the select change handlers!
-        $locationS.on('change', function (e) {
+        $eventS.on('change', function (e) {
             // Get the selected options from the available select list
-            var $selected = $locationS.find('option:selected');
+            var $selected = $eventS.find('option:selected');
             
             if($selected.length > 0)
             {
                 // we have our selection, so clear the edit screen and
                 // load in the new contact
-                var locationId = $(this).val();
+                var eventId = $(this).val();
 
-                that.resetLocationView();
+                that.resetEventView();
                 
-                if(locationId == 'none')
+                if(eventId == 'none')
                 {
                     return;
                 }
                 
-                that.loadLocation(locationId);
+                that.loadEvent(eventId);
             }
             else
             {
                 // Nothing selected, so clear the edit screen
-                that.resetLocationView();
+                that.resetEventView();
             }
         });
         
@@ -147,15 +147,15 @@
         $newBtn.on('click', function (e) {
             e.preventDefault();
             
-            $locationS.attr("disabled", "disabled");
-            $locationS.val('none');
+            $eventS.attr("disabled", "disabled");
+            $eventS.val('none');
             
             var myParams = {
-                aid: locationManagementView.params.aid,
+                aid: eventManagementView.params.aid,
                 output: 'html'
             };
 
-            locationManagementView.setupNewLocationView(myParams);
+            eventManagementView.setupNewEventView(myParams);
             $newBtn.attr("disabled", "disabled");
             $deleteBtn.attr("disabled", "disabled");
         });
@@ -163,7 +163,7 @@
         $deleteBtn.on('click', function (e) {
             e.preventDefault();
             
-            var $modal = locationManagementView.createDeleteModal();
+            var $modal = eventManagementView.createDeleteModal();
             
             $modal.modal({
                 loading: false,
@@ -175,15 +175,15 @@
             // clicks. Specifically, we only care about the 'yes' button.
             $('button#yes').on('click', function (e) {
                 // They clicked yes and so now we must delete the contact!!!
-                var locationId = $locationS.val();
+                var eventId = $eventS.val();
                 
                 // We must disable everything and put up our spinner...
                 var spinner = '<div id="loading"' +
                     '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
                     'alt="Loading..." /></div>';
             
-                // Prepare to delete the location.
-                $locationS.attr("disabled", "disabled");
+                // Prepare to delete the event.
+                $eventS.attr("disabled", "disabled");
                 $newBtn.attr("disabled", "disabled");
                 $deleteBtn.attr("disabled", "disabled");
                 $saveBtn.attr("disabled", "disabled").hide();
@@ -192,16 +192,16 @@
                 // Show we are busy by appending the spinner to the assign button
                 $deleteBtn.parent().prepend(spinner);
             
-                // Now let's delete the location!!!
+                // Now let's delete the event!!!
                 var myParams = {
-                    aid: locationManagementView.params.id,
-                    id: locationId,
-                    pk: locationId,
+                    aid: eventManagementView.params.id,
+                    id: eventId,
+                    pk: eventId,
                     output: 'html'
                 };
                 
                 $.ajax({
-                    url: locationManagementView.endpoints.location.deleteRecord,
+                    url: eventManagementView.endpoints.event.deleteRecord,
                     data: myParams,
                     type: 'POST',
                     dataType: 'html',
@@ -220,12 +220,12 @@
                         if (myjsonObj !== false)
                         {
                             window.setTimeout(function () {
-                                $locationS.removeAttr("disabled");
+                                $eventS.removeAttr("disabled");
                                 $newBtn.removeAttr("disabled");
                                 $deleteBtn.removeAttr("disabled");
                                 utilities.ajaxError.show(
                                         "Error",
-                                        "Failed to delete the venue",
+                                        "Failed to delete the event",
                                         xhr,
                                         "error",
                                         "Login Required"
@@ -235,22 +235,22 @@
                             return;
                         }
                     
-                        // Remove the location from the list
-                        $locationS.find('option[value="' + locationId + '"]').remove();
-                        $locationS.val('none').trigger('change');
+                        // Remove the event from the list
+                        $eventS.find('option[value="' + eventId + '"]').remove();
+                        $eventS.val('none').trigger('change');
                         
-                        $locationS.removeAttr("disabled");
+                        $eventS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");
                         $deleteBtn.parent().find('#loading').remove();
                     },
                     error: function(xhr, status, errorThrown) {
-                        $locationS.removeAttr("disabled");
+                        $eventS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");
                         $deleteBtn.parent().find('#loading').remove();
                     
                         utilities.ajaxError.show(
                             "Error",
-                            "Failed to delete the venue",
+                            "Failed to delete the event",
                             xhr,
                             status,
                             errorThrown
@@ -268,8 +268,8 @@
                     '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
                     'alt="Loading..." /></div>';
             
-            // Prepare to create the new location
-            $locationS.attr("disabled", "disabled");
+            // Prepare to create the new event
+            $eventS.attr("disabled", "disabled");
             $newBtn.attr("disabled", "disabled");
             $deleteBtn.attr("disabled", "disabled");
             $saveBtn.attr("disabled", "disabled");
@@ -279,10 +279,10 @@
             $saveBtn.parent().prepend(spinner);
             
             // Ok, we are going for a ride here as we will send all of the
-            // values to the server at once to create the location.
+            // values to the server at once to create the event.
             // I hope all goes well ;-)
-            $('.location-editable').editable('submit', { 
-                url: locationManagementView.endpoints.location.newRecord, 
+            $('.event-editable').editable('submit', { 
+                url: eventManagementView.endpoints.event.newRecord, 
                 ajaxOptions: {
                     dataType: 'json'
                 },
@@ -296,35 +296,35 @@
                        // set pk
                        $(this).editable('option', 'pk', data.id);
                        
-                       $('#Location_tags').editable('setValue', data.tags);
+                       $('#Event_tags').editable('setValue', data.tags);
                        
                        // remove unsaved class
                        $(this).removeClass('editable-unsaved');
                        
                        // update the select lists!
-                       var vals = $('#Location_name').editable('getValue');
-                       var strStatus = $('#Location_status_id').text();
-                       var strType = $('#Location_type_id').text();
+                       var vals = $('#Event_name').editable('getValue');
+                       var strStatus = $('#Event_status_id').text();
+                       var strType = $('#Event_type_id').text();
                 
                        var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
                        var newOption = '<option value="' + data.id + '">' + newText + '</option>';
-                       $locationS.append(newOption);
+                       $eventS.append(newOption);
                        
                        // Now select the newly appended option
-                       $locationS.val(data.id); // We don't trigger a change!
+                       $eventS.val(data.id); // We don't trigger a change!
                        
                        $saveBtn.attr("disabled", "disabled").hide(250);
                        $cancelBtn.attr("disabled", "disabled").hide(250);
-                       $locationS.removeAttr("disabled");
+                       $eventS.removeAttr("disabled");
                        $newBtn.removeAttr("disabled");
                        $deleteBtn.removeAttr("disabled");
                        
                        //show messages
                        var msgArea = '<div class="alert alert-success">' +
                            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                           '<h3><span class="badge badge-success">New location added!</span></h3></div>';
+                           '<h3><span class="badge badge-success">New event added!</span></h3></div>';
                        
-                       $('#locationDetails').prepend(msgArea);
+                       $('#eventDetails').prepend(msgArea);
                    } else if(data && data.errors){ 
                        //server-side validation error, response like {"errors": {"username": "username already exist"} }
                        config.error.call(this, data.errors);
@@ -344,7 +344,7 @@
                        msg = errors.responseText;
                        utilities.ajaxError.show(
                             "Error",
-                            "Failed to add the new location",
+                            "Failed to add the new event",
                             errors,
                             'error',
                             'Unknown'
@@ -369,7 +369,7 @@
                            '<h3><span class="badge badge-important">Please correct the following errors:</span></h3>' +
                            msg + '</div>';
                    
-                   $('#locationDetails').prepend(msgArea);
+                   $('#eventDetails').prepend(msgArea);
                }
            });
         });
@@ -377,17 +377,17 @@
         $cancelBtn.on('click', function (e) {
             e.preventDefault();
             
-            locationManagementView.resetLocationView();
+            eventManagementView.resetEventView();
         });
         
-        if(locationManagementView.location.id !== "undefined")
+        if(eventManagementView.event.id !== "undefined")
         {
-            locationManagementView.setupLocationView(locationManagementView.location, locationManagementView.params);
+            eventManagementView.setupEventView(eventManagementView.event, eventManagementView.params);
         }
     };
     
-    locationManagementView.setupLocationEditables = function (params) {
-        $('#Location_name').editable({
+    eventManagementView.setupEventEditables = function (params) {
+        $('#Event_name').editable({
             params: params,
             success: function(response, newValue) {
                 if (typeof response !== 'undefined' && response.length > 0)
@@ -396,37 +396,37 @@
                             " the session has expired."
                 }
             
-                var strStatus = $('#Location_status_id').text();
-                var strType = $('#Location_type_id').text();
+                var strStatus = $('#Event_status_id').text();
+                var strType = $('#Event_type_id').text();
                 
                 var newText = newValue + ' - ' + strType + ' (' + strStatus + ')';
                 
                 // This is a bit risky as the user may select a different
-                // location by the time we get to this part even
+                // event by the time we get to this part even
                 // though we have disabled the buttons and the select list.
-                var $locationS = $('#locationsSelect');
+                var $eventS = $('#eventsSelect');
                 
                 // Assume the currectly selected option is the one we want
                 // to update
-                var id = $locationS.val();
+                var id = $eventS.val();
                 
                 if(id == 'none')
                 {
                     return;
                 }
                 
-                $locationS.find('option[value="' + id + '"]').text(newText);
+                $eventS.find('option[value="' + id + '"]').text(newText);
             }
         });
         
-        $('#Location_external_id').editable({
+        $('#Event_external_id').editable({
             params: params
         });
         
-        $('#Location_status_id').editable({
+        $('#Event_status_id').editable({
             params: params,
             showbuttons: false,
-            source: locationManagementView.locationStatuses,
+            source: eventManagementView.eventStatuses,
             success: function(response, newValue) {
                 if (typeof response !== 'undefined' && response.length > 0)
                 {
@@ -434,34 +434,34 @@
                             " the session has expired."
                 }
             
-                var vals = $('#Location_name').editable('getValue');
-                var strStatus = $('#Location_status_id').text();
-                var strType = $('#Location_type_id').text();
+                var vals = $('#Event_name').editable('getValue');
+                var strStatus = $('#Event_status_id').text();
+                var strType = $('#Event_type_id').text();
                 
                 var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
                 
                 // This is a bit risky as the user may select a different
-                // location by the time we get to this part even
+                // event by the time we get to this part even
                 // though we have disabled the buttons and the select list.
-                var $locationS = $('#locationsSelect');
+                var $eventS = $('#eventsSelect');
                 
                 // Assume the currectly selected option is the one we want
                 // to update
-                var id = $locationS.val();
+                var id = $eventS.val();
                 
                 if(id == 'none')
                 {
                     return;
                 }
                 
-                $locationS.find('option[value="' + id + '"]').text(newText);
+                $eventS.find('option[value="' + id + '"]').text(newText);
             }
         });
         
-        $('#Location_type_id').editable({
+        $('#Event_type_id').editable({
             params: params,
             showbuttons: false,
-            source: locationManagementView.locationTypes,
+            source: eventManagementView.eventTypes,
             success: function(response, newValue) {
                 if (typeof response !== 'undefined' && response.length > 0)
                 {
@@ -469,389 +469,389 @@
                             " the session has expired."
                 }
             
-                var vals = $('#Location_name').editable('getValue');
-                var strStatus = $('#Location_status_id').text();
-                var strType = $('#Location_type_id').text();
+                var vals = $('#Event_name').editable('getValue');
+                var strStatus = $('#Event_status_id').text();
+                var strType = $('#Event_type_id').text();
                 
                 var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
                 
                 // This is a bit risky as the user may select a different
-                // location by the time we get to this part even
+                // event by the time we get to this part even
                 // though we have disabled the buttons and the select list.
-                var $locationS = $('#locationsSelect');
+                var $eventS = $('#eventsSelect');
                 
                 // Assume the currectly selected option is the one we want
                 // to update
-                var id = $locationS.val();
+                var id = $eventS.val();
                 
                 if(id == 'none')
                 {
                     return;
                 }
                 
-                $locationS.find('option[value="' + id + '"]').text(newText);
+                $eventS.find('option[value="' + id + '"]').text(newText);
             }
         });
         
-        $('#Location_notes').editable({
+        $('#Event_notes').editable({
             params: params,
             toggle: 'manual'
         });
         
-        $('#Location_notes_edit').off('click');
+        $('#Event_notes_edit').off('click');
         
-        $('#Location_notes_edit').on('click', function (e) {
+        $('#Event_notes_edit').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
             
-            $('#Location_notes').editable('toggle');
+            $('#Event_notes').editable('toggle');
         });
         
-        $('#Location_description').editable({
+        $('#Event_description').editable({
             params: params,
             toggle: 'manual'
         });
         
-        $('#Location_description_edit').off('click');
+        $('#Event_description_edit').off('click');
         
-        $('#Location_description_edit').on('click', function (e) {
+        $('#Event_description_edit').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
             
-            $('#Location_description').editable('toggle');
+            $('#Event_description').editable('toggle');
         });
         
-        $('#Location_tags').editable({
+        $('#Event_tags').editable({
             params: params
         });
 
-        $('#Location_length').editable({
+        $('#Event_length').editable({
             params: params
         });
         
-        $('#Location_width').editable({
+        $('#Event_width').editable({
             params: params
         });
 
-        $('#Location_radius').editable({
+        $('#Event_radius').editable({
             params: params
         });
         
-        $('#Location_seating').editable({
+        $('#Event_seating').editable({
             params: params
         });        
     };
     
-    locationManagementView.setupLocationView = function (location, params) {
-        var $locationDetails = $('#locationDetails');
-        var $locationEditables = $('.location-editable');
+    eventManagementView.setupEventView = function (event, params) {
+        var $eventDetails = $('#eventDetails');
+        var $eventEditables = $('.event-editable');
         
         // Destroy any existing editables!
-        $('#Location_notes_edit').off('click');
-        $('#Location_description_edit').off('click');
+        $('#Event_notes_edit').off('click');
+        $('#Event_description_edit').off('click');
         
-        if ($locationEditables.length > 0)
+        if ($eventEditables.length > 0)
         {
-            $locationEditables.each(function () {
+            $eventEditables.each(function () {
                 $(this).editable('destroy');
             });
         }
         
         // Add one row at a time. 
-        var locationView = '<strong>Details</strong><br /><table class="table ' +
+        var eventView = '<strong>Details</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
         
-        locationView += '<tr><td style="width:33%">Name</td><td>' +
-                '<a href="#" id="Location_name" data-name="name" ' +
+        eventView += '<tr><td style="width:33%">Name</td><td>' +
+                '<a href="#" id="Event_name" data-name="name" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + location.name + '" ' +
-                'title="Venue Name" class="location-editable">' + 
-                location.name + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + event.name + '" ' +
+                'title="Event Name" class="event-editable">' + 
+                event.name + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">External ID</td><td>' +
-                '<a href="#" id="Location_external_id" data-name="external_id" ' +
+        eventView += '<tr><td style="width:33%">External ID</td><td>' +
+                '<a href="#" id="Event_external_id" data-name="external_id" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.external_id ? location.external_id : '') + '" ' +
-                'title="Your Venue ID" class="location-editable">' +
-                (location.external_id ? location.external_id : '') + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.external_id ? event.external_id : '') + '" ' +
+                'title="Your Event ID" class="event-editable">' +
+                (event.external_id ? event.external_id : '') + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Tags</td><td>' +
-                '<a href="#" id="Location_tags" data-name="tags" ' +
+        eventView += '<tr><td style="width:33%">Tags</td><td>' +
+                '<a href="#" id="Event_tags" data-name="tags" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + location.tags + '" ' +
-                'title="Venue Tags" class="location-editable">' +
-                location.tags + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + event.tags + '" ' +
+                'title="Event Tags" class="event-editable">' +
+                event.tags + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Type</td><td>' +
-                '<a href="#" id="Location_type_id" data-name="type_id" ' +
+        eventView += '<tr><td style="width:33%">Type</td><td>' +
+                '<a href="#" id="Event_type_id" data-name="type_id" ' +
                 'data-type="select" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + location.type_id + '" ' +
-                'title="Venue Type" class="location-editable">' +
-                location.type + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + event.type_id + '" ' +
+                'title="Event Type" class="event-editable">' +
+                event.type + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Status</td><td>' +
-                '<a href="#" id="Location_status_id" data-name="status_id" ' +
+        eventView += '<tr><td style="width:33%">Status</td><td>' +
+                '<a href="#" id="Event_status_id" data-name="status_id" ' +
                 'data-type="select" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + location.status_id + '" ' +
-                'title="Venue Status" class="location-editable">' +
-                location.status + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + event.status_id + '" ' +
+                'title="Event Status" class="event-editable">' +
+                event.status + '</a></td></tr>';
         
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Now the next table of info!
-        locationView += '<strong>Additional Details</strong><br /><table class="table ' +
+        eventView += '<strong>Additional Details</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
 
-        locationView += '<tr><td style="width:33%">Length (ft)</td><td>' +
-                '<a href="#" id="Location_length" data-name="length" ' +
+        eventView += '<tr><td style="width:33%">Length (ft)</td><td>' +
+                '<a href="#" id="Event_length" data-name="length" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.length ? location.length : '') + '" ' +
-                'title="Venue length in feet" class="location-editable">' +
-                (location.length ? location.length : '') + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.length ? event.length : '') + '" ' +
+                'title="Event length in feet" class="event-editable">' +
+                (event.length ? event.length : '') + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Width (ft)</td><td>' +
-                '<a href="#" id="Location_width" data-name="width" ' +
+        eventView += '<tr><td style="width:33%">Width (ft)</td><td>' +
+                '<a href="#" id="Event_width" data-name="width" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.width ? location.width : '') + '" ' +
-                'title="Venue width in feet" class="location-editable">' +
-                (location.width ? location.width : '') + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.width ? event.width : '') + '" ' +
+                'title="Event width in feet" class="event-editable">' +
+                (event.width ? event.width : '') + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
-                '<a href="#" id="Location_radius" data-name="radius" ' +
+        eventView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
+                '<a href="#" id="Event_radius" data-name="radius" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.radius ? location.radius : '') + '" ' +
-                'title="Venue readius in feet" class="location-editable">' +
-                (location.radius ? location.radius : '') + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.radius ? event.radius : '') + '" ' +
+                'title="Event readius in feet" class="event-editable">' +
+                (event.radius ? event.radius : '') + '</a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
-                '<a href="#" id="Location_seating" data-name="seating" ' +
+        eventView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
+                '<a href="#" id="Event_seating" data-name="seating" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.seating ? location.seating : '') + '" ' +
-                'title="Venue seating capacity" class="location-editable">' +
-                (location.seating ? location.seating : '') + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.seating ? event.seating : '') + '" ' +
+                'title="Event seating capacity" class="event-editable">' +
+                (event.seating ? event.seating : '') + '</a></td></tr>';
 
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Now the next table of info!
-        locationView += '<strong>Description & Notes</strong><br /><table class="table ' +
+        eventView += '<strong>Description & Notes</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
 
-        locationView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
-                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_description_edit">' +
-                '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
+        eventView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
+                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Event_description_edit">' +
+                '<span>[edit]</span></a></td><td><div id="Event_description" data-name="description" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.description ? location.description : '') + '" ' +
-                'title="Venue Description" class="location-editable">' +
-                (location.description ? location.description : '') + '</div></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.description ? event.description : '') + '" ' +
+                'title="Event Description" class="event-editable">' +
+                (event.description ? event.description : '') + '</div></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
-                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_notes_edit">' +
-                '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
+        eventView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
+                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Event_notes_edit">' +
+                '<span>[edit]</span></a></td><td><div id="Event_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.notes ? location.notes : '') + '" ' +
-                'title="Venue Notes" class="location-editable">' +
-                (location.notes ? location.notes : '') + '</div></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.notes ? event.notes : '') + '" ' +
+                'title="Event Notes" class="event-editable">' +
+                (event.notes ? event.notes : '') + '</div></td></tr>';
         
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Ok, now we can fade-out the current view, and then fade in our new
         // view!
-        var $cv = $('<div id="locationDetails">' + locationView + '</div>');
+        var $cv = $('<div id="eventDetails">' + eventView + '</div>');
         
         $cv.hide();
         
-        $locationDetails.fadeOut(500, function () {
+        $eventDetails.fadeOut(500, function () {
             // Current view is hidden so let's remove it
-            $locationDetails.parent().prepend($cv);
+            $eventDetails.parent().prepend($cv);
             
             // Setup the contact editables before we fade in!
-            locationManagementView.setupLocationEditables(params);
+            eventManagementView.setupEventEditables(params);
             
             // Now fade us in!
             $cv.fadeIn(500, function() {
-                var $newBtn = $('#newLocationButton');
-                var $deleteBtn = $('#deleteLocationButton');
-                var $locationS = $('#locationsSelect');
+                var $newBtn = $('#newEventButton');
+                var $deleteBtn = $('#deleteEventButton');
+                var $eventS = $('#eventsSelect');
 
-                $locationS.removeAttr("disabled");
+                $eventS.removeAttr("disabled");
                 $newBtn.removeAttr("disabled");
                 $deleteBtn.removeAttr("disabled");
 
-                $locationS.parent().find('#loading').remove();
-                $locationDetails.remove();
+                $eventS.parent().find('#loading').remove();
+                $eventDetails.remove();
             });            
         });
     };
     
-    locationManagementView.setupNewLocationView = function (params) {
-        var $locationDetails = $('#locationDetails');
-        var $locationEditables = $('.location-editable');
+    eventManagementView.setupNewEventView = function (params) {
+        var $eventDetails = $('#eventDetails');
+        var $eventEditables = $('.event-editable');
         
         // Destroy any existing editables!
-        $('#Location_notes_edit').off('click');
-        $('#Location_description_edit').off('click');
+        $('#Event_notes_edit').off('click');
+        $('#Event_description_edit').off('click');
         
-        if ($locationEditables.length > 0)
+        if ($eventEditables.length > 0)
         {
-            $locationEditables.each(function () {
+            $eventEditables.each(function () {
                 $(this).editable('destroy');
             });
         }
         
         // Add one row at a time. 
-        var locationView = '<strong>Details</strong><br /><table class="table ' +
+        var eventView = '<strong>Details</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
         
-        locationView += '<tr><td style="width:33%">Name</td><td>' +
-                '<a href="#" id="Location_name" data-name="name" ' +
+        eventView += '<tr><td style="width:33%">Name</td><td>' +
+                '<a href="#" id="Event_name" data-name="name" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Name" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event Name" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">External ID</td><td>' +
-                '<a href="#" id="Location_external_id" data-name="external_id" ' +
+        eventView += '<tr><td style="width:33%">External ID</td><td>' +
+                '<a href="#" id="Event_external_id" data-name="external_id" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Your Venue ID" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Your Event ID" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Tags</td><td>' +
-                '<a href="#" id="Location_tags" data-name="tags" ' +
+        eventView += '<tr><td style="width:33%">Tags</td><td>' +
+                '<a href="#" id="Event_tags" data-name="tags" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Tags" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event Tags" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Type</td><td>' +
-                '<a href="#" id="Location_type_id" data-name="type_id" ' +
+        eventView += '<tr><td style="width:33%">Type</td><td>' +
+                '<a href="#" id="Event_type_id" data-name="type_id" ' +
                 'data-type="select" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-value="1" title="Venue Type" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-value="1" title="Event Type" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Status</td><td>' +
-                '<a href="#" id="Location_status_id" data-name="status_id" ' +
+        eventView += '<tr><td style="width:33%">Status</td><td>' +
+                '<a href="#" id="Event_status_id" data-name="status_id" ' +
                 'data-type="select" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-value="1" title="Venue Status" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-value="1" title="Event Status" class="event-editable"></a></td></tr>';
         
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Now the next table of info!
-        locationView += '<strong>Email & Phone</strong><br /><table class="table ' +
+        eventView += '<strong>Email & Phone</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
 
-        locationView += '<tr><td style="width:33%">Length (ft)</td><td>' +
-                '<a href="#" id="Location_length" data-name="length" ' +
+        eventView += '<tr><td style="width:33%">Length (ft)</td><td>' +
+                '<a href="#" id="Event_length" data-name="length" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue length in feet" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event length in feet" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Width (ft)</td><td>' +
-                '<a href="#" id="Location_width" data-name="width" ' +
+        eventView += '<tr><td style="width:33%">Width (ft)</td><td>' +
+                '<a href="#" id="Event_width" data-name="width" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue width in feet" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event width in feet" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
-                '<a href="#" id="Location_radius" data-name="radius" ' +
+        eventView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
+                '<a href="#" id="Event_radius" data-name="radius" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue readius in feet" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event readius in feet" class="event-editable"></a></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
-                '<a href="#" id="Location_seating" data-name="seating" ' +
+        eventView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
+                '<a href="#" id="Event_seating" data-name="seating" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue seating capacity" class="location-editable"></a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event seating capacity" class="event-editable"></a></td></tr>';
                 
-        locationView += '<tr style="display:none;"><td>Arena ID</td><td>' +
-                '<a href="#" id="Location_arena_id" data-name="aid" ' +
+        eventView += '<tr style="display:none;"><td>Arena ID</td><td>' +
+                '<a href="#" id="Event_arena_id" data-name="aid" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-value="' + locationManagementView.params.aid + '" ' +
-                'title="Arena ID" class="location-editable">' +
-                locationManagementView.params.aid + '</a></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-value="' + eventManagementView.params.aid + '" ' +
+                'title="Arena ID" class="event-editable">' +
+                eventManagementView.params.aid + '</a></td></tr>';
                 
-        locationView += '<tr style="display:none;"><td>Output</td><td>' +
-                '<a href="#" id="Location_output" data-name="output" ' +
+        eventView += '<tr style="display:none;"><td>Output</td><td>' +
+                '<a href="#" id="Event_output" data-name="output" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-value="json" title="Output" class="location-editable">' +
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-value="json" title="Output" class="event-editable">' +
                 'json</a></td></tr>';
                 
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Now the next table of info!
-        locationView += '<strong>Description & Notes</strong><br /><table class="table ' +
+        eventView += '<strong>Description & Notes</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
 
-        locationView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
-                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_description_edit">' +
-                '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
+        eventView += '<tr><td style="width:33%">Description<i class="fa fa-lg fa-fw ' +
+                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Event_description_edit">' +
+                '<span>[edit]</span></a></td><td><div id="Event_description" data-name="description" ' +
                 'data-type="wysihtml5" data-toggle="manual" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Description" class="location-editable"></div></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event Description" class="event-editable"></div></td></tr>';
         
-        locationView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
-                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Location_notes_edit">' +
-                '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
+        eventView += '<tr><td style="width:33%">Notes<i class="fa fa-lg fa-fw ' +
+                'fa-pencil" style="padding-right: 5px"></i> <a href="#" id="Event_notes_edit">' +
+                '<span>[edit]</span></a></td><td><div id="Event_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-toggle="manual" data-mode="inline" data-url="' + 
-                locationManagementView.endpoints.location.updateRecord + '" ' +
-                'title="Venue Notes" class="location-editable"></div></td></tr>';
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'title="Event Notes" class="event-editable"></div></td></tr>';
         
-        locationView += '</tbody></table>';
+        eventView += '</tbody></table>';
         
         // Ok, now we can fade-out the current view, and then fade in our new
         // view!
-        var $cv = $('<div id="locationDetails">' + locationView + '</div>');
+        var $cv = $('<div id="eventDetails">' + eventView + '</div>');
         
         $cv.hide();
         
-        $locationDetails.fadeOut(500, function () {
+        $eventDetails.fadeOut(500, function () {
             // Current view is hidden so let's remove it
-            $locationDetails.parent().prepend($cv);
+            $eventDetails.parent().prepend($cv);
             
             // Setup the contact editables before we fade in!
-            locationManagementView.setupLocationEditables(params);
+            eventManagementView.setupEventEditables(params);
             
-            $('#Location_arena_id').editable({
+            $('#Event_arena_id').editable({
                 params: params
             });
             
-            $('#Location_output').editable({
+            $('#Event_output').editable({
                 params: params
             });
             
             // Now fade us in!
             $cv.fadeIn(500, function() {
-                var $saveBtn = $('#saveLocationButton');
-                var $cancelBtn = $('#cancelLocationButton');
+                var $saveBtn = $('#saveEventButton');
+                var $cancelBtn = $('#cancelEventButton');
 
                 $saveBtn.removeAttr("disabled").show(250);
                 $cancelBtn.removeAttr("disabled").show(250);
                 
-                $locationDetails.remove();
+                $eventDetails.remove();
             });            
         });
     };
     
-    locationManagementView.resetLocationView = function (){
-        var $locationDetails = $('#locationDetails');
-        var $locationEditables = $('.location-editable');
-        var $newBtn = $('#newLocationButton');
-        var $deleteBtn = $('#deleteLocationButton');
-        var $saveBtn = $('#saveLocationButton');
-        var $cancelBtn = $('#cancelLocationButton');
-        var $locationS = $('#locationsSelect');
+    eventManagementView.resetEventView = function (){
+        var $eventDetails = $('#eventDetails');
+        var $eventEditables = $('.event-editable');
+        var $newBtn = $('#newEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        var $saveBtn = $('#saveEventButton');
+        var $cancelBtn = $('#cancelEventButton');
+        var $eventS = $('#eventsSelect');
         
         $newBtn.attr("disabled", "disabled");
         $deleteBtn.attr("disabled", "disabled");
@@ -859,56 +859,56 @@
         $cancelBtn.attr("disabled", "disabled").hide();
         
         // Destroy any existing editables!
-        $('#Location_notes_edit').off('click');
-        $('#Location_description_edit').off('click');
+        $('#Event_notes_edit').off('click');
+        $('#Event_description_edit').off('click');
         
-        if ($locationEditables.length > 0)
+        if ($eventEditables.length > 0)
         {
-            $locationEditables.each(function () {
+            $eventEditables.each(function () {
                 $(this).editable('destroy');
             });
         }
         
-        $locationDetails.fadeOut(500, function () {
+        $eventDetails.fadeOut(500, function () {
             // Current view is hidden so let's remove it
-            $locationDetails.empty();
+            $eventDetails.empty();
             
             // Now fade us in!
-            $locationDetails.fadeIn(500, function () {
+            $eventDetails.fadeIn(500, function () {
                 $newBtn.removeAttr("disabled");
-                $locationS.removeAttr("disabled");
+                $eventS.removeAttr("disabled");
             });
         });
     };
     
-    locationManagementView.loadLocation = function (locationId) {
-        var $newBtn = $('#newLocationButton');
-        var $deleteBtn = $('#deleteLocationButton');
-        var $saveBtn = $('#saveLocationButton');
-        var $cancelBtn = $('#cancelLocationButton');
-        var $locationS = $('#locationsSelect');
+    eventManagementView.loadEvent = function (eventId) {
+        var $newBtn = $('#newEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        var $saveBtn = $('#saveEventButton');
+        var $cancelBtn = $('#cancelEventButton');
+        var $eventS = $('#eventsSelect');
         
         var spinner = '<div id="loading"' +
                 '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
                 'alt="Loading..." /></div>';
             
-        // Prepare to load the location!
+        // Prepare to load the event!
         $newBtn.attr("disabled", "disabled");
         $deleteBtn.attr("disabled", "disabled");
         $saveBtn.attr("disabled", "disabled").hide();
         $cancelBtn.attr("disabled", "disabled").hide();
-        $locationS.attr("disabled", "disabled");
+        $eventS.attr("disabled", "disabled");
 
-        $locationS.parent().append(spinner);
+        $eventS.parent().append(spinner);
         
         var myParams = {
-            id: locationId,
-            aid: locationManagementView.params.aid,
+            id: eventId,
+            aid: eventManagementView.params.aid,
             output: 'json'
         };
         
         $.ajax({
-            url: locationManagementView.endpoints.location.viewRecord,
+            url: eventManagementView.endpoints.event.viewRecord,
             data: myParams,
             type: 'GET',
             dataType: 'json',
@@ -916,19 +916,19 @@
                 // Its possible we will get a session timeout so check for it!
                 if (result.error && result.error === "LOGIN_REQUIRED")
                 {
-                    $locationS.removeAttr("disabled");
+                    $eventS.removeAttr("disabled");
                     $newBtn.removeAttr("disabled");
                     $deleteBtn.removeAttr("disabled");
                 
-                    $locationS.parent().find('#loading').remove();
+                    $eventS.parent().find('#loading').remove();
                     
                     window.setTimeout(function () {
-                        $locationS.removeAttr("disabled");
+                        $eventS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");
                         $deleteBtn.removeAttr("disabled");
                         utilities.ajaxError.show(
                                 "Error",
-                                "Failed to load the venue",
+                                "Failed to load the event",
                                 xhr,
                                 "error",
                                 "Login Required"
@@ -938,24 +938,24 @@
                     return;
                 }
                     
-                // Location has been loaded!
+                // Event has been loaded!
                 myParams.output = 'html';
                 
                 if(result.data && result.data.id !== "undefined")
                 {
-                    locationManagementView.setupLocationView(result.data, myParams);
+                    eventManagementView.setupEventView(result.data, myParams);
                 }
             },
             error: function(xhr, status, errorThrown) {
-                $locationS.removeAttr("disabled");
+                $eventS.removeAttr("disabled");
                 $newBtn.removeAttr("disabled");
                 $deleteBtn.removeAttr("disabled");
                 
-                $locationS.parent().find('#loading').remove();
+                $eventS.parent().find('#loading').remove();
                 
                 utilities.ajaxError.show(
                         "Error",
-                        "Failed to load the venue",
+                        "Failed to load the event",
                         xhr,
                         status,
                         errorThrown
@@ -964,4 +964,4 @@
         });            
     };
     
-}( window.locationManagementView = window.locationManagementView || {}, jQuery ));
+}( window.eventManagementView = window.eventManagementView || {}, jQuery ));

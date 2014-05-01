@@ -96,7 +96,7 @@ class LocationController extends Controller
         // Try and get the data!
         try {
             if($aid > 0) {
-            $sql = 'SELECT l.*, s.display_name AS status, t.display_name AS type '
+                $sql = 'SELECT l.*, s.display_name AS status, t.display_name AS type '
                     . 'FROM location l '
                     . 'INNER JOIN location_status s '
                     . 'ON l.status_id = s.id '
@@ -127,7 +127,7 @@ class LocationController extends Controller
                 $attributes['type'] = $model->type;
                 $attributes['status'] = $model->status;
             } else {
-            $sql = 'SELECT l.*, s.display_name AS status, t.display_name AS type '
+                $sql = 'SELECT l.*, s.display_name AS status, t.display_name AS type '
                     . 'FROM location l '
                     . 'INNER JOIN location_status s '
                     . 'ON l.status_id = s.id '
@@ -191,7 +191,7 @@ class LocationController extends Controller
                 }
             
                 $this->breadcrumbs = array(
-                    'Venues' => $this->createUrl('contact/index'),
+                    'Venues' => $this->createUrl('location/index'),
                     isset($model->name) ? CHtml::encode($model->name) : ''
                 );
 

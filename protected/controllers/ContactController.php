@@ -299,7 +299,7 @@ class ContactController extends Controller
         
         // Verify we have a valid ID! We need either an arena ID or we need
         // to return the available arenas to assign the contact to.
-        if($aid <= 0 && get_available <= 0) {
+        if($aid <= 0 && $get_available <= 0) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(400, 'Invalid parameters');
             }

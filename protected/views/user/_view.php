@@ -95,7 +95,7 @@
                                 </a>
                             </td>
                         </tr>
-        <?php if(Yii::app()->user->isArenaManager()) : ?>
+        <?php if(Yii::app()->user->isApplicationAdministrator()) : ?>
                         <tr>
                             <td style="width:33%">
                                 <?php echo $attributeLabels['status_id']; ?>
@@ -225,7 +225,7 @@
             . 'userAccountProfile.params = ' . json_encode($params['data']) . ';'
             . 'userAccountProfile.account = ' . json_encode($model->attributes) . ';'
             . 'userAccountProfile.profile = ' . json_encode($model->profile->attributes) . ';'
-            . 'userAccountProfile.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
+            . 'userAccountProfile.isArenaManager = ' . (Yii::app()->user->isApplicationAdministrator() ? 1 : 0) . ';'
             . 'userAccountProfile.statusList = ' . json_encode($model->itemAlias('UserStatus')) . ';'
             . 'userAccountProfile.stateList = ' . json_encode(UnitedStatesNames::$states) . ';'
             . 'userAccountProfile.Id = ' . (integer)Yii::app()->user->id . ';'
@@ -277,7 +277,7 @@ $(document).ready(function() {
                 userAccountProfile.params = <?php echo json_encode($params['data']); ?>;
                 userAccountProfile.account = <?php echo json_encode($model->attributes); ?>;
                 userAccountProfile.profile = <?php echo json_encode($model->profile->attributes); ?>;
-                userAccountProfile.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
+                userAccountProfile.isArenaManager = <?php echo (Yii::app()->user->isApplicationAdministrator()) ? 1 : 0; ?>;
                 userAccountProfile.statusList = <?php echo json_encode($model->itemAlias('UserStatus')); ?>;
                 userAccountProfile.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;
                 userAccountProfile.Id = <?php echo Yii::app()->user->id; ?>;
@@ -295,7 +295,7 @@ $(document).ready(function() {
         userAccountProfile.params = <?php echo json_encode($params['data']); ?>;
         userAccountProfile.account = <?php echo json_encode($model->attributes); ?>;
         userAccountProfile.profile = <?php echo json_encode($model->profile->attributes); ?>;
-        userAccountProfile.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
+        userAccountProfile.isArenaManager = <?php echo (Yii::app()->user->isApplicationAdministrator()) ? 1 : 0; ?>;
         userAccountProfile.statusList = <?php echo json_encode($model->itemAlias('UserStatus')); ?>;
         userAccountProfile.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;
         userAccountProfile.Id = <?php echo Yii::app()->user->id; ?>;

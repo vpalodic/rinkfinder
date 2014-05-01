@@ -1706,7 +1706,10 @@
                 // Contact has been loaded!
                 myParams.output = 'html';
                 
-                arenaManagementView.setupContactView(result.data, myParams);
+                if(result.data && result.data.id !== "undefined")
+                {
+                    arenaManagementView.setupContactView(result.data, myParams);
+                }
             },
             error: function(xhr, status, errorThrown) {
                 $availableMS.removeAttr("disabled");
@@ -2589,7 +2592,10 @@
                 // Location has been loaded!
                 myParams.output = 'html';
                 
-                arenaManagementView.setupLocationView(result.data, myParams);
+                if(result.data && result.data.id !== "undefined")
+                {
+                    arenaManagementView.setupLocationView(result.data, myParams);
+                }
             },
             error: function(xhr, status, errorThrown) {
                 $locationS.removeAttr("disabled");

@@ -434,7 +434,7 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 0
                         ));
@@ -447,7 +447,7 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 1
                         ));
@@ -619,7 +619,7 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 0
                         ));
@@ -632,7 +632,7 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 1
                         ));
@@ -677,7 +677,7 @@ class ManagementController extends Controller
         // Try and get the data!
         try {
             // First validate the user is authorized
-            $arena = $this->loadArenaModel($id, $outputFormat, false);
+            $arena = $this->loadArenaModel($aid, $outputFormat, false);
             
             if(!$arena->isUserAssigned($uid)) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
@@ -835,7 +835,7 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 0
                         ));
@@ -848,7 +848,235 @@ class ManagementController extends Controller
                             'model' => $model,
                             'params' => $params,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
+                            'path' => $path,
+                            'doReady' => 1
+                        ));
+            }
+        }
+    }
+    
+    protected function handleEventView($id, $outputFormat)
+    {
+        // We need to ensure that we have an Arena ID
+        // We need this to ensure that the model isn't being edited/viewed out
+        // of context!
+        
+        $aid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid']) && $_GET['aid'] > 0) {
+            $aid = $_GET['aid'];
+        }
+        
+        // Validate we have an Arena ID and Event ID
+        if($id === null || $id < 0 || $aid === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        
+        // During the process of retrieving the location model, we validate
+        // that the user is authorized to view / update this location!
+
+        // Try and get the data!
+        try {
+            // First validate the user is authorized
+            $arena = $this->loadArenaModel($aid, $outputFormat, false);
+            
+            if(!$arena->isUserAssigned($uid)) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(403);
+                }
+
+                $this->sendResponseHeaders(403, 'json');
+                echo json_encode(array(
+                        'success' => false,
+                        'error' => 'Permission denied. You are not authorized to perform this action.'
+                    )
+                );
+                Yii::app()->end();
+            }
+            
+            $sql = 'SELECT e.*, '
+                    . "DATE_FORMAT(e.start_date, '%c/%e/%Y') AS startDate, "
+                    . "DATE_FORMAT(e.start_time, '%l:%i %p') AS startTime, "
+                    . 'a.name AS arena_name, '
+                    . 'l.name AS location_name, '
+                    . "CASE WHEN l.name IS NULL THEN CONCAT(DATE_FORMAT(e.start_date, '%c/%e/%Y'), ' ', DATE_FORMAT(e.start_time, '%l:%i %p'), ' @ ', a.name) "
+                    . "ELSE CONCAT(DATE_FORMAT(e.start_date, '%c/%e/%Y'), ' ', DATE_FORMAT(e.start_time, '%l:%i %p'), ' @ ', a.name, ' ', l.name) "
+                    . "END AS eventName, "
+                    . 's.display_name AS estatus, '
+                    . 't.display_name AS etype '
+                    . 'FROM event e '
+                    . 'INNER JOIN arena a '
+                    . 'ON e.arena_id = a.id AND e.id = :id AND a.id = :aid '
+                    . 'INNER JOIN event_status s '
+                    . 'ON e.status_id = s.id '
+                    . 'INNER JOIN event_type t '
+                    . 'ON e.type_id = t.id '
+                    . 'LEFT OUTER JOIN location l '
+                    . 'ON e.location_id = l.id '
+                    . 'ORDER BY e.start_date ASC, e.start_time';
+        
+
+            $model = Event::model()->findBySql($sql, array(':id' => $id, ':aid' => $aid));
+            
+            if($model === null) {
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(404, 'Event not found');
+                }
+
+                $this->sendResponseHeaders(404, 'json');
+                
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Event not found',
+                        )
+                );
+                Yii::app()->end();
+            }
+
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
+        }
+        
+        // Data has been retrieved!
+        $params = array(
+            'endpoints' => array(
+                'event' => array(
+                    'new' => Yii::app()->createUrl('/event/createEvent'),
+                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/event/viewEvent'),
+                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                )
+            ),
+            'data' => array(
+                'id' => $model->id,
+                'output' => 'json',
+                'aid' => $model->arena_id,
+                'lid' => $model->location_id
+            )
+        );
+            
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => array(
+                            'model' => $model,
+                            'params' => $params
+                        )
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('model' => $model, 'params' => $params), "details", "event");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Event Management - Event: #' . $model->id;
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Events' => array('/management/index', 'model' => 'event'),
+                $model->etype . ' Event: #' . $model->id
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_event",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => 0,
+                            'path' => $path,
+                            'doReady' => 0
+                        ));
+            } else {
+                $this->registerManagementScripts();
+        
+                $this->render(
+                        "_event",
+                        array(
+                            'model' => $model,
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => 1
                         ));
@@ -980,11 +1208,11 @@ class ManagementController extends Controller
             // Publish and register our jQuery plugin
             $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
             
-            $this->pageTitle = Yii::app()->name . ' - Event Request Management - #' . $model->id;
+            $this->pageTitle = Yii::app()->name . ' - Event Request Management - Request: #' . $data['item']['fields']['id']['value'];
             $this->breadcrumbs = array(
                 'Management' => array('/site/management'),
                 'Event Requests' => array('/management/index', 'model' => 'eventRequest'),
-                'Event Request #' . $model->id
+                $data['item']['fields']['type_id']['value'] . ' Request: #' . $data['item']['fields']['id']['value']
             );
 
             $this->includeCss = true;
@@ -997,7 +1225,7 @@ class ManagementController extends Controller
                             'model' => new EventRequest(),
                             'data' => $data,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => false
                         ));
@@ -1010,7 +1238,7 @@ class ManagementController extends Controller
                             'model' => new EventRequest(),
                             'data' => $data,
                             'ownView' => true,
-                            'newRecord' => false,
+                            'newRecord' => 0,
                             'path' => $path,
                             'doReady' => true
                         ));

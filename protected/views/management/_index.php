@@ -17,8 +17,8 @@
 <?php else: ?>
 <form class="form-search">
     <div class="input-prepend">
-        <span class="add-on">Search</span>
-        <input id="tableFilter" type="text" class="input-medium search-query" placeholder="Search" />
+        <span class="add-on">Filter</span>
+        <input id="tableFilter" type="text" class="input-medium search-query" placeholder="Filter" />
     </div>
     <?php if(isset($data['types'])) : ?>
     <span> </span>

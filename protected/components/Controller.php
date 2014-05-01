@@ -49,7 +49,7 @@ class Controller extends CController
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/locationManagementView.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/contactManagementView.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_event.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/eventManagementView.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.js', CClientScript::POS_END);
             //Yii::app()->clientScript->registerScriptFile($path . '/js/management/_reservation.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js', CClientScript::POS_END);
@@ -60,7 +60,7 @@ class Controller extends CController
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/locationManagementView.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/contactManagementView.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_manager.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/management/_event.min.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/management/eventManagementView.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_eventRequest.min.js', CClientScript::POS_END);
             //Yii::app()->clientScript->registerScriptFile($path . '/js/management/_reservation.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js', CClientScript::POS_END);

@@ -152,6 +152,8 @@
                 
                 if(contactId == 'none')
                 {
+                    contactManagementView.resetArenaLists();
+                    
                     return;
                 }
                 
@@ -416,6 +418,7 @@
             
             $assignedS.attr("disabled", "disabled");
             $assignedS.val('none');
+            contactManagementView.resetArenaLists();
             
             var myParams = {
                 get_available: 1,
@@ -615,7 +618,6 @@
                        var newText = vals.last_name + ', ' + vals.first_name + ' - ' + vals.email + ' (' + active + ')';
                        var newOption = '<option value="' + data.id + '">' + newText + '</option>';
                        $assignedS.append(newOption);
-                       $assignedMS.append(newOption);
                        
                        // Now select the newly appended option
                        $assignedS.val(data.id); // We don't trigger a change!
@@ -632,6 +634,18 @@
                            '<h3><span class="badge badge-success">New contact added!</span></h3></div>';
                        
                        $('#contactDetails').prepend(msgArea);
+                       
+                       contactManagementView.resetArenaLists();
+                            
+                       if (data.availableArenas !== "undefined")
+                       {
+                           contactManagementView.loadArenaList($availableMS, data.availableArenas);
+                       }
+
+                       if (data.assignedArenas !== "undefined")
+                       {
+                           contactManagementView.loadArenaList($assignedMS, data.assignedArenas);
+                       }
                    } else if(data && data.errors){ 
                        //server-side validation error, response like {"errors": {"username": "username already exist"} }
                        config.error.call(this, data.errors);
@@ -698,11 +712,16 @@
             e.preventDefault();
             
             contactManagementView.resetContactView();
+            contactManagementView.resetArenaLists();
         });
         
         if(contactManagementView.contact.id !== "undefined")
         {
             contactManagementView.setupContactView(contactManagementView.contact, contactManagementView.params);
+        }
+        else
+        {
+            $newBtn.trigger('click');
         }
     };
     
@@ -721,7 +740,6 @@
                 // This is a bit risky as the user may select a different
                 // a different contact by the time we get to this part even
                 // though we have disabled the buttons and the select lists.
-                var $assignedMS = $('#assignedContactsMSelect');
                 var $assignedS = $('#assignedContactsSelect');
                 
                 // Assume the currectly selected option is the one we want
@@ -734,14 +752,10 @@
                 }
                 
                 var $op1 = $assignedS.find('option[value="' + id + '"]');
-                var $op2 = $assignedMS.find('option[value="' + id + '"]');
-                
                 var active = (vals.active == 0) ? 'Inactive' : 'Active';
-                
                 var newText = vals.last_name + ', ' + newValue + ' - ' + vals.email + ' (' + active + ')';
                 
                 $op1.text(newText);
-                $op2.text(newText);
             }
         });
         
@@ -759,7 +773,6 @@
                 // This is a bit risky as the user may select a different
                 // a different contact by the time we get to this part even
                 // though we have disabled the buttons and the select lists.
-                var $assignedMS = $('#assignedContactsMSelect');
                 var $assignedS = $('#assignedContactsSelect');
                 
                 // Assume the currectly selected option is the one we want
@@ -772,14 +785,10 @@
                 }
                 
                 var $op1 = $assignedS.find('option[value="' + id + '"]');
-                var $op2 = $assignedMS.find('option[value="' + id + '"]');
-                
                 var active = (vals.active == 0) ? 'Inactive' : 'Active';
-                
                 var newText = newValue + ', ' + vals.first_name + ' - ' + vals.email + ' (' + active + ')';
                 
                 $op1.text(newText);
-                $op2.text(newText);
             }
         });
         
@@ -805,7 +814,6 @@
                 // This is a bit risky as the user may select a different
                 // a different contact by the time we get to this part even
                 // though we have disabled the buttons and the select lists.
-                var $assignedMS = $('#assignedContactsMSelect');
                 var $assignedS = $('#assignedContactsSelect');
                 
                 // Assume the currectly selected option is the one we want
@@ -818,14 +826,10 @@
                 }
                 
                 var $op1 = $assignedS.find('option[value="' + id + '"]');
-                var $op2 = $assignedMS.find('option[value="' + id + '"]');
-                
                 var active = (newValue == 0) ? 'Inactive' : 'Active';
-                
                 var newText = vals.last_name + ', ' + vals.first_name + ' - ' + vals.email + ' (' + active + ')';
                 
                 $op1.text(newText);
-                $op2.text(newText);
             }
         });
         
@@ -843,7 +847,6 @@
                 // This is a bit risky as the user may select a different
                 // a different contact by the time we get to this part even
                 // though we have disabled the buttons and the select lists.
-                var $assignedMS = $('#assignedContactsMSelect');
                 var $assignedS = $('#assignedContactsSelect');
                 
                 // Assume the currectly selected option is the one we want
@@ -856,14 +859,10 @@
                 }
                 
                 var $op1 = $assignedS.find('option[value="' + id + '"]');
-                var $op2 = $assignedMS.find('option[value="' + id + '"]');
-                
                 var active = (vals.active == 0) ? 'Inactive' : 'Active';
-                
                 var newText = vals.last_name + ', ' + vals.first_name + ' - ' + newValue + ' (' + active + ')';
                 
                 $op1.text(newText);
-                $op2.text(newText);
             }
         });
         
@@ -1217,6 +1216,36 @@
         });
     };
     
+    contactManagementView.loadArenaList = function ($element, list){
+        if (list === "undefined" || list.length === "undefined" || list.length <= 0)
+        {
+            return;
+        }
+        
+        for (var i = 0; i < list.length; i++)
+        {
+            var val = list[i].id;
+            var text = list[i].name + ', ' + list[i].city + ', ' + list[i].state + ' ' + list[i].zip + ' (' + list[i].status + ')';
+            
+            $element.append('<option value="' + val + '">' + text + '</option>');
+        }
+    };
+    
+    contactManagementView.resetArenaLists = function (){
+        var $assignBtn = $('#assignContactButton');
+        var $unassignBtn = $('#unassignContactButton');
+        var $availableMS = $('#availableContactsMSelect');
+        var $assignedMS = $('#assignedContactsMSelect');
+        
+        $availableMS.val('');
+        $availableMS.empty();
+        $assignBtn.attr("disabled", "disabled");
+        
+        $assignedMS.val('');
+        $assignedMS.empty();
+        $unassignBtn.attr("disabled", "disabled");        
+    };
+    
     contactManagementView.resetContactView = function (){
         var $contactDetails = $('#contactDetails');
         var $contactEditables = $('.contact-editable');
@@ -1332,7 +1361,21 @@
                 // Contact has been loaded!
                 myParams.output = 'html';
                 
-                contactManagementView.setupContactView(result.data, myParams);
+                if(result.data && result.data.id !== "undefined")
+                {
+                    contactManagementView.setupContactView(result.data, myParams);
+                    contactManagementView.resetArenaLists();
+                    
+                    if (result.availableArenas !== "undefined")
+                    {
+                        contactManagementView.loadArenaList($availableMS, result.availableArenas);
+                    }
+                    
+                    if (result.assignedArenas !== "undefined")
+                    {
+                        contactManagementView.loadArenaList($assignedMS, result.assignedArenas);
+                    }
+                }
             },
             error: function(xhr, status, errorThrown) {
                 $availableMS.removeAttr("disabled");

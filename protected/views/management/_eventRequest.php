@@ -96,7 +96,6 @@
                                     data-original-title="Accept this request"
                                     id="<?php echo $data['item']['fields']['accepter']['button']['name']; ?>">
                                 <i class="fa fa-lg fa-check"></i> <br />
-                                <span class="spinner"><i class="fa fa-lg fa-cog fa-spin"></i></span>
                                 <span>Accept</span>
                             </button>
                         </div>
@@ -358,7 +357,7 @@
                                 <?php echo $data['item']['fields']['event_id']['label']; ?>
                             </td>
                             <td>
-                                <?php echo '<a target="_blank" ""href="' . $this->createUrl('/management/Event', array(
+                                <?php echo '<a target="_blank" href="' . $this->createUrl('/management/Event', array(
                                     'id' => $data['item']['fields']['event_id']['value'],
                                     'aid' => $data['item']['fields']['arena_id']['value']
                                     )) . '">' . $data['item']['fields']['event_id']['value'] . '</a>'; ?>

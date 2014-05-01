@@ -6,21 +6,28 @@
  * The followings are the available columns in table 'event':
  * @property integer $id
  * @property integer $arena_id
+ * @property string $arena_name
  * @property integer $location_id
+ * @property string $location_name
  * @property string $external_id
  * @property string $name
+ * @property string $eventName
  * @property string $description
  * @property string $tags
  * @property boolean $all_day
  * @property string $start_date
+ * @property string $startDate
  * @property string $start_time
+ * @property string $startTime
  * @property integer $duration
  * @property string $end_date
  * @property string $end_time
  * @property string $price
  * @property string $notes
  * @property integer $type_id
+ * @property string $etype
  * @property integer $status_id
+ * @property string $estatus
  * @property integer $lock_version
  * @property integer $created_by_id
  * @property string $created_on
@@ -39,6 +46,14 @@
  */
 class Event extends RinkfinderActiveRecord
 {
+    public $etype = '';
+    public $estatus = '';
+    public $arena_name = '';
+    public $location_name = '';
+    public $eventName = '';
+    public $startDate = '';
+    public $startTime = '';
+
     /**
      * @var string $oldTags
      */
@@ -205,6 +220,20 @@ class Event extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns an array of event types
+     * @return array[] the array of location types
+     * @throws CDbException
+     */
+    public static function getTypesList()
+    {
+        $sql = 'SELECT id AS value, display_name AS text '
+                . 'FROM event_type '
+                . 'WHERE active = 1';
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
      * Returns an array of event statuses
      * @param boolean $activeOnly If true, then only active values will be returned
      * @return array[] the array of event statuses
@@ -220,6 +249,20 @@ class Event extends RinkfinderActiveRecord
         
         $sql .= ' ORDER BY display_order ASC ';
         
+        $command = Yii::app()->db->createCommand($sql);
+        return $command->queryAll(true);
+    }
+    
+    /**
+     * Returns an array of evet statuses
+     * @return array[] the array of location statuses
+     * @throws CDbException
+     */
+    public static function getStatusesList()
+    {
+        $sql = 'SELECT id AS value, display_name AS text '
+                . 'FROM event_status '
+                . 'WHERE active = 1';
         $command = Yii::app()->db->createCommand($sql);
         return $command->queryAll(true);
     }
