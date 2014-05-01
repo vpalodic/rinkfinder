@@ -18,6 +18,8 @@
     };
     
     eventManagementView.event = {};
+    eventManagementView.arenas = [];
+    eventManagementView.locations = [];
     eventManagementView.eventTypes = [];
     eventManagementView.eventStatuses = [];
     eventManagementView.params = {};
@@ -387,20 +389,120 @@
     };
     
     eventManagementView.setupEventEditables = function (params) {
-        $('#Event_name').editable({
+        $('#Event_arena_id').editable({
             params: params,
+            showbuttons: false,
+            source: eventManagementView.arenas,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                var newLocations = false;
+
+                try
+                {
+                    if (response && response.length > 0)
+                    {
+                        newLocations = JSON.parse(response);
+                        response = null;
+                    }
+                }
+                catch (err)
+                {
+                    newLocations = false;
+                }            
+                
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
-            
+
+                var vals = $('#Event_start_date, #Event_start_time').editable('getValue');
+                var strArena = '';
+                
+                // Find the newly selected Arena name
+                for (var i = 0; i < eventManagementView.arenas.length; i++)
+                {
+                    if (newValue == eventManagementView.arenas[i].value)
+                    {
+                        strArena = eventManagementView.arenas[i].text;
+                        break;
+                    }
+                }
+                
                 var strStatus = $('#Event_status_id').text();
                 var strType = $('#Event_type_id').text();
+                var strDate = moment(vals.start_date, ['YYYY-MM-DD', 'MM/DD/YYYY']);
+                var strTime = moment(vals.start_time, ['HH:mm', 'hh:mm A']);
                 
-                var newText = newValue + ' - ' + strType + ' (' + strStatus + ')';
+                var newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' - ' + strType + ' (' + strStatus + ')';
                 
+                // Set the new location list for the editable!
+                eventManagementView.locations = newLocations.locations;
+                
+                $('#Event_location_id').editable('option', 'source', newLocations.locations);
+                $('#Event_location_id').editable('setValue', null);
+                
+                $('.event-editable').editable('option', 'params', {aid: newValue, output: 'json'});
+                // This is a bit risky as the user may select a different
+                // event by the time we get to this part even
+                // though we have disabled the buttons and the select list.
+                var $eventS = $('#eventsSelect');
+                
+                // Assume the currectly selected option is the one we want
+                // to update
+                var id = $eventS.val();
+                
+                if(id == 'none')
+                {
+                    return;
+                }
+                
+                $eventS.find('option[value="' + id + '"]').text(newText);
+            }
+        });
+        
+        $('#Event_location_id').editable({
+            params: params,
+            showbuttons: false,
+            source: eventManagementView.locations,
+            success: function(response, newValue) {
+                if (response && response.length > 0)
+                {
+                    return "Data not saved. Please refresh the page as it appears" +
+                            " the session has expired.";
+                }
+                
+                // Since we changed Arenas for this event, there is no location name!
+                var vals = $('#Event_start_date, #Event_start_time, #Event_arena_id').editable('getValue');
+                var strArena = $('#Event_arena_id').text();
+                var strLocation = '';
+                
+                // Find the newly selected location name
+                for (var i = 0; i < eventManagementView.locations.length; i++)
+                {
+                    if (newValue == eventManagementView.locations[i].value)
+                    {
+                        strLocation = eventManagementView.locations[i].text;
+                        break;
+                    }
+                }
+                
+                var strStatus = $('#Event_status_id').text();
+                var strType = $('#Event_type_id').text();
+                var strDate = moment(vals.start_date, ['YYYY-MM-DD', 'MM/DD/YYYY']);
+                var strTime = moment(vals.start_time, ['HH:mm', 'hh:mm A']);
+                
+                var newText = '';
+                
+                if (strLocation === '')
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' - ' + strType + ' (' + strStatus + ')';
+                }
+                else
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' ' + strLocation + ' - ' + strType + ' (' + strStatus + ')';
+                }
+                
+                $('.event-editable').editable('option', 'params', {aid: vals.arena_id, lid: newValue, output: 'json'});
                 // This is a bit risky as the user may select a different
                 // event by the time we get to this part even
                 // though we have disabled the buttons and the select list.
@@ -423,22 +525,46 @@
             params: params
         });
         
-        $('#Event_status_id').editable({
+        $('#Event_type_id').editable({
             params: params,
             showbuttons: false,
-            source: eventManagementView.eventStatuses,
+            source: eventManagementView.eventTypes,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
-                var vals = $('#Event_name').editable('getValue');
+                var vals = $('#Event_start_date, #Event_start_time').editable('getValue');
+                var strArena = $('#Event_arena_id').text();
+                var strLocation = $('#Event_location_id').text();
                 var strStatus = $('#Event_status_id').text();
-                var strType = $('#Event_type_id').text();
+                var strType = '';
                 
-                var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
+                // Find the newly selected type name
+                for (var i = 0; i < eventManagementView.eventTypes.length; i++)
+                {
+                    if (newValue == eventManagementView.eventTypes[i].value)
+                    {
+                        strType = eventManagementView.eventTypes[i].text;
+                        break;
+                    }
+                }                
+                
+                var strDate = moment(vals.start_date, ['YYYY-MM-DD', 'MM/DD/YYYY']);
+                var strTime = moment(vals.start_time, ['HH:mm', 'hh:mm A']);
+                
+                var newText = '';
+                
+                if (strLocation === '')
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' - ' + strType + ' (' + strStatus + ')';
+                }
+                else
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' ' + strLocation + ' - ' + strType + ' (' + strStatus + ')';
+                }
                 
                 // This is a bit risky as the user may select a different
                 // event by the time we get to this part even
@@ -458,22 +584,46 @@
             }
         });
         
-        $('#Event_type_id').editable({
+        $('#Event_status_id').editable({
             params: params,
             showbuttons: false,
-            source: eventManagementView.eventTypes,
+            source: eventManagementView.eventStatuses,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
-                var vals = $('#Event_name').editable('getValue');
-                var strStatus = $('#Event_status_id').text();
+                var vals = $('#Event_start_date, #Event_start_time').editable('getValue');
+                var strArena = $('#Event_arena_id').text();
+                var strLocation = $('#Event_location_id').text();
+                var strStatus = '';
                 var strType = $('#Event_type_id').text();
+
+                // Find the newly selected status name
+                for (var i = 0; i < eventManagementView.eventStatuses.length; i++)
+                {
+                    if (newValue == eventManagementView.eventStatuses[i].value)
+                    {
+                        strStatus = eventManagementView.eventStatuses[i].text;
+                        break;
+                    }
+                }
                 
-                var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
+                var strDate = moment(vals.start_date, ['YYYY-MM-DD', 'MM/DD/YYYY']);
+                var strTime = moment(vals.start_time, ['HH:mm', 'hh:mm A']);
+                
+                var newText = '';
+                
+                if (strLocation === '')
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' - ' + strType + ' (' + strStatus + ')';
+                }
+                else
+                {
+                    newText = strDate.format('MM/DD/YYYY') + ' ' + strTime.format('hh:mm A') + ' @ ' + strArena + ' ' + strLocation + ' - ' + strType + ' (' + strStatus + ')';
+                }
                 
                 // This is a bit risky as the user may select a different
                 // event by the time we get to this part even
@@ -490,6 +640,121 @@
                 }
                 
                 $eventS.find('option[value="' + id + '"]').text(newText);
+            }
+        });
+        
+        $('#Event_name').editable({
+            params: params
+        });
+        
+        $('#Event_tags').editable({
+            params: params
+        });
+        
+        $('#Event_all_day').editable({
+            params: params,
+            showbuttons: false,
+            source: [{value: 0, text: 'No'}, {value: 1, text: 'Yes'}]
+        });
+        
+        $('#Event_duration').editable({
+            params: params,
+            display: function(value, sourceData) {
+                // display the supplied digits as a phone number!
+                var html = '';
+
+                if (typeof value === 'undefined' || value.length <= 0)
+                {
+                    return;
+                }
+            
+                $(this).html(value + " minutes");
+            }
+        });
+
+        $('#Event_start_date').editable({
+            params: params,
+            datepicker: {
+                autoclose: true,
+                cleanBtn: true,
+                endDate: moment().add('years', 2).endOf('day').toDate(),
+                startDate: moment().startOf('day').toDate(),
+                startView: 'month',
+                todayBtn: false,
+                todayHighlight: false
+            }
+        });
+        
+        $('#Event_start_time').editable({
+            params: params,
+//            format: 'HH:mm',
+//            viewFormat: 'hh:mm A',
+            combodate: {
+//                template: 'hh : mm A',
+                minuteStep: 1,
+                firstItem: 'name'
+//                viewFormat: 'hh:mm A',
+//                format: 'HH:mm'
+            }
+        });
+
+        $('#Event_end_date').editable({
+            params: params,
+            datepicker: {
+                autoclose: true,
+                cleanBtn: true,
+                endDate: moment().add('years', 2).endOf('day').toDate(),
+                startDate: moment().startOf('day').toDate(),
+                startView: 'month',
+                todayBtn: false,
+                todayHighlight: false
+            }
+        });
+        
+        $('#Event_end_time').editable({
+            params: params,
+//            format: 'HH:mm',
+//            viewFormat: 'hh:mm A',
+            combodate: {
+//                template: 'hh : mm A',
+                minuteStep: 1,
+                firstItem: 'name'
+//                viewFormat: 'hh:mm A',
+//                format: 'HH:mm'
+            }
+        });
+        
+        $('#Event_price').editable({
+            params: params,
+            display: function(value, sourceData) {
+                // display the supplied digits as a phone number!
+                var html = '';
+
+                if (typeof value === 'undefined' || value.length <= 0)
+                {
+                    return;
+                }
+            
+                $(this).html("$" + value);
+            }
+        });
+
+        $("#Event_price").on('shown', function(e, editable) {
+            // ensure that we only get the unmasked value
+            if (editable) {
+                $(this).data('editable').input.$input.inputmask({
+                    alias: 'decimal',
+                    placeholder: "$0.00",
+                    autoUnmask: true,
+                    digits: 2,
+                    groupSeparator: ",",
+                    radixPoint: ".",
+                    autoGroup: true,
+                    rightAlignNumerics: true,
+                    clearMaskOnLostFocus: true,
+                    clearIncomplete: true,
+                    showTooltip: true
+                });
             }
         });
         
@@ -520,26 +785,6 @@
             
             $('#Event_description').editable('toggle');
         });
-        
-        $('#Event_tags').editable({
-            params: params
-        });
-
-        $('#Event_length').editable({
-            params: params
-        });
-        
-        $('#Event_width').editable({
-            params: params
-        });
-
-        $('#Event_radius').editable({
-            params: params
-        });
-        
-        $('#Event_seating').editable({
-            params: params
-        });        
     };
     
     eventManagementView.setupEventView = function (event, params) {
@@ -558,16 +803,32 @@
         }
         
         // Add one row at a time. 
-        var eventView = '<strong>Details</strong><br /><table class="table ' +
+        var eventView = '<strong>General Details</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
+        
+        eventView += '<tr><td style="width:33%">Arena</td><td>' +
+                '<a href="#" id="Event_arena_id" data-name="arena_id" ' +
+                'data-type="select" data-mode="inline" data-url="' + 
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + event.arena_id + '" ' +
+                'title="Event Type" class="event-editable">' +
+                event.arena_name + '</a></td></tr>';
+        
+        eventView += '<tr><td style="width:33%">Venue</td><td>' +
+                '<a href="#" id="Event_location_id" data-name="location_id" ' +
+                'data-type="select" data-mode="inline" data-url="' + 
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.location_id ? event.location_id : '') + '" ' +
+                'title="Event Type" class="event-editable">' +
+                (event.location_id ? event.location_name : '') + '</a></td></tr>';
         
         eventView += '<tr><td style="width:33%">Name</td><td>' +
                 '<a href="#" id="Event_name" data-name="name" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + event.name + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.name ? event.name : '') + '" ' +
                 'title="Event Name" class="event-editable">' + 
-                event.name + '</a></td></tr>';
+                (event.name ? event.name : '') + '</a></td></tr>';
         
         eventView += '<tr><td style="width:33%">External ID</td><td>' +
                 '<a href="#" id="Event_external_id" data-name="external_id" ' +
@@ -604,40 +865,64 @@
         eventView += '</tbody></table>';
         
         // Now the next table of info!
-        eventView += '<strong>Additional Details</strong><br /><table class="table ' +
+        eventView += '<strong>Event Details</strong><br /><table class="table ' +
                 'table-condensed table-information"><tbody>';
 
-        eventView += '<tr><td style="width:33%">Length (ft)</td><td>' +
-                '<a href="#" id="Event_length" data-name="length" ' +
-                'data-type="text" data-mode="inline" data-url="' + 
+        eventView += '<tr><td style="width:33%">All Day</td><td>' +
+                '<a href="#" id="Event_all_day" data-name="all_day" ' +
+                'data-type="select" data-mode="inline" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.length ? event.length : '') + '" ' +
-                'title="Event length in feet" class="event-editable">' +
-                (event.length ? event.length : '') + '</a></td></tr>';
+                'data-pk="' + event.id + '" data-value="' + event.all_day + '" ' +
+                'title="All Day Event" class="event-editable">' +
+                (event.all_day == 0 ? 'No' : 'Yes') + '</a></td></tr>';
         
-        eventView += '<tr><td style="width:33%">Width (ft)</td><td>' +
-                '<a href="#" id="Event_width" data-name="width" ' +
-                'data-type="text" data-mode="inline" data-url="' + 
+        eventView += '<tr><td style="width:33%">Start Date</td><td>' +
+                '<a href="#" id="Event_start_date" data-name="start_date" ' +
+                'data-type="date" data-format="yyyy-mm-dd" data-mode="inline" data-viewFormat="mm/dd/yyyy" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.width ? event.width : '') + '" ' +
-                'title="Event width in feet" class="event-editable">' +
-                (event.width ? event.width : '') + '</a></td></tr>';
+                'data-pk="' + event.id + '" data-value="' + event.start_date + '" ' +
+                'title="Event Start Date" class="event-editable">' +
+                moment(event.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY') + '</a></td></tr>';
         
-        eventView += '<tr><td style="width:33%">Radius (ft)</td><td>' +
-                '<a href="#" id="Event_radius" data-name="radius" ' +
-                'data-type="text" data-mode="inline" data-url="' + 
+        eventView += '<tr><td style="width:33%">Start Time</td><td>' +
+                '<a href="#" id="Event_start_time" data-name="start_time" ' +
+                'data-type="combodate" data-template="hh : mm A" data-format="HH:mm" data-mode="inline" data-viewFormat="hh:mm A" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.radius ? event.radius : '') + '" ' +
-                'title="Event readius in feet" class="event-editable">' +
-                (event.radius ? event.radius : '') + '</a></td></tr>';
+                'data-pk="' + event.id + '" data-value="' + event.start_time + '" ' +
+                'title="Event Start Time" class="event-editable">' +
+                moment(event.start_time, 'HH:mm:ss').format('hh:mm A') + '</a></td></tr>';
         
-        eventView += '<tr><td style="width:33%">Seating Capacity</td><td>' +
-                '<a href="#" id="Event_seating" data-name="seating" ' +
+        eventView += '<tr><td style="width:33%">End Date</td><td>' +
+                '<a href="#" id="Event_end_date" data-name="end_date" ' +
+                'data-type="date" data-format="yyyy-mm-dd" data-mode="inline" data-viewFormat="mm/dd/yyyy" data-url="' + 
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.end_date ? event.end_date : '') + '" ' +
+                'title="Event End Date" class="event-editable">' +
+                (event.end_date ? moment(event.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY') : '') + '</a></td></tr>';
+        
+        eventView += '<tr><td style="width:33%">End Time</td><td>' +
+                '<a href="#" id="Event_end_time" data-name="end_time" ' +
+                'data-type="combodate" data-template="hh : mm A" data-format="HH:mm" data-mode="inline" data-viewFormat="hh:mm A" data-url="' + 
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.end_time ? event.end_time : '') + '" ' +
+                'title="Event End Time" class="event-editable">' +
+                (event.end_time ? moment(event.end_time, 'HH:mm:ss').format('hh:mm A') : '') + '</a></td></tr>';
+        
+        eventView += '<tr><td style="width:33%">Event Duration</td><td>' +
+                '<a href="#" id="Event_duration" data-name="duration" ' +
                 'data-type="text" data-mode="inline" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.seating ? event.seating : '') + '" ' +
-                'title="Event seating capacity" class="event-editable">' +
-                (event.seating ? event.seating : '') + '</a></td></tr>';
+                'data-pk="' + event.id + '" data-value="' + (event.duration ? event.duration : '') + '" ' +
+                'title="Event Duration" class="event-editable">' +
+                (event.duration ? event.duration : '') + '</a></td></tr>';
+
+        eventView += '<tr><td style="width:33%">Event Price</td><td>' +
+                '<a href="#" id="Event_price" data-name="price" ' +
+                'data-type="text" data-mode="inline" data-url="' + 
+                eventManagementView.endpoints.event.updateRecord + '" ' +
+                'data-pk="' + event.id + '" data-value="' + (event.price ? event.price : '') + '" ' +
+                'title="Event Price $" class="event-editable">' +
+                (event.price ? event.price : '') + '</a></td></tr>';
 
         eventView += '</tbody></table>';
         

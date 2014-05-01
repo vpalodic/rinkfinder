@@ -2425,4 +2425,23 @@ class Arena extends RinkfinderActiveRecord
         return $ret;
     }
     
+    /**
+     * Returns an array of locations for the arena
+     * @return array[] the array of locations
+     * @throws CDbException
+     */
+    public static function getLocationsList($aid)
+    {
+        $sql = 'SELECT l.id AS value, '
+                . 'CONCAT(l.name, " (", s.display_name, ")") AS text '
+                . 'FROM location l '
+                . 'INNER JOIN location_status s '
+                . 'ON l.status_id = s.id AND l.arena_id = :aid '
+                . 'ORDER BY text ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        return $command->queryAll(true);
+    }    
 }

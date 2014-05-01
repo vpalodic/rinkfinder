@@ -114,10 +114,10 @@
             params: _eventRequest.data.parms,
             showbuttons: 'bottom',
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 // We hide the editable, set the history, and then clear the value

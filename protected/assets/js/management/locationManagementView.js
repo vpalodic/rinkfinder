@@ -390,10 +390,10 @@
         $('#Location_name').editable({
             params: params,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var strStatus = $('#Location_status_id').text();
@@ -428,10 +428,10 @@
             showbuttons: false,
             source: locationManagementView.locationStatuses,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Location_name').editable('getValue');
@@ -463,10 +463,10 @@
             showbuttons: false,
             source: locationManagementView.locationTypes,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Location_name').editable('getValue');

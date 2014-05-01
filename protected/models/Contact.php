@@ -143,13 +143,15 @@ class Contact extends RinkfinderActiveRecord
      * @return array[] the array of contacts
      * @throws CDbException
      */
-    public static function getAvailable($aid, $active = 1)
+    public static function getAvailable($uid, $aid, $active = 1)
     {
         $sql = 'SELECT * '
                 . 'FROM contact c '
-                . 'WHERE c.id NOT IN (SELECT aca.contact_id '
+                . 'WHERE c.id NOT IN (SELECT DISTINCT aca.contact_id '
                 . '                 FROM arena_contact_assignment aca '
-                . '                 WHERE aca.arena_id = :aid) ';
+                . '                 INNER JOIN arena_user_assignment aua '
+                . '                 ON aca.arena_id = aua.arena_id AND '
+                . '                 aca.arena_id = :aid AND aua.user_id = :uid) ';
         
         if($active == 1) {
             $sql .= 'AND c.active = :active ';
@@ -163,6 +165,7 @@ class Contact extends RinkfinderActiveRecord
             $command->bindValue(':active', $active, PDO::PARAM_INT);
         }
         
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
         $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
         
         $ret = $command->queryAll(true);
@@ -175,13 +178,15 @@ class Contact extends RinkfinderActiveRecord
      * @return array[] the array of contact statuses
      * @throws CDbException
      */
-    public static function getAssigned($aid, $active = 1)
+    public static function getAssigned($uid, $aid, $active = 1)
     {
         $sql = 'SELECT * '
                 . 'FROM contact c '
-                . 'WHERE c.id IN (SELECT aca.contact_id '
-                . '                 FROM arena_contact_assignment aca '
-                . '                 WHERE aca.arena_id = :aid) ';
+                . 'WHERE c.id IN (SELECT DISTINCT aca.contact_id '
+                . '                 FROM arena_contact_assignment aca'
+                . '                 INNER JOIN arena_user_assignment aua '
+                . '                 ON aca.arena_id = aua.arena_id AND '
+                . '                 aca.arena_id = :aid AND aua.user_id = :uid) ';
         
         if($active == 1) {
             $sql .= 'AND c.active = :active ';
@@ -195,6 +200,7 @@ class Contact extends RinkfinderActiveRecord
             $command->bindValue(':active', $active, PDO::PARAM_INT);
         }
         
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
         $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
         
         $ret = $command->queryAll(true);

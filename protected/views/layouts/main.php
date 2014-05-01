@@ -52,6 +52,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/combodate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
             if(Yii::app()->user->isRestrictedArenaManager()) {
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.js', CClientScript::POS_END);
@@ -76,6 +77,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-datetimepicker.min.js', CClientScript::POS_END);
+//            Yii::app()->clientScript->registerScriptFile($path . '/js/combodate.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
             if(Yii::app()->user->isRestrictedArenaManager()) {
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.min.js', CClientScript::POS_END);

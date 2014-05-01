@@ -729,10 +729,10 @@
         $('#Contact_first_name').editable({
             params: params,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Contact_active, #Contact_last_name, #Contact_email').editable('getValue');
@@ -762,10 +762,10 @@
         $('#Contact_last_name').editable({
             params: params,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Contact_active, #Contact_first_name, #Contact_email').editable('getValue');
@@ -803,10 +803,10 @@
                 text: 'Active'
             }],
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Contact_first_name, #Contact_last_name, #Contact_email').editable('getValue');
@@ -836,10 +836,10 @@
         $('#Contact_email').editable({
             params: params,
             success: function(response, newValue) {
-                if (typeof response !== 'undefined' && response.length > 0)
+                if (response && response.length > 0)
                 {
                     return "Data not saved. Please refresh the page as it appears" +
-                            " the session has expired."
+                            " the session has expired.";
                 }
             
                 var vals = $('#Contact_active, #Contact_first_name, #Contact_last_name').editable('getValue');

@@ -420,8 +420,8 @@
     <?php
     // We are going to grab two lists of contacts for the list views
     // We only need the contact name and id, we don't need anything else
-    $availableContacts = Contact::getAvailable($model->id, 0);
-    $assignedContacts = Contact::getAssigned($model->id, 0);
+    $availableContacts = Contact::getAvailable(Yii::app()->user->id, $model->id, 0);
+    $assignedContacts = Contact::getAssigned(Yii::app()->user->id, $model->id, 0);
     ?>
     <div id="contactsTabPane" class="tab-pane fade">
         <div id="contactManagementView" class="panel panel-primary">

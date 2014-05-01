@@ -14,6 +14,8 @@
 
     $eventsStatuses = Event::getStatusesList();
     $eventsTypes = Event::getTypesList();
+    $arenas = User::getArenasList(Yii::app()->user->id);
+    $locations = Arena::getLocationsList($model->arena_id);
 ?>
 <div id="eventManagementView" class="panel panel-primary">
     <div class="panel-heading">
@@ -111,6 +113,8 @@
             . 'eventManagementView.event.startTime = "' . $model->startTime . '";'
             . 'eventManagementView.event.type = "' . $model->etype . '";'
             . 'eventManagementView.event.status = "' . $model->estatus . '";'
+            . 'eventManagementView.arenas = ' . json_encode($arenas) . ';'
+            . 'eventManagementView.locations = ' . json_encode($locations) . ';'
             . 'eventManagementView.eventTypes = ' . json_encode($eventsTypes) . ';'
             . 'eventManagementView.eventStatuses = ' . json_encode($eventsStatuses) . ';'
             . 'eventManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
@@ -171,6 +175,8 @@ $(document).ready(function() {
                 eventManagementView.event.startTime = "<?php echo $model->startTime; ?>";
                 eventManagementView.event.type = "<?php echo $model->etype; ?>";
                 eventManagementView.event.status = "<?php echo $model->estatus; ?>";
+                eventManagementView.arenas = <?php echo json_encode($arenas); ?>;
+                eventManagementView.locations = <?php echo json_encode($locations); ?>;
                 eventManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
                 eventManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
                 eventManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
@@ -197,6 +203,8 @@ $(document).ready(function() {
         eventManagementView.event.startTime = "<?php echo $model->startTime; ?>";
         eventManagementView.event.type = "<?php echo $model->etype; ?>";
         eventManagementView.event.status = "<?php echo $model->estatus; ?>";
+        eventManagementView.arenas = <?php echo json_encode($arenas); ?>;
+        eventManagementView.locations = <?php echo json_encode($locations); ?>;
         eventManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
         eventManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
         eventManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;

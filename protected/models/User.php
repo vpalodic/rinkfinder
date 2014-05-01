@@ -1373,4 +1373,25 @@ class User extends RinkfinderActiveRecord
         return $ret;
     }
 
+    /**
+     * Returns an array of arenas for the user
+     * @return array[] the array of arenas
+     * @throws CDbException
+     */
+    public static function getArenasList($uid)
+    {
+        $sql = 'SELECT a.id AS value, '
+                . 'CONCAT(a.name, " (", s.display_name, ")") AS text '
+                . 'FROM arena a '
+                . 'INNER JOIN arena_status s '
+                . 'ON a.status_id = s.id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id AND aua.user_id = :uid '
+                . 'ORDER BY text ASC ';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+        return $command->queryAll(true);
+    }    
 }
