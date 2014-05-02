@@ -721,7 +721,7 @@
         
         that.searchParams = values;
         that.searchParams.lat = (that.centerpoint) ? that.centerpoint.lat() : 0;
-        that.searchParams.lng = (that.centerpoing) ? that.centerpoint.lng() : 0;
+        that.searchParams.lng = (that.centerpoint) ? that.centerpoint.lng() : 0;
 
         return values !== {};
     };
