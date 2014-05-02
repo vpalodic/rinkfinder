@@ -60,7 +60,7 @@ class ContactController extends Controller
         // And that the user has permission to update it!
         if(!Yii::app()->user->isRestrictedArenaManager()) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
@@ -325,7 +325,7 @@ class ContactController extends Controller
             // And that the user has permission to update it!
             if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
-                    throw new CHttpException(403);
+                    throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
                 }
             
                 $this->sendResponseHeaders(403, 'json');
@@ -339,7 +339,7 @@ class ContactController extends Controller
         } else {
             if(!Yii::app()->user->isRestrictedArenaManager()) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
-                    throw new CHttpException(403);
+                    throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
                 }
             
                 $this->sendResponseHeaders(403, 'json');
@@ -412,8 +412,14 @@ class ContactController extends Controller
             }
             
             if($outputFormat == "html") {
-                echo 'id:' . $model->id;
-                Yii::app()->end();
+                echo json_encode(
+                        array(
+                            'success' => true,
+                            'error' => false,
+                            'id' => $model->id,
+                            'availableArenas' => $availableArenas
+                        )
+                );
             } else if ($outputFormat == "xml") {
                 $xmlout = array(
                     'success' => 'true',
@@ -569,7 +575,7 @@ class ContactController extends Controller
             // And that the user has permission to update it!
             if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
-                    throw new CHttpException(403);
+                    throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
                 }
             
                 $this->sendResponseHeaders(403, 'json');
@@ -583,7 +589,7 @@ class ContactController extends Controller
         } else {
             if(!Yii::app()->user->isRestrictedArenaManager()) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
-                    throw new CHttpException(403);
+                    throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
                 }
             
                 $this->sendResponseHeaders(403, 'json');
@@ -922,7 +928,7 @@ class ContactController extends Controller
         // And that the user has permission to update it!
         if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');

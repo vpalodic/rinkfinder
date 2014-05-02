@@ -100,7 +100,7 @@ class EventController extends Controller
         // And that the user has permission to update it!
         if(!Yii::app()->user->isRestrictedArenaManager()) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
@@ -116,6 +116,11 @@ class EventController extends Controller
         $id = isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id'] > 0 ? (integer)$_GET['id'] : 0;
         $aid = isset($_GET['aid']) && is_numeric($_GET['aid']) && $_GET['aid'] > 0 ? (integer)$_GET['aid'] : 0;
         $uid = Yii::app()->user->id;
+        $aid = 0;
+        
+        // Honestly, we don't need the aid here as events are publicly available
+        // and we validate in the updateAttribute action that the user has 
+        // authorization to edit the event.
         
         // Verify we have a valid ID!
         if($id <= 0) {
@@ -163,7 +168,7 @@ class EventController extends Controller
                 
                 if($model === null) {
                     if($outputFormat == "html" || $outputFormat == "xml") {
-                        throw new CHttpException(404, 'Location not found');
+                        throw new CHttpException(404, 'Event not found');
                     }
 
                     $this->sendResponseHeaders(404, 'json');
@@ -171,7 +176,7 @@ class EventController extends Controller
                     echo json_encode(
                             array(
                                 'success' => false,
-                                'error' => 'Location not found',
+                                'error' => 'Event not found',
                             )
                     );
                     Yii::app()->end();
@@ -211,7 +216,7 @@ class EventController extends Controller
                 
                 if($model === null) {
                     if($outputFormat == "html" || $outputFormat == "xml") {
-                        throw new CHttpException(404, 'Location not found');
+                        throw new CHttpException(404, 'Event not found');
                     }
 
                     $this->sendResponseHeaders(404, 'json');
@@ -219,7 +224,7 @@ class EventController extends Controller
                     echo json_encode(
                             array(
                                 'success' => false,
-                                'error' => 'Location not found',
+                                'error' => 'Event not found',
                             )
                     );
                     Yii::app()->end();
@@ -1120,6 +1125,215 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * Creates a new model.
+     * If creation is successful, the primary key of the new event is returned
+     * along with the tags!
+     * Otherwise if there are validation errors, those are returned as well.
+     */
+    public function actionCreateEvent()
+    {
+        Yii::trace("In actionCreateLocation.", "application.controllers.LocationController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only create via a POST and AJAX request!
+        $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        
+        // Verify we have a valid ID!
+        if($aid <= 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Load the Arena model and ensure that the user is assigned to it!
+        $arena = $this->loadArenaModel($aid, $outputFormat);
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // We need to grab and validate the rest of our parameters from the request body
+        $model = new Event;
+
+        $model->arena_id = $aid;
+        $model->location_id = isset($_POST['location_id']) && is_numeric($_POST['location_id']) ? (integer)$_POST['location_id'] : null;
+        $model->external_id = isset($_POST['external_id']) && is_string($_POST['external_id']) && strlen($_POST['external_id']) > 0 ? $_POST['external_id'] : null;
+        $model->recurrence_id = isset($_POST['recurrence_id']) && is_numeric($_POST['recurrence_id']) ? (integer)$_POST['recurrence_id'] : null;
+        $model->name = isset($_POST['name']) && is_string($_POST['name']) && strlen($_POST['name']) > 0 ? $_POST['name'] : null;
+        $model->description = isset($_POST['description']) && is_string($_POST['description']) && strlen($_POST['description']) > 0 ? $_POST['description'] : null;
+        $model->notes = isset($_POST['notes']) && is_string($_POST['notes']) && strlen($_POST['notes']) > 0 ? $_POST['notes'] : null;
+        $model->tags = isset($_POST['tags']) && is_string($_POST['tags']) && strlen($_POST['tags']) > 0 ? $_POST['tags'] : null;
+        $model->type_id = isset($_POST['type_id']) && is_numeric($_POST['type_id']) ? (integer)$_POST['type_id'] : 1;
+        $model->status_id = isset($_POST['status_id']) && is_numeric($_POST['status_id']) ? (integer)$_POST['status_id'] : 1;
+        $model->all_day = isset($_POST['all_day']) && is_numeric($_POST['all_day']) ? (integer)$_POST['all_day'] : null;
+        $model->duration = isset($_POST['duration']) && is_numeric($_POST['duration']) ? (integer)$_POST['duration'] : null;
+        $model->price = isset($_POST['price']) && is_numeric($_POST['price']) ? (float)$_POST['price'] : 0.00;
+        $model->start_date = isset($_POST['start_date']) && is_string($_POST['start_date']) && strlen($_POST['start_date']) > 0 ? $_POST['start_date'] : null;
+        $model->start_time = isset($_POST['start_time']) && is_string($_POST['start_time']) && strlen($_POST['start_time']) > 0 ? $_POST['start_time'] : null;
+        $model->end_date = isset($_POST['end_date']) && is_string($_POST['end_date']) && strlen($_POST['end_date']) > 0 ? $_POST['end_date'] : null;
+        $model->end_time = isset($_POST['end_time']) && is_string($_POST['end_time']) && strlen($_POST['end_time']) > 0 ? $_POST['end_time'] : null;
+        $model->created_by_id = $uid;
+        $model->created_on = new CDbExpression('NOW()');
+        $model->updated_by_id = $uid;
+        $model->updated_on = new CDbExpression('NOW()');
+        
+        // Ok, we auto-tag it before we save!
+        $model->autoDurationEndDateTimeStatus(0);
+        $model->autoTag();
+        
+        try {
+            if(!$model->save()) {
+                $errors = $model->getErrors();
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    $output = '';
+
+                    foreach($errors as $error) {
+                        if($output == '') {
+                            $output = $error;
+                        } else {
+                            $output .= "\n" . $error;
+                        }
+                    }
+                    throw new CHttpException(200, $output);
+                }
+            
+                $this->sendResponseHeaders(200, 'json');
+            
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => true,
+                            'errors' => json_encode($errors)
+                        )
+                );
+                Yii::app()->end();
+            }
+            
+            if($outputFormat == "html") {
+                echo json_encode(
+                        array(
+                            'success' => true,
+                            'error' => false,
+                            'id' => $model->id,
+                            'tags' => $model->tags
+                        )
+                );
+            } else if ($outputFormat == "xml") {
+                $xmlout = array(
+                    'success' => 'true',
+                    'error' => 'false',
+                    'id' => $model->id,
+                    'tags' => $model->tags
+                );
+                
+                $this->sendResponseHeaders(200, 'xml');
+                $xml = Controller::generate_valid_xml_from_array($xmlout, "newLocation", "location");
+                echo $xml;
+                Yii::app()->end();
+            } else {
+                $this->sendResponseHeaders(200, 'json');
+            
+                echo json_encode(
+                        array(
+                            'success' => true,
+                            'error' => false,
+                            'id' => $model->id,
+                            'aid' => $model->arena_id,
+                            'tags' => $model->tags,
+                            'all_day' => $model->all_day,
+                            'start_date' => $model->start_date,
+                            'start_time' => $model->start_time,
+                            'end_date' => $model->end_date,
+                            'end_time' => $model->end_time,
+                            'duration' => $model->duration
+                        )
+                );
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, $ex->getMessage());
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
 	/**
 	 * Updates a particular model.
 	 * If update is successful, the browser will be redirected to the 'view' page.
@@ -1164,6 +1378,7 @@ class EventController extends Controller
         $pk = isset($_POST['pk']) && is_numeric($_POST['pk']) && $_POST['pk'] > 0 ? (integer)$_POST['pk'] : 0;
         $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
         $lid = isset($_POST['lid']) && is_numeric($_POST['lid']) && $_POST['lid'] > 0 ? (integer)$_POST['lid'] : 0;
+        $newRecord = isset($_POST['newRecord']) && is_numeric($_POST['newRecord']) && $_POST['newRecord'] > 0 ? (integer)$_POST['newRecord'] : 0;
         
         if($id == 0) {
             // Work around an editable side-effect after adding a new record.
@@ -1171,7 +1386,7 @@ class EventController extends Controller
         }
         
         // Verify we have a valid ID!
-        if($aid <= 0 || $id <= 0 || $pk <= 0 || $id !== $pk) {
+        if(($aid <= 0 || $id <= 0 || $pk <= 0 || $id !== $pk) && $newRecord == 0) {
             if($outputFormat == "html" || $outputFormat == "xml") {
                 throw new CHttpException(400, 'Invalid parameters');
             }
@@ -1191,13 +1406,20 @@ class EventController extends Controller
         // Always grab the currently logged in user's ID.
         $uid = Yii::app()->user->id;
         
+        // Ok, we have what appear to be valid parameters and so
+        // it is time to validate and then update the value!
+        if (!$newRecord) {
+            $model = $this->loadModel($id, $outputFormat);
+            $aid = $model->arena_id;
+        }
+        
         // Load the Arena model and ensure that the user is assigned to it!
         $arena = $this->loadArenaModel($aid, $outputFormat);
         
         // And that the user has permission to update it!
         if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
@@ -1232,10 +1454,27 @@ class EventController extends Controller
             );
             Yii::app()->end();
         }
-            
+        
+        // If it is for a new record, grab and return the arena locations
+        if($newRecord >= 1 && $name == 'arena_id') {
+            $locations = Arena::getLocationsList($value);
+                
+            // regardless of the output method, we are going to send a json
+            // encoded response!!
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'locations' => $locations,
+                    )
+            );
+            Yii::app()->end();
+        }
+        
         // Ok, we have what appear to be valid parameters and so
         // it is time to validate and then update the value!
-        $model = $this->loadModel($id, $outputFormat);
         $model->$name = $value;
             
         $attribs = array($name);
@@ -1280,9 +1519,42 @@ class EventController extends Controller
             }
 
             if($name == 'arena_id') {
+                // Load the new Arena model and ensure that the user is assigned to it!
+                $arena = $this->loadArenaModel($value, $outputFormat);
+        
+                // And that the user has permission to update it!
+                if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+                    if($outputFormat == "html" || $outputFormat == "xml") {
+                        throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+                    }
+            
+                    $this->sendResponseHeaders(403, 'json');
+                    echo json_encode(array(
+                            'success' => false,
+                            'error' => 'Permission denied. You are not authorized to perform this action.'
+                        )
+                    );
+                    Yii::app()->end();
+                }
+                
                 $attributes = array(
                     $name => $value,
                     'location_id' => new CDbExpression('NULL'),
+                    'updated_by_id' => $uid,
+                    'updated_on' => new CDbExpression('NOW()')
+                );
+            } elseif($name == 'start_date' || $name == 'start_time' || 
+                    $name == 'duration' || $name == 'all_day' ||
+                    $name == 'end_date' || $name == 'end_time') {
+                $model->autoDurationEndDateTimeStatus(0);
+                
+                $attributes = array(
+                    'all_day' => $model->all_day,
+                    'start_date' => $model->start_date,
+                    'start_time' => $model->start_time,
+                    'end_date' => $model->end_date,
+                    'end_time' => $model->end_time,
+                    'duration' => $model->duration,
                     'updated_by_id' => $uid,
                     'updated_on' => new CDbExpression('NOW()')
                 );
@@ -1312,46 +1584,39 @@ class EventController extends Controller
                 Yii::app()->end();
             }
             
-            if($name == 'tags') {
+            if($name == 'start_date' || $name == 'start_time' || 
+                    $name == 'duration' || $name == 'all_day' ||
+                    $name == 'end_date' || $name == 'end_time') {
+                // Data has been saved or else we would have thrown an exception
+                // Regardless of the output method, we are going to send a json
+                // encoded response!!
+                $this->sendResponseHeaders(200, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => true,
+                            'error' => false,
+                            'attributes' => $attributes,
+                        )
+                );
+            } elseif($name == 'tags') {
                 $model->normalizeTags();
                 Tag::model()->updateFrequency($model->oldTags, $model->tags);
-            }
-            
-            if($name == 'arena_id') {
-                // Data has been retrieved or else we would have thrown an exception
+            } elseif($name == 'arena_id') {
+                // Data has been saved or else we would have thrown an exception
                 $locations = Arena::getLocationsList($value);
                 
-                if($outputFormat == 'json') {
-                    $this->sendResponseHeaders(200, 'json');
-                
-                    echo json_encode(
-                            array(
-                                'success' => true,
-                                'error' => false,
-                                'locations' => $locations,
-                            )
-                    );
-                
-                    Yii::app()->end();
-                } elseif($outputFormat == 'xml') {
-                    $this->sendResponseHeaders(200, 'xml');
-            
-                    $xml = Controller::generate_valid_xml_from_array($attributes, "view", "event");
-                    echo $xml;
-            
-                    Yii::app()->end();
-                } else {
-                    // We default to html!
-                    // Publish and register our jQuery plugin
-                    echo json_encode(
-                            array(
-                                'success' => true,
-                                'error' => false,
-                                'locations' => $locations,
-                            )
-                    );
-                    Yii::app()->end();
-                }
+                // regardless of the output method, we are going to send a json
+                // encoded response!!
+                $this->sendResponseHeaders(200, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => true,
+                            'error' => false,
+                            'locations' => $locations,
+                        )
+                );
             }
         } catch (Exception $ex) {
             if($ex instanceof CHttpException) {
@@ -1791,7 +2056,7 @@ class EventController extends Controller
         
         if($model === null) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(404, 'Facility not found');
+                throw new CHttpException(404, 'Event not found');
             }
 
             $this->sendResponseHeaders(404, 'json');
@@ -1799,7 +2064,7 @@ class EventController extends Controller
             echo json_encode(
                     array(
                         'success' => false,
-                        'error' => 'Facility not found',
+                        'error' => 'Event not found',
                     )
             );
             Yii::app()->end();

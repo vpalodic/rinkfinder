@@ -45,7 +45,7 @@ class Location extends RinkfinderActiveRecord
     /**
      * @var string $oldTags
      */
-    private $oldTags;
+    public $oldTags;
     
 	/**
 	 * @return string the associated database table name

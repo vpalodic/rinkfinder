@@ -57,7 +57,7 @@ class Event extends RinkfinderActiveRecord
     /**
      * @var string $oldTags
      */
-    private $oldTags;
+    public $oldTags;
     
     /**
      * @return string the associated database table name
@@ -75,7 +75,7 @@ class Event extends RinkfinderActiveRecord
         // NOTE: you should only define rules for those attributes that
         // will receive user inputs.
         return array(
-            array('arena_id, location_id, start_date, start_time', 'required'),
+            array('arena_id, start_date, start_time', 'required'),
             array('arena_id, location_id, duration, type_id, status_id, lock_version, created_by_id, updated_by_id', 'numerical', 'integerOnly' => true),
             array('all_day', 'boolean'),
             array('external_id', 'length', 'max'=>32),
@@ -606,7 +606,7 @@ class Event extends RinkfinderActiveRecord
     /**
      * Normalizes the user-entered tags.
      */
-    public function normalizeTags($attribute, $params)
+    public function normalizeTags($attribute = null, $params = null)
     {
         $this->tags = Tag::array2string(array_unique(Tag::string2array($this->tags)));
     }
@@ -681,7 +681,12 @@ class Event extends RinkfinderActiveRecord
         $dtCurrentTime = new DateTime();
         $dtEventStartDateTime = new DateTime($this->start_date . ' ' . $this->start_time);
         
-        $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
+        if(!isset($this->end_date) || !isset($this->end_time)) {
+            $dtEventEndDateTime = $dtEventStartDateTime;
+        } else {
+            $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
+        }
+        
         $bAllDay = $this->all_day;
         
         $this->duration = !empty($this->duration) ? abs($this->duration) : 60;

@@ -113,7 +113,7 @@ class ArenaController extends Controller
             
             if(!$model->isUserAssigned($uid)) {
                 if($outputFormat == "html" || $outputFormat == "xml") {
-                    throw new CHttpException(403);
+                    throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
                 }
 
                 $this->sendResponseHeaders(403, 'json');
@@ -526,7 +526,7 @@ class ArenaController extends Controller
         // Ensure that the user has permission to create it!
         if(!Yii::app()->user->isApplicationAdministrator()) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
@@ -749,7 +749,7 @@ class ArenaController extends Controller
         // And that the user has permission to update it!
         if(!Yii::app()->user->isRestrictedArenaManager() || !$model->isUserAssigned($uid)) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
@@ -971,7 +971,7 @@ class ArenaController extends Controller
         // Ensure that the user has permission to delete it!
         if(!Yii::app()->user->isApplicationAdministrator()) {
             if($outputFormat == "html" || $outputFormat == "xml") {
-                throw new CHttpException(403);
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
             }
             
             $this->sendResponseHeaders(403, 'json');
