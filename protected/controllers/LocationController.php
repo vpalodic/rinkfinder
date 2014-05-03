@@ -525,9 +525,7 @@ class LocationController extends Controller
         // Default to HTML output!
         $outputFormat = "html";
         
-        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
-            $outputFormat = $_GET['output'];
-        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
             $outputFormat = $_POST['output'];
         }
         

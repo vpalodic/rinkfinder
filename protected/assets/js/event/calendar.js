@@ -40,7 +40,7 @@
                     });
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    utilities.ajaxError.show('Arena Calendar',
+                    utilities.ajaxError.show('Facility Calendar',
                         'Failed to retrieve the calendar',
                         jqXHR, textStatus, errorThrown);
                 }

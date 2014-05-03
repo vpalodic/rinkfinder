@@ -21,9 +21,9 @@ class EventController extends Controller
     {
         return array(
             'accessControl',
-            'postOnly + delete deleteEvent updateAttribute createEvent',
+            'postOnly + delete deleteEvent deleteEvents updateAttribute createEvent exportEvents',
             'arenaContext + create admin uploadEvents',
-            'ajaxOnly + viewEvent deleteEvent updateAttribute createEvent uploadEventsFileDelete uploadEventsProcessCSV type status',
+            'ajaxOnly + retrieveEvents viewEvent deleteEvent updateAttribute createEvent uploadEventsFileDelete uploadEventsProcessCSV type status',
         );
     }
 
@@ -52,10 +52,11 @@ class EventController extends Controller
             array(
                 'allow', // allow authenticated user to perform 'create' and 'update' actions
                 'actions' => array(
-                    'create',
                     'createEvent',
                     'deleteEvent',
-                    'update',
+                    'deleteEvents',
+                    'retrieveEvents',
+                    'exportEvents',
                     'updateAttribute',
                     'uploadEvents',
                     'uploadEventsFile',
@@ -70,7 +71,9 @@ class EventController extends Controller
             array(
                 'allow', // allow admin user to perform 'admin' and 'delete' actions
                 'actions' => array(
+                    'create',
                     'admin',
+                    'update',
                     'delete'
                 ),                
                 'roles' => array(
@@ -523,6 +526,167 @@ class EventController extends Controller
                             'path' => $path,
                         ));
             }
+        }
+    }
+
+    /**
+     * Displays a particular arena's events one month at a time.
+     */
+    public function actionRetrieveEvents()
+    {
+        Yii::trace("In actionRetrieveEvents.", "application.controllers.EventController");
+        
+        // We output json or XML only for this one!
+        $outputFormat = "json";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        $aid = 0;
+        $lid = null;
+        $from = null;
+        $to = null;
+        $tid = null;
+        $sid = null;
+        
+        if(isset($_GET['aid']) && is_numeric($_GET['aid']) && $_GET['aid'] > 0) {
+            $aid = $_GET['aid'];
+        }
+        
+        if(isset($_GET['lid']) && is_numeric($_GET['lid']) && $_GET['lid'] > 0) {
+            $aid = $_GET['lid'];
+        }
+        
+        if(isset($_GET['from']) && strtotime($_GET['from'])) {
+            $from = $_GET['from'];
+        }
+        
+        if(isset($_GET['to']) && strtotime($_GET['to'])) {
+            $to = $_GET['to'];
+        }
+        
+        if(isset($_GET['tid']) && is_numeric($_GET['tid']) && $_GET['tid'] > 0) {
+            $tid = $_GET['tid'];
+        }
+        
+        if(isset($_GET['sid']) && is_numeric($_GET['sid']) && $_GET['sid'] > 0) {
+            $sid = $_GET['sid'];
+        }
+        
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        $data = null;
+        
+        // We are pretty flexible in what we will accept as we can either send
+        // lat & lng pair to search by distance, a single arena id, or an array
+        // of arena IDs. At least one of these must be passed in to us or else
+        // we will bomb out.
+        if($aid <= 0) {
+            if($outputFormat == "xml" || $outputFormat == "html") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Load the Arena model and ensure that the user is assigned to it!
+        $arena = $this->loadArenaModel($aid, $outputFormat);
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        $data = null;
+        
+        // Try and get the data!
+        try {
+            $data = Event::getAssignedArenaView($uid, $aid, $lid, $from, $to, $tid, $sid);
+            
+            // Data has been retrieved!
+            if($outputFormat == 'json') {
+                $this->sendResponseHeaders(200, 'json');
+
+                echo json_encode(array(
+                    'success' => true,
+                    'error' => false,
+                    'data' => $data
+                ));
+                Yii::app()->end();
+            } elseif($outputFormat == 'xml') {
+                $this->sendResponseHeaders(200, 'xml');
+            
+                $xml = Controller::generate_valid_xml_from_array($data, "events", "event");
+                echo $xml;
+            
+                Yii::app()->end();
+            } else {
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500);
+            }
+            
+            $errorInfo = null;
+            
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+            
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+            
+            Yii::app()->end();
         }
     }
 
@@ -1617,6 +1781,427 @@ class EventController extends Controller
                             'locations' => $locations,
                         )
                 );
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, $ex->getMessage());
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
+    /**
+     * Deletes an array of models.
+     * If delete is successful, there is no output, otherwise we output an error.
+     */
+    public function actionExportEvents()
+    {
+        Yii::trace("In actionExportEvents.", "application.controllers.EventController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only delete via a POST and AJAX request!
+        
+        $events = isset($_POST['events']) && is_array($_POST['events']) && count($_POST['events']) > 0 ? $_POST['events'] : array();
+        $count = count($events);
+        
+        // Verify we have a valid array of ids and aids!
+        if($count <= 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // We will have to do this in a way that ensures that the events
+        // being exported are associated with arenas that the user is assigned to.
+        // We do this as the external_id of the events will be updated with the 
+        // event ID so that the user can later re-import them.
+        // To do this, we will build a custom SELECT and UPDATE query that the Event model
+        // will contain as a static method. 
+        // Before we get to that point, we will at least ensure that the user
+        // is in fact authorized to even make the request.
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        try {
+            $data = null;
+            $data = Event::exportByArray($uid, $events);
+            if($data == null || count($data) == 0) {
+                $output = 'Failed to export the records as the update was either unauthorized or because too many rows would be exported.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            }
+            
+            // Ok, we have our data so we need to build up a CSV record and then
+            // send that to the browser in a manner that will force it to download
+            // the CSV file!
+            $header = array_keys($data[0]);
+            
+            $csv = $this->arrayToCsv($header);
+            $csv .= "\r\n";
+            
+            foreach($data as $event) {
+                $csv .= $this->arrayToCsv($event);
+                $csv .= "\r\n";
+            }
+            
+            header("Cache-Control: ");
+            //header("Contact-type: application/download");
+            header("Content-type: text/plain");
+            header('Content-Disposition: attachment; filename="EventExport_' . time() . '_.csv"');
+
+            echo $csv;
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, $ex->getMessage());
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
+    /**
+     * Deletes an array of models.
+     * If delete is successful, there is no output, otherwise we output an error.
+     */
+    public function actionDeleteEvents()
+    {
+        Yii::trace("In actionDeleteEvents.", "application.controllers.EventController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only delete via a POST and AJAX request!
+        
+        $events = isset($_POST['events']) && is_array($_POST['events']) && count($_POST['events']) > 0 ? $_POST['events'] : array();
+        $count = count($events);
+        
+        // Verify we have a valid array of ids and aids!
+        if($count <= 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // We will have to do this in a way that ensures that the events
+        // being deleted are associated with arenas that the user is assigned to.
+        // To do this, we will build a custom DELETE query that the Event model
+        // will contain as a static method. 
+        // Before we get to that point, we will at least ensure that the user
+        // is in fact authorized to even make the request.
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        try {
+            if(!Event::deleteByArray($uid, $events)) {
+                $output = 'Failed to delete the records as the update was either unauthorized or because too many rows would be deleted.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, $ex->getMessage());
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
+    /**
+     * Deletes a particular model.
+     * If delete is successful, there is no output, otherwise we output an error.
+     */
+    public function actionDeleteEvent()
+    {
+        Yii::trace("In actionDeleteEvent.", "application.controllers.EventController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only delete via a POST and AJAX request!
+        $id = isset($_POST['id']) && is_numeric($_POST['id']) && $_POST['id'] > 0 ? (integer)$_POST['id'] : 0;
+        $pk = isset($_POST['pk']) && is_numeric($_POST['pk']) && $_POST['pk'] > 0 ? (integer)$_POST['pk'] : 0;
+        $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        
+        // Verify we have a valid ID!
+        if($aid <= 0 || $id <= 0 || $pk <= 0 || $id !== $pk) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        $model = $this->loadModel($id, $outputFormat);
+        
+        $aid = $model->arena_id;
+        
+        // Load the Arena model and ensure that the user is assigned to it!
+        $arena = $this->loadArenaModel($aid, $outputFormat);
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->isRestrictedArenaManager() || !$arena->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        try {
+            if(!$model->delete()) {
+                $output = 'Failed to delete the record as the update was either unauthorized or because too many rows would be updated.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
             }
         } catch (Exception $ex) {
             if($ex instanceof CHttpException) {

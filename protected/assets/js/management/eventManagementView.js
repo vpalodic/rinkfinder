@@ -410,13 +410,13 @@
             eventManagementView.resetEventView();
         });
         
-        if (eventManagementView.event.id !== "undefined")
-        {
-            eventManagementView.setupEventView(eventManagementView.event, eventManagementView.params);
-        }
-        else if (eventManagementView.newRecord)
+        if (eventManagementView.newRecord)
         {
             $newBtn.trigger('click');
+        }
+        else if (eventManagementView.event && eventManagementView.event.id)
+        {
+            eventManagementView.setupEventView(eventManagementView.event, eventManagementView.params);
         }
     };
     
@@ -1179,7 +1179,7 @@
         
         eventView += '<tr><td style="width:33%">Tags</td><td>' +
                 '<a href="#" id="Event_tags" data-name="tags" ' +
-                'data-type="text" data-tpl="<input type=\'password\'>" "data-mode="inline" data-url="' + 
+                'data-type="text" "data-mode="inline" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
                 'data-pk="' + event.id + '" data-value="' + event.tags + '" ' +
                 'title="Event Tags" class="event-editable">' +

@@ -266,7 +266,7 @@
                                         <a id="Arena_directions" target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($model->address_line1 . ', ' . $model->address_line2 . ', ' . $model->city . ', ' . $model->state . ' ' . $model->zip); ?>">
                                             Driving Directions
                                         </a><br />
-                                    <?php elseif(isset($model->address_line1) && isset($model->city_state_zip)) : ?>
+                                    <?php elseif(isset($model->address_line1) && isset($model->city)) : ?>
                                         <a id="Arena_directions" target="_blank" href="http://maps.google.com/maps?daddr=<?php echo urlencode($model->address_line1 . ', ' . $model->city . ', ' . $model->state . ' ' . $model->zip); ?>">
                                             Driving Directions
                                         </a><br />
@@ -488,7 +488,7 @@
                 </div>
                 <div class="row-fluid">
                     <div class="span12">
-                        <strong>Select a contact to edit</strong><br />
+                        <strong>Select a contact to view or edit</strong><br />
                         <select id="assignedContactsSelect"
                                 class="span12">
                             <option value="none"></option>
@@ -574,7 +574,7 @@
             <div class="panel-body">
                 <div class="row-fluid">
                     <div class="span12">
-                        <strong>Select a venue to edit</strong><br />
+                        <strong>Select a venue to view or edit</strong><br />
                         <select id="locationsSelect"
                                 class="span12">
                             <option value="none"></option>
@@ -643,7 +643,12 @@
             </div>
         </div>
     </div>
-    
+    <?php
+    // Grab the event status and types. We don't pre-load any events
+    // as that would be too time consuming and very wasteful!
+    $eventsStatuses = Event::getStatusesList();
+    $eventsTypes = Event::getTypesList();
+    ?>
     <div id="eventsTabPane" class="tab-pane fade">
         <div id="eventManagementView" class="panel panel-primary">
             <div class="panel-heading">
@@ -654,39 +659,132 @@
             <div class="panel-body">
                 <div class="row-fluid">
                     <div class="span12">
-                        <strong>Event Actions</strong><br />
-                        <div class="well">
-                            <div class="row-fluid">
-                                <div class="span4">
-                                    <button class="btn btn-block btn-success"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Import Events"
-                                            id="importEventButton">
-                                        <i class="fa fa-lg fa-upload"></i> <br />
-                                        <span>Import</span>
-                                    </button>
-                                </div>
-                                <div class="span4">
-                                    <button class="btn btn-block btn-primary"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Create a new event"
-                                            id="newEventButton">
-                                        <i class="fa fa-lg fa-plus-square"></i> <br />
-                                        <span>New</span>
-                                    </button>
-                                </div>
-                                <div class="span4">
-                                    <button class="btn btn-block btn-danger"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Delete this event"
-                                            id="deleteEventButton">
-                                        <i class="fa fa-lg fa-minus-square"></i> <br />
-                                        <span>Delete</span>
-                                    </button>
-                                </div>
+                        <strong>Event List</strong><br />
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="span9">
+                            <button id="retrieveEventButton" class="btn"
+                                    type="button" data-toggle="tooltip"
+                                    data-original-title="Retrieve all events for this Facility">
+                                <i class="fa fa-fw fa-lg fa-search"></i><br />
+                                <span>Retrieve Events</span>                            
+                            </button>
+                            <span> </span>
+                            <a class="btn btn-success"
+                               href="<?php echo $params['endpoints']['event']['import']; ?>"
+                               target="_blank"
+                               id="importEventButton"
+                               data-toggle="tooltip"
+                               data-original-title="Import Events (Opens in a new window)">
+                                <i class="fa fa-lg fa-fw fa-upload"></i><br />
+                                <span>Import Events</span>
+                            </a>
+                            <span> </span>
+                            <button id="exportEventButton" class="btn btn-warning"
+                                    type="button" data-toggle="tooltip"
+                                    data-original-title="Export all of the events in the events list">
+                                <i class="fa fa-fw fa-lg fa-download"></i><br />
+                                <span>Export All Events</span>                            
+                            </button>
+                        </div>
+                        <div class="span3">
+                            <button id="deleteEventButton" class="btn btn-danger"
+                                    type="button" data-toggle="tooltip"
+                                    data-original-title="Delete all of the events in the events list">
+                                <i class="fa fa-fw fa-lg fa-times-circle"></i><br />
+                                <span>Delete All Events</span>                            
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <br />
+                        <form class="form-search">
+                            <div class="input-prepend">
+                                <span class="add-on">Filter</span>
+                                <input id="tableEventFilter" type="text" class="input-medium search-query" placeholder="Filter" />
+                            </div>
+                            <span> </span>
+                            <div id="tableEventVenueFilterGroup" class="input-prepend">
+                                <span class="add-on">Venue:</span>
+                                <select class="input-medium search-query" id="tableEventVenueFilter" placeholder="Venue">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach($locations as $location) {
+                                        echo '<option value="' . $location['id'] . '">' . str_replace(' ', '_', $location['name']) . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <span> </span>
+                            <div id="tableEventTypeFilterGroup" class="input-prepend">
+                                <span class="add-on">Type:</span>
+                                <select class="input-medium search-query" id="tableEventTypeFilter" placeholder="Type">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach($eventsTypes as $type) {
+                                        echo '<option value="' . $type['value'] . '">' . $type['text'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <span> </span>
+                            <div id="tableEventStatusFilterGroup" class="input-prepend">
+                                <span class="add-on">Status:</span>
+                                <select class="input-medium search-query" id="tableEventStatusFilter" placeholder="Status">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach($eventsStatuses as $status) {
+                                        echo '<option value="' . $status['value'] . '">' . $status['text'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="well well-small">
+                            <div id="eventsTableContainer">
+                                <table id="eventFootable"
+                                       class="items table table-striped table-bordered table-condensed table-hover footable"
+                                       data-filter="#tableEventFilter"
+                                       data-sort="false"
+                                       data-filter-text-only="true"
+                                       data-filter-minimum="2">
+                                    <thead>
+                                        <tr>
+                                            <th data-type="numeric" data-class="event-arena-id">
+                                                Event
+                                            </th>
+                                            <th data-type="alpha" data-class="event-location_id" data-hide="phone,tablet">
+                                                Venue
+                                            </th>
+                                            <th data-type="alpha" data-class="event-type_id" data-hide="phone,tablet">
+                                                Type
+                                            </th>
+                                            <th data-type="alpha" data-class="event-status_id" data-hide="phone,tablet">
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="eventFootableBody">
+                                        
+                                    </tbody>
+                                    <tfoot class="hide-if-no-paging">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="pagination pagination-centered">
+                                                    
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -696,62 +794,29 @@
                         <strong>Event Actions</strong><br />
                         <div class="well">
                             <div class="row-fluid">
-                                <div class="span4">
-                                    <button class="btn btn-block btn-success"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Import Events"
-                                            id="importEventButton">
-                                        <i class="fa fa-lg fa-upload"></i> <br />
-                                        <span>Import</span>
-                                    </button>
+                                <div class="span4 offset2">
+                                    <a class="btn btn-block btn-success"
+                                       href="<?php echo $params['endpoints']['event']['update']; ?>"
+                                       target="_blank"
+                                       data-toggle="tooltip"
+                                       data-original-title="Editable Events (Opens in a new window)"
+                                       id="editEventButton">
+                                        <i class="fa fa-lg fa-fw fa-pencil"></i> <br />
+                                        <span>Editable Events</span>
+                                    </a>
                                 </div>
                                 <div class="span4">
-                                    <button class="btn btn-block btn-primary"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Create a new event"
-                                            id="newEventButton">
-                                        <i class="fa fa-lg fa-plus-square"></i> <br />
-                                        <span>New</span>
-                                    </button>
-                                </div>
-                                <div class="span4">
-                                    <button class="btn btn-block btn-danger"
-                                            type="button"
-                                            data-toggle="tooltip"
-                                            data-original-title="Delete this event"
-                                            id="deleteEventButton">
-                                        <i class="fa fa-lg fa-minus-square"></i> <br />
-                                        <span>Delete</span>
-                                    </button>
+                                    <a class="btn btn-block btn-warning"
+                                       href="<?php echo $params['endpoints']['event']['new']; ?>"
+                                       target="_blank"
+                                       data-toggle="tooltip"
+                                       data-original-title="New Event (Opens in a new window)"
+                                       id="newEventButton">
+                                        <i class="fa fa-lg fa-fw fa-plus-square"></i> <br />
+                                        <span>New Event</span>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row-fluid">
-                    <div class="span8 offset2">
-                        <div id="eventDetails">
-                            
-                        </div>
-                        <div id="newEventButtons">
-                            <button id="saveEventButton"
-                                    class="btn btn-large btn-primary"
-                                    type="button"
-                                    data-toggle="tooltip"
-                                    data-original-title="Save the new event">
-                                <i class="fa fa-lg fa-fw fa-check"></i>
-                                <span>Save</span>
-                            </button>
-                            <button id="cancelEventButton"
-                                    class="btn btn-large pull-right"
-                                    type="button"
-                                    data-toggle="tooltip"
-                                    data-original-title="Cancel adding a new event">
-                                <i class="fa fa-lg fa-fw fa-times"></i>
-                                <span>Cancel</span>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -783,6 +848,13 @@
             . 'arenaManagementView.endpoints.location.updateRecord = "' . $params['endpoints']['location']['update'] . '";'
             . 'arenaManagementView.endpoints.location.viewRecord = "' . $params['endpoints']['location']['view'] . '";'
             . 'arenaManagementView.endpoints.location.deleteRecord = "' . $params['endpoints']['location']['delete'] . '";'
+            . 'arenaManagementView.endpoints.event.newRecord = "' . $params['endpoints']['event']['new'] . '";'
+            . 'arenaManagementView.endpoints.event.updateRecord = "' . $params['endpoints']['event']['update'] . '";'
+            . 'arenaManagementView.endpoints.event.viewRecord = "' . $params['endpoints']['event']['view'] . '";'
+            . 'arenaManagementView.endpoints.event.deleteRecord = "' . $params['endpoints']['event']['delete'] . '";'
+            . 'arenaManagementView.endpoints.event.searchRecord = "' . $params['endpoints']['event']['search'] . '";'
+            . 'arenaManagementView.endpoints.event.exportRecord = "' . $params['endpoints']['event']['export'] . '";'
+            . 'arenaManagementView.endpoints.event.deleteAllRecord = "' . $params['endpoints']['event']['deleteAll'] . '";'
             . 'arenaManagementView.params = ' . json_encode($params['data']) . ';'
             . 'arenaManagementView.arena = ' . json_encode($model->attributes) . ';'
             . 'arenaManagementView.locations = ' . json_encode($locations) . ';'
@@ -790,6 +862,8 @@
             . 'arenaManagementView.locationStatuses = ' . json_encode($locationsStatuses) . ';'
             . 'arenaManagementView.contacts = ' . json_encode($assignedContacts) . ';'
             //. 'arenaManagementView.events = ' . json_encode($model->events) . ';'
+            . 'arenaManagementView.eventTypes = ' . json_encode($eventsTypes) . ';'
+            . 'arenaManagementView.eventStatuses = ' . json_encode($eventsStatuses) . ';'
             //. 'arenaManagementView.managers = ' . json_encode($model->managers) . ';'
             . 'arenaManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
             . 'arenaManagementView.statusList = ' . json_encode(Arena::getActiveStatusList()) . ';'
@@ -848,12 +922,21 @@ $(document).ready(function() {
                 arenaManagementView.endpoints.location.updateRecord = "<?php echo $params['endpoints']['location']['update']; ?>";
                 arenaManagementView.endpoints.location.viewRecord = "<?php echo $params['endpoints']['location']['view']; ?>";
                 arenaManagementView.endpoints.location.deleteRecord = "<?php echo $params['endpoints']['location']['delete']; ?>";
+                arenaManagementView.endpoints.event.newRecord = "<?php echo $params['endpoints']['event']['new']; ?>";
+                arenaManagementView.endpoints.event.updateRecord = "<?php echo $params['endpoints']['event']['update']; ?>";
+                arenaManagementView.endpoints.event.viewRecord = "<?php echo $params['endpoints']['event']['view']; ?>";
+                arenaManagementView.endpoints.event.deleteRecord = "<?php echo $params['endpoints']['event']['delete']; ?>";
+                arenaManagementView.endpoints.event.searchRecord = "<?php echo $params['endpoints']['event']['search']; ?>";
+                arenaManagementView.endpoints.event.exportRecord = "<?php echo $params['endpoints']['event']['export']; ?>";
+                arenaManagementView.endpoints.event.deleteAllRecord = "<?php echo $params['endpoints']['event']['deleteAll']; ?>";
                 arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
                 arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
                 arenaManagementView.locations = <?php echo json_encode($locations); ?>;
                 arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
                 arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
                 arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
+                arenaManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
+                arenaManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
                 arenaManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
                 arenaManagementView.statusList = <?php echo json_encode(Arena::getActiveStatusList()); ?>;
                 arenaManagementView.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;
@@ -877,12 +960,21 @@ $(document).ready(function() {
         arenaManagementView.endpoints.location.updateRecord = "<?php echo $params['endpoints']['location']['update']; ?>";
         arenaManagementView.endpoints.location.viewRecord = "<?php echo $params['endpoints']['location']['view']; ?>";
         arenaManagementView.endpoints.location.deleteRecord = "<?php echo $params['endpoints']['location']['delete']; ?>";
+        arenaManagementView.endpoints.event.newRecord = "<?php echo $params['endpoints']['event']['new']; ?>";
+        arenaManagementView.endpoints.event.updateRecord = "<?php echo $params['endpoints']['event']['update']; ?>";
+        arenaManagementView.endpoints.event.viewRecord = "<?php echo $params['endpoints']['event']['view']; ?>";
+        arenaManagementView.endpoints.event.deleteRecord = "<?php echo $params['endpoints']['event']['delete']; ?>";
+        arenaManagementView.endpoints.event.searchRecord = "<?php echo $params['endpoints']['event']['search']; ?>";
+        arenaManagementView.endpoints.event.exportRecord = "<?php echo $params['endpoints']['event']['export']; ?>";
+        arenaManagementView.endpoints.event.deleteAllRecord = "<?php echo $params['endpoints']['event']['deleteAll']; ?>";
         arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
         arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
         arenaManagementView.locations = <?php echo json_encode($locations); ?>;
         arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
         arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
         arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
+        arenaManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
+        arenaManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
         arenaManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
         arenaManagementView.statusList = <?php echo json_encode(Arena::getActiveStatusList()); ?>;
         arenaManagementView.stateList = <?php echo json_encode(UnitedStatesNames::$states); ?>;

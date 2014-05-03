@@ -30,7 +30,10 @@
             viewRecord: "/server/endpoint",
             updateRecord: "/server/endpoint",
             newRecord: "/server/endpoint",
-            deleteRecord: "/server/endpoint"
+            deleteRecord: "/server/endpoint",
+            searchRecord: "/server/endpoint",
+            exportRecord: "/server/endpoint",
+            deleteAllRecord: "/server/endpoint"
         },
         manager: {
             viewRecord: "/server/endpoint",
@@ -46,6 +49,9 @@
     arenaManagementView.locationStatuses = [];
     arenaManagementView.contacts = {};
     arenaManagementView.events = {};
+    arenaManagementView.eventTypes = [];
+    arenaManagementView.eventStatuses = [];
+    arenaManagementView.newEventRecord = false;
     arenaManagementView.managers = {};
     arenaManagementView.params = {};
     arenaManagementView.isArenaManager = false;
@@ -86,6 +92,7 @@
         arenaManagementView.setupArenaGeocoding();
         arenaManagementView.setupInitialContactView();
         arenaManagementView.setupInitialLocationView();
+        arenaManagementView.setupInitialEventView();
         
         $('[data-toggle="tooltip"]').tooltip();
     };
@@ -299,18 +306,45 @@
                                 data: myParams,
                                 type: 'POST',
                                 dataType: "html",
-                                success: function () {
-                                            $('#Arena_geocode_btn').show(300, function () {
-                                                var $link = $('#Arena_directions');
+                                success: function(result, status, xhr) {
+                                    // Its possible we will get a session timeout so check for it!
+                                    var myjsonObj = false;
+                                    try
+                                    {
+                                        myjsonObj = JSON.parse(result);
+                                    }
+                                    catch (err)
+                                    {
+                                        myjsonObj = false;
+                                    }
+
+                                    if (myjsonObj !== false)
+                                    {
+                                        $('#Arena_geocode_btn').show(300, function () {
+                                            $parent.find('#loading').remove();
+                                        });
+                                        utilities.ajaxError.show(
+                                            "Error",
+                                            "Failed to assign the contact",
+                                            xhr,
+                                            "error",
+                                            "Login Required"
+                                        );
+
+                                        return;
+                                    }
+
+                                    $('#Arena_geocode_btn').show(300, function () {
+                                        var $link = $('#Arena_directions');
+
+                                        var newHref = 'http://maps.google.com/maps?daddr=' + escape(address);
                                                 
-                                                var newHref = 'http://maps.google.com/maps?daddr=' + escape(address);
+                                        $link.attr('href', newHref);
                                                 
-                                                $link.attr('href', newHref);
-                                                
-                                                $parent.find('#loading').remove();
-                                                var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
-                                                $parent.prepend(alertSuccess);
-                                            });
+                                        $parent.find('#loading').remove();
+                                        var alertSuccess = '<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Success!</strong></div>';
+                                        $parent.prepend(alertSuccess);
+                                    });
                                 },
                                 error: function(xhr, status, errorThrown) {
                                     $('#Arena_geocode_btn').show(300, function () {
@@ -784,6 +818,7 @@
             
             // The modal is now in the DOM so we can hook in to the button
             // clicks. Specifically, we only care about the 'yes' button.
+            $('button#yes').off('click');
             $('button#yes').on('click', function (e) {
                 // They clicked yes and so now we must delete the contact!!!
                 var contactId = $assignedS.val();
@@ -823,6 +858,7 @@
                     dataType: 'html',
                     success: function(result, status, xhr) {
                         // Its possible we will get a session timeout so check for it!
+                        $('button#yes').off('click');
                         var myjsonObj = false;
                         try
                         {
@@ -873,6 +909,7 @@
                         $deleteBtn.parent().find('#loading').remove();
                     },
                     error: function(xhr, status, errorThrown) {
+                        $('button#yes').off('click');
                         // Clear any selections
                         $availableMS.val('');
                         $assignedMS.val('');
@@ -1829,6 +1866,7 @@
             
             // The modal is now in the DOM so we can hook in to the button
             // clicks. Specifically, we only care about the 'yes' button.
+            $('button#yes').off('click');
             $('button#yes').on('click', function (e) {
                 // They clicked yes and so now we must delete the contact!!!
                 var locationId = $locationS.val();
@@ -1862,6 +1900,7 @@
                     type: 'POST',
                     dataType: 'html',
                     success: function(result, status, xhr) {
+                        $('button#yes').off('click');
                         // Its possible we will get a session timeout so check for it!
                         var myjsonObj = false;
                         try
@@ -1879,6 +1918,7 @@
                                 $locationS.removeAttr("disabled");
                                 $newBtn.removeAttr("disabled");
                                 $deleteBtn.removeAttr("disabled");
+                                $deleteBtn.parent().find('#loading').remove();
                                 utilities.ajaxError.show(
                                         "Error",
                                         "Failed to delete the venue",
@@ -1894,14 +1934,17 @@
                         // Remove the location from the list
                         $locationS.find('option[value="' + locationId + '"]').remove();
                         $locationS.val('none').trigger('change');
+                        $('#tableEventVenueFilter').find('option[value="' + locationId + '"]').remove();
                         
                         $locationS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");
                         $deleteBtn.parent().find('#loading').remove();
                     },
                     error: function(xhr, status, errorThrown) {
+                        $('button#yes').off('click');
                         $locationS.removeAttr("disabled");
                         $newBtn.removeAttr("disabled");
+                        $deleteBtn.removeAttr("disabled");
                         $deleteBtn.parent().find('#loading').remove();
                     
                         utilities.ajaxError.show(
@@ -1965,6 +2008,7 @@
                        var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
                        var newOption = '<option value="' + data.id + '">' + newText + '</option>';
                        $locationS.append(newOption);
+                       $('#tableEventVenueFilter').append('<option value="' + data.id + '">' + vals.name.replace(' ', '_') + '</option>');
                        
                        // Now select the newly appended option
                        $locationS.val(data.id); // We don't trigger a change!
@@ -2067,6 +2111,7 @@
                 }
                 
                 $locationS.find('option[value="' + id + '"]').text(newText);
+                $('#tableEventVenueFilter').find('option[value="' + id + '"]').text(newValue.replace(' ', '_'));
             }
         });
         
@@ -2086,7 +2131,17 @@
                 }
             
                 var vals = $('#Location_name').editable('getValue');
-                var strStatus = $('#Location_status_id').text();
+                var strStatus = '';
+                
+                for (var i = 0; i < arenaManagementView.locationStatuses.length; i++)
+                {
+                    if (arenaManagementView.locationStatuses[i].value == newValue)
+                    {
+                        strStatus = arenaManagementView.locationStatuses[i]['text'];
+                        break;
+                    }
+                }
+                
                 var strType = $('#Location_type_id').text();
                 
                 var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
@@ -2122,7 +2177,16 @@
             
                 var vals = $('#Location_name').editable('getValue');
                 var strStatus = $('#Location_status_id').text();
-                var strType = $('#Location_type_id').text();
+                var strType = '';
+                
+                for (var i = 0; i < arenaManagementView.locationTypes.length; i++)
+                {
+                    if (arenaManagementView.locationTypes[i].value == newValue)
+                    {
+                        strType = arenaManagementView.locationTypes[i]['text'];
+                        break;
+                    }
+                }
                 
                 var newText = vals.name + ' - ' + strType + ' (' + strStatus + ')';
                 
@@ -2613,6 +2677,514 @@
                 );
             }
         });            
+    };
+    
+    arenaManagementView.setupInitialEventView = function () {
+        var $searchBtn = $('#retrieveEventButton');
+        var $exportBtn = $('#exportEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        var $eventTable = $('#eventFootable');
+        
+        $exportBtn.attr("disabled", "disabled");
+        $deleteBtn.attr("disabled", "disabled");
+        
+        $searchBtn.on('click', function (e) {
+            e.preventDefault();
+            arenaManagementView.retrieveEventsTable();
+        });
+        
+        $exportBtn.on('click', function (e) {
+            e.preventDefault();
+            arenaManagementView.exportEventsTable();
+        });
+        
+        $deleteBtn.on('click', function (e) {
+            e.preventDefault();
+            arenaManagementView.deleteEventsTable();
+        });
+        
+        // Initialize the footable!
+        $eventTable.footable({
+            addRowToggle: false
+        });
+        
+        $("#eventFootable").footable().on('footable_filtering', function (e) {
+            var selected = $('#tableEventVenueFilter').find(':selected').text();
+            var selected2 = $('#tableEventTypeFilter').find(':selected').text();
+            var selected3 = $('#tableEventStatusFilter').find(':selected').text();
+            
+            if (selected && selected.length > 0) {
+                e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected : selected;
+                e.clear = !e.filter;
+            }
+            if (selected2 && selected2.length > 0) {
+                e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected2 : selected2;
+                e.clear = !e.filter;
+            }
+            if (selected3 && selected3.length > 0) {
+                e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected3 : selected3;
+                e.clear = !e.filter;
+            }
+        });
+
+        $('.clear-filter').click(function (e) {
+          e.preventDefault();
+          $('#tableEventVenueFilter').val('');
+          $('#tableEventTypeFilter').val('');
+          $('#tableEventStatusFilter').val('');
+        });
+
+        $('#tableEventVenueFilter, #tableEventTypeFilter, #tableEventStatusFilter').change(function (e) {
+          e.preventDefault();
+          $("#eventFootable").trigger('footable_filter', {filter: $('#tableEventFilter').val()});
+        });
+   };
+   
+    arenaManagementView.exportEventsTable = function () {
+        // Grab all of the event and arena IDs that we should export!
+        var $table = $('#eventFootable');
+        var $tbody = $('#eventFootable').find('#eventFootableBody');
+        var $rows = $tbody.find('tr').not('.footable-row-detail').not('.footable-filtered');
+        
+        if ($rows.length <= 0)
+        {
+            return;
+        }
+
+        var $searchBtn = $('#retrieveEventButton');
+        var $exportBtn = $('#exportEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+
+        $searchBtn.prop("disabled", true);
+        $exportBtn.prop("disabled", true);
+        $deleteBtn.prop("disabled", true);
+        
+        // We must disable everything and put up our spinner...
+        var spinner = '<div id="loading"' +
+                '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                'alt="Loading..." /></div>';
+
+        // Show we are busy by appending the spinner to the assign button
+        $exportBtn.parent().prepend(spinner);
+
+        var ids = [];
+
+        $rows.each(function () {
+            var event_id = $(this).data('event_id');
+            var arena_id = $(this).data('arena_id');
+
+            ids.push({id: event_id, aid: arena_id});
+        });
+            
+        // Grab our footable object as we will need it later!!
+        var footable = $table.data('footable');
+            
+        // Now let's export the events!!!
+        var myParams = {
+            events: ids
+        };
+        
+        var url = arenaManagementView.endpoints.event.exportRecord;
+        
+        $("#eventsExportForm").remove();
+        
+        var form = $('<form id="eventsExportForm" method="POST" action="' + url + '">');
+        $.each(ids, function(k, v) {
+            form.append($('<input type="hidden" name="events[' + k +
+                    '][id]" value="' + v.id + '">'));
+            form.append($('<input type="hidden" name="events[' + k +
+                    '][aid]" value="' + v.aid + '">'));
+        });
+        
+        $('body').append(form);
+        form.submit();
+        form.remove();
+
+        $searchBtn.prop("disabled", false);
+        $exportBtn.prop("disabled", false);
+        $deleteBtn.prop("disabled", false);
+        $exportBtn.parent().find('#loading').remove();
+    };
+
+    arenaManagementView.oldExportEvents = function () {
+        // Grab all of the event and arena IDs that we should export!
+        var $table = $('#eventFootable');
+        var $tbody = $('#eventFootable').find('#eventFootableBody');
+        var $rows = $tbody.find('tr').not('.footable-row-detail').not('.footable-filtered');
+        
+        if ($rows.length <= 0)
+        {
+            return;
+        }
+
+        var $searchBtn = $('#retrieveEventButton');
+        var $exportBtn = $('#exportEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+
+        $searchBtn.prop("disabled", true);
+        $exportBtn.prop("disabled", true);
+        $deleteBtn.prop("disabled", true);
+        
+        // We must disable everything and put up our spinner...
+        var spinner = '<div id="loading"' +
+                '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                'alt="Loading..." /></div>';
+
+        // Show we are busy by appending the spinner to the assign button
+        $exportBtn.parent().prepend(spinner);
+
+        var ids = [];
+
+        $rows.each(function () {
+            var event_id = $(this).data('event_id');
+            var arena_id = $(this).data('arena_id');
+
+            ids.push({id: event_id, aid: arena_id});
+        });
+            
+        // Grab our footable object as we will need it later!!
+        var footable = $table.data('footable');
+            
+        // Now let's export the events!!!
+        var myParams = {
+            events: ids
+        };
+        
+        var url = arenaManagementView.endpoints.event.exportRecord;
+        
+        $.ajax({
+            url: url,
+            data: myParams,
+            type: 'POST',
+            dataType: 'html',
+            success: function(result, status, xhr) {
+                // Its possible we will get a session timeout so check for it!
+                var myjsonObj = false;
+                try
+                {
+                    myjsonObj = JSON.parse(result);
+                }
+                catch (err)
+                {
+                    myjsonObj = false;
+                }
+
+                if (myjsonObj !== false)
+                {
+                    $searchBtn.prop("disabled", false);
+                    $exportBtn.prop("disabled", false);
+                    $deleteBtn.prop("disabled", false);
+                    $exportBtn.parent().find('#loading').remove();
+                    utilities.ajaxError.show(
+                            "Error",
+                            "Failed to delete the events",
+                            xhr,
+                            "error",
+                            "Login Required"
+                    );
+                    return;
+                }
+
+                var alertSuccess = '<div class="alert alert-success"><button ' + 
+                        'type="button" class="close" data-dismiss="alert">' + 
+                        '&times;</button><strong>Success!</strong> Exported ' +
+                        $rows.length + ' events.</div>';
+                
+                $table.parent().prepend(alertSuccess);
+
+                $searchBtn.prop("disabled", false);
+                $exportBtn.prop("disabled", false);
+                $deleteBtn.prop("disabled", false);
+                $exportBtn.parent().find('#loading').remove();
+            },
+            error: function(xhr, status, errorThrown) {
+                $searchBtn.prop("disabled", false);
+                $exportBtn.prop("disabled", false);
+                $deleteBtn.prop("disabled", false);
+                $exportBtn.parent().find('#loading').remove();
+                
+                utilities.ajaxError.show(
+                        "Error",
+                        "Failed to export the events",
+                        xhr,
+                        status,
+                        errorThrown
+                );
+            }
+        });
+    };
+    
+    arenaManagementView.deleteEventsTable = function () {
+        // Grab all of the event and arena IDs that we should delete!
+        var $table = $('#eventFootable');
+        var $tbody = $('#eventFootable').find('#eventFootableBody');
+        var $rows = $tbody.find('tr').not('.footable-row-detail').not('.footable-filtered');
+        
+        if ($rows.length <= 0)
+        {
+            return;
+        }
+        
+        var $modal = arenaManagementView.createDeleteAllModal();
+
+        $modal.modal({
+            loading: false,
+            replace: false,
+            modalOverflow: false
+        });
+            
+        // The modal is now in the DOM so we can hook in to the button
+        // clicks. Specifically, we only care about the 'yes' button.
+        $('button#yes').off('click');
+        $('button#yes').on('click', function (e) {
+            // They clicked yes and so now we must delete the events!!!
+            var $searchBtn = $('#retrieveEventButton');
+            var $exportBtn = $('#exportEventButton');
+            var $deleteBtn = $('#deleteEventButton');
+        
+            $searchBtn.attr("disabled", "disabled");
+            $exportBtn.attr("disabled", "disabled");
+            $deleteBtn.attr("disabled", "disabled");
+        
+            // We must disable everything and put up our spinner...
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Show we are busy by appending the spinner to the assign button
+            $deleteBtn.parent().prepend(spinner);
+            
+            var ids = [];
+            
+            $rows.each(function () {
+                var event_id = $(this).data('event_id');
+                var arena_id = $(this).data('arena_id');
+                
+                ids.push({id: event_id, aid: arena_id});
+            });
+            
+            // Grab our footable object as we will need it later!!
+            var footable = $table.data('footable');
+            
+            // Now let's delete the events!!!
+            var myParams = {
+                events: ids,
+                output: 'html'
+            };
+                
+            $.ajax({
+                url: arenaManagementView.endpoints.event.deleteAllRecord,
+                data: myParams,
+                type: 'POST',
+                dataType: 'html',
+                success: function(result, status, xhr) {
+                    // Its possible we will get a session timeout so check for it!
+                    var myjsonObj = false;
+                    try
+                    {
+                        myjsonObj = JSON.parse(result);
+                    }
+                    catch (err)
+                    {
+                        myjsonObj = false;
+                    }
+
+                    if (myjsonObj !== false)
+                    {
+                        window.setTimeout(function () {
+                            $searchBtn.removeAttr("disabled");
+                            $exportBtn.removeAttr("disabled");
+                            $deleteBtn.removeAttr("disabled");
+                            $deleteBtn.parent().find('#loading').remove();
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to delete the events",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                            );
+                        }, 1000);
+                        return;
+                    }
+
+                    // Remove the events from the table!!!
+                    $rows.each(function () {
+                        footable.removeRow(this);
+                    });
+
+                    var alertSuccess = '<div class="alert alert-success"><button ' + 
+                            'type="button" class="close" data-dismiss="alert">' + 
+                            '&times;</button><strong>Success!</strong> Deleted ' +
+                            $rows.length + ' events.</div>';
+                    $table.parent().prepend(alertSuccess);
+                    // Determine if the Delete All button should be re-enabled
+                    $rows = $tbody.find('tr').not('.footable-row-detail');
+                    
+                    if($rows.length > 1)
+                    {
+                        $deleteBtn.prop("disabled", false);
+                    }
+                    
+                    $searchBtn.removeAttr("disabled");
+                    $exportBtn.removeAttr("disabled");
+                    $deleteBtn.parent().find('#loading').remove();
+                },
+                error: function(xhr, status, errorThrown) {
+                    $searchBtn.removeAttr("disabled");
+                    $exportBtn.removeAttr("disabled");
+                    $deleteBtn.removeAttr("disabled");
+                    $deleteBtn.parent().find('#loading').remove();
+
+                    utilities.ajaxError.show(
+                            "Error",
+                            "Failed to delete the events",
+                            xhr,
+                            status,
+                            errorThrown
+                    );
+                }
+            });
+        });
+    }; 
+    
+    arenaManagementView.retrieveEventsTable = function (eventId) {
+        var $searchBtn = $('#retrieveEventButton');
+        var $exportBtn = $('#exportEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        
+        var spinner = '<div id="loading"' +
+                '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                'alt="Loading..." /></div>';
+            
+        // Prepare to find the events!
+        var disabledEx = $exportBtn.prop("disabled");
+        var disabledDe = $deleteBtn.prop("disabled");
+        
+        $exportBtn.prop("disabled");
+        $deleteBtn.prop("disabled");
+        $searchBtn.attr("disabled", "disabled");
+        $searchBtn.parent().append(spinner);
+        
+        var myParams = {
+            aid: arenaManagementView.params.aid,
+            output: 'json'
+        };
+        
+        $.ajax({
+            url: arenaManagementView.endpoints.event.searchRecord,
+            data: myParams,
+            type: 'GET',
+            dataType: 'json',
+            success: function(result, status, xhr) {
+                // Its possible we will get a session timeout so check for it!
+                if (result.error && result.error === "LOGIN_REQUIRED")
+                {
+                    $exportBtn.prop("disabled", disabledEx);
+                    $deleteBtn.prop("disabled", disabledDe);
+                    $searchBtn.removeAttr("disabled");
+                
+                    $searchBtn.parent().find('#loading').remove();
+                    
+                    utilities.ajaxError.show(
+                            "Error",
+                            "Failed to retrieve the events",
+                            xhr,
+                            "error",
+                            "Login Required"
+                    );
+
+                    return;
+                }
+                    
+                // Events has been retrieved! Well, there may be zero
+                // events but, the call was a success ;-)
+                myParams.output = 'html';
+                
+                if(result.data && result.data.count !== "undefined")
+                {
+                    arenaManagementView.setupEventView(result.data, myParams);
+                }
+            },
+            error: function(xhr, status, errorThrown) {
+                $exportBtn.prop("disabled", disabledEx);
+                $deleteBtn.prop("disabled", disabledDe);
+                $searchBtn.removeAttr("disabled");
+                
+                $searchBtn.parent().find('#loading').remove();
+                
+                utilities.ajaxError.show(
+                        "Error",
+                        "Failed to retrieve the events",
+                        xhr,
+                        status,
+                        errorThrown
+                );
+            }
+        });
+    };
+    
+    arenaManagementView.setupEventView = function (data, params) {
+        // We won't be using the params parameter
+        var $table = $('#eventFootable');
+        var $tbody = $('#eventFootable').find('#eventFootableBody');
+//        var $rows = $tbody.find('tr').not('.footable-row-detail').not('.footable-filtered');
+        var $rows = $tbody.find('tr').not('.footable-row-detail');
+        
+        // Grab our footable object!
+        var footable = $table.data('footable');
+        var events = data.events;
+        
+        // Ok, before we add new rows, we need to delete all previous rows!
+//        $rows.each(function () {
+//            console.log(this);
+//            footable.removeRow(this);
+//        });
+        $tbody.empty();
+        
+        // Now our table should be empty!!
+        for (var i = 0; i < data.count; i++)
+        {
+            // We need to build up our row and then add it to the footable
+            var row = '<tr data-event_id="' + events[i].id + '" data-arena_id="' +
+                    events[i].arena_id + '">';
+            
+            row += '<td data-value="' + events[i].id + '">' + events[i].eventName + '</td>';
+            row += '<td data-value="' + events[i].location_name.replace(' ', '_') + '">' + events[i].location_name.replace(' ', '_') + '</td>';
+            row += '<td data-value="' + events[i].etype + '">' + events[i].etype + '</td>';
+            row += '<td data-value="' + events[i].estatus + '">' + events[i].estatus + '</td>';
+            
+            row += '</tr>';
+            
+            $tbody.append(row);
+        }
+        
+        footable.redraw();
+        
+        var $searchBtn = $('#retrieveEventButton');
+        var $exportBtn = $('#exportEventButton');
+        var $deleteBtn = $('#deleteEventButton');
+        
+        $searchBtn.prop("disabled", false);
+        $searchBtn.parent().find("#loading").remove();
+        $exportBtn.prop("disabled", false);
+        $deleteBtn.prop("disabled", false);
+    };
+    
+    arenaManagementView.createDeleteAllModal = function () {
+        var modalBody = '<div id="deleteAllModal" class="well"><h3>Are you sure you want to ' +
+            'permanently delete all of these items?</h3><p class="lead text-error">This operation ' +
+            'cannot be undone and will also delete any related items ' +
+            'For example, deleting a location / venue will also delete ' +
+            'any events associated with that location / venue.</p></div>';
+    
+        var modalFooter = '<button class="btn btn-large btn-danger" data-dismiss="' +
+                'modal" type="button" aria-hidden="true" id="yes"><i class="' +
+                'fa fa-fw fa-lg fa-check"></i> Yes</button>' +
+                '<button class="btn btn-large" data-dismiss="' +
+                'modal" type="button" aria-hidden="true" id="close"><i class="' +
+                'fa fa-fw fa-lg fa-times"></i> No</button>';
+
+        return utilities.modal.add('Confirm Action', modalBody, modalFooter, false, false);
     };
     
 }( window.arenaManagementView = window.arenaManagementView || {}, jQuery ));

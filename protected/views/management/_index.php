@@ -36,7 +36,7 @@
     <?php endif; ?>
     <?php if(isset($data['statuses'])) : ?>
     <span> </span>
-    <div id="tablefilterStatusGroup" class="input-prepend">
+    <div id="tableFilterStatusGroup" class="input-prepend">
         <span class="add-on">Status:</span>
         <select class="input-medium search-query" id="tableFilterStatus" placeholder="Status">
             <option value=""></option>

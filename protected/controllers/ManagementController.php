@@ -32,6 +32,7 @@ class ManagementController extends Controller
                 'actions' => array(
                     'getCounts',
                     'getOperations',
+                    'create',
                     'index',
                     'view',
                 ),
@@ -145,6 +146,180 @@ class ManagementController extends Controller
         );
         
         Yii::app()->end();
+    }
+    
+    /**
+     * Action method to view a model.
+     */
+    public function actionCreate()
+    {
+        Yii::trace("In actionView.", "application.controllers.ManagementController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
+            $outputFormat = $_GET['output'];
+        }
+        
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // There is at least one GET required parameter: model
+        // Depending on the model, there may be more required GET parameters
+        // Those will be verified by each model's handler
+        if(!isset($_GET['model']) || !is_string($_GET['model'])) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+            
+            $this->sendResponseHeaders(400, 'json');
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        $modelName = $_GET['model'];
+        
+        switch(strtolower(trim($modelName))) {
+            case 'arena':
+                $this->handleArenaCreate($outputFormat);
+                break;
+            case 'event':
+                $this->handleEventCreate($outputFormat);
+                break;
+            case 'eventrequest':
+                $this->handleEventRequestCreate($outputFormat);
+                break;
+            case 'reservation':
+                $this->handleReservationCreate($outputFormat);
+                break;
+            case 'contact':
+                $this->handleContactCreate($outputFormat);
+                break;
+            case 'location':
+                $this->handleLocationCreate($outputFormat);
+                break;
+            case 'manager':
+                $this->handleManagerCreate($outputFormat);
+                break;
+            case 'arenareservationpolicy':
+                $this->handleArenaReservationPolicyCreate($outputFormat);
+                break;
+            case 'recurrence':
+                $this->handleRecurrenceCreate($outputFormat);
+                break;
+            default:
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, 'Unknown model');
+                }
+            
+                $this->sendResponseHeaders(400);
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => 'Unknown model',
+                        )
+                );
+                Yii::app()->end();
+        }
+    }
+    
+    protected function handleEventCreate($outputFormat)
+    {
+        // Always restrict to the currently logged in user!
+        $uid = Yii::app()->user->id;
+        
+        $params = array(
+            'endpoints' => array(
+                'event' => array(
+                    'new' => Yii::app()->createUrl('/event/createEvent'),
+                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
+                    'view' => Yii::app()->createUrl('/event/viewEvent'),
+                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                )
+            ),
+            'data' => array(
+                'output' => 'html'
+            )
+        );
+            
+        if($outputFormat == 'json') {
+            $this->sendResponseHeaders(200, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => true,
+                        'error' => false,
+                        'data' => array(
+                            'model' => $model,
+                            'params' => $params
+                        )
+                    )
+            );
+        
+            Yii::app()->end();
+        } elseif($outputFormat == 'xml') {
+            $this->sendResponseHeaders(200, 'xml');
+            
+            $xml = Controller::generate_valid_xml_from_array(array('model' => $model, 'params' => $params), "details", "event");
+            echo $xml;
+            
+            Yii::app()->end();
+        } else {
+            // We default to html!
+            // Publish and register our jQuery plugin
+            $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
+            
+            $this->pageTitle = Yii::app()->name . ' - Event Management - New Event';
+            $this->breadcrumbs = array(
+                'Management' => array('/site/management'),
+                'Events' => array('/management/index', 'model' => 'event'),
+                'New Event'
+            );
+
+            $this->includeCss = true;
+            $this->navigation = true;
+
+            if(Yii::app()->request->isAjaxRequest) {
+                $this->renderPartial(
+                        "_event",
+                        array(
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => 1,
+                            'path' => $path,
+                            'doReady' => 0
+                        ));
+            } else {
+                $this->registerManagementScripts();
+        
+                $this->render(
+                        "_event",
+                        array(
+                            'params' => $params,
+                            'ownView' => true,
+                            'newRecord' => 1,
+                            'path' => $path,
+                            'doReady' => 1
+                        ));
+            }
+        }
     }
     
     /**
@@ -359,10 +534,14 @@ class ManagementController extends Controller
                     'delete' => Yii::app()->createUrl('/location/deleteLocation')
                 ),
                 'event' => array(
-                    'new' => Yii::app()->createUrl('/event/createEvent'),
-                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/event/view'),
-                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                    'new' => Yii::app()->createUrl('/management/create', array('model' => 'event')),
+                    'update' => Yii::app()->createUrl('/management/index', array('model' => 'event', 'aid' => $model->id)),
+                    'view' => Yii::app()->createUrl('/event/viewEvent'),
+                    'delete' => Yii::app()->createUrl('/event/deleteEvent'),
+                    'search' => Yii::app()->createUrl('/event/retrieveEvents'),
+                    'import' => Yii::app()->createUrl('/event/uploadEvents', array('aid' => $model->id)),
+                    'export' => Yii::app()->createUrl('/event/exportEvents'),
+                    'deleteAll' => Yii::app()->createUrl('/event/deleteEvents')
                 ),
                 'eventRequest' => array(
                     'new' => Yii::app()->createUrl('/eventRequest/createEventRequest'),
@@ -376,7 +555,7 @@ class ManagementController extends Controller
                     'view' => Yii::app()->createUrl('/reservation/view'),
                     'delete' => Yii::app()->createUrl('/reservation/deleteReservation')
                 ),
-                'user' => array(
+                'manager' => array(
                     'new' => Yii::app()->createUrl('/user/createUser'),
                     'update' => Yii::app()->createUrl('/user/updateAttribute'),
                     'view' => Yii::app()->createUrl('/user/view'),

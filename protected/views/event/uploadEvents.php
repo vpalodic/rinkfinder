@@ -12,12 +12,13 @@
     $this->pageTitle = Yii::app()->name . ' - Upload Events';
     $this->breadcrumbs = array(
         'Management' => array('/site/management'),
+        'Facilities' => array('//management/index', 'model' => 'arena'),
         CHtml::encode($arenaName) => array('/management/Arena', 'id' => $arenaId),
-        'Upload Events'
+        'Import Events'
     );
 ?>
 
-<h2 class="sectionHeader">Upload Events</h2>
+<h2 class="sectionHeader">Import Events</h2>
 
 <?php
     $this->renderPartial('/event/_uploadEvents', array(

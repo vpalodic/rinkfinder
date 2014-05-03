@@ -1099,6 +1099,104 @@ class Event extends RinkfinderActiveRecord
     }
     
     /**
+     * Returns a summary record for each event for arenas assigned to user.
+     * The results can be further restricted by passing in a status code,
+     * type code, from date, to date. 
+     * @param integer $uid The user to get the arenas for.
+     * @param integer $aid The required arena id to get events for.
+     * @param integer $lid The optional location id to get events for.
+     * @param integer $from The optional from date to limit results.
+     * @param integer $to The optional to date to limit results.
+     * @param integer $tid The optional type code id to limit results.
+     * @param integer $sid The optional status code id to limit results.
+     * @return mixed[] The event summeries or an empty array.
+     * @throws CDbException
+     */
+    public static function getAssignedArenaView($uid, $aid, $lid = null, $from = null, $to = null, $tid = null, $sid = null)
+    {
+        // Let's start by building up our query
+        $ret = array();
+        
+        $sql = "SELECT e.*, "
+                . "UNIX_TIMESTAMP(CONCAT(e.start_date, ' ', e.start_time)) AS startDate, "
+                . 'a.name AS arena_name, '
+                . 'l.name AS location_name, '
+                . "CASE WHEN l.name IS NULL THEN CONCAT(DATE_FORMAT(e.start_date, '%c/%e/%Y'), ' ', DATE_FORMAT(e.start_time, '%l:%i %p'), ' @ ', a.name) "
+                . "ELSE CONCAT(DATE_FORMAT(e.start_date, '%c/%e/%Y'), ' ', DATE_FORMAT(e.start_time, '%l:%i %p'), ' @ ', a.name, ' ', l.name) "
+                . "END AS eventName, "
+                . 's.display_name AS estatus, '
+                . 't.display_name AS etype '
+                . 'FROM event e '
+                . 'INNER JOIN arena a '
+                . 'ON e.arena_id = a.id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id AND aua.user_id = :uid '
+                . 'INNER JOIN event_status s '
+                . 'ON e.status_id = s.id '
+                . 'INNER JOIN event_type t '
+                . 'ON e.type_id = t.id '
+                . 'LEFT OUTER JOIN location l '
+                . 'ON e.location_id = l.id '
+                . "WHERE e.arena_id = :aid ";
+
+        if($lid !== null) {
+            $sql .= "AND e.location_id = :lid ";
+        }
+        
+        if($from !== null) {
+            $sql .= "AND e.start_date >= :from ";
+        }
+        
+        if($to !== null) {
+            $sql .= "AND e.start_date <= :to ";
+        }
+        
+        if($tid !== null) {
+            $sql .= "AND e.type_id = :tid ";
+        }
+        
+        if($sid !== null) {
+            $sql .= "AND e.status_id = :sid ";
+        }
+        
+        $sql .= "ORDER BY startDate ASC";
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        if($lid !== null) {
+            $command->bindValue(':lid', $lid, (integer)PDO::PARAM_INT);
+        }
+        
+        if($from !== null) {
+            $command->bindValue(':from', $from, PDO::PARAM_STR);
+        }
+        
+        if($to !== null) {
+            $command->bindValue(':to', $to, PDO::PARAM_STR);
+        }
+        
+        if($tid !== null) {
+            $command->bindValue(':tid', (integer)$tid, PDO::PARAM_INT);
+        }
+        
+        if($sid !== null) {
+            $command->bindValue(':sid', (integer)$sid, PDO::PARAM_INT);
+        }
+        
+        $ret['events'] = $command->queryAll(true);
+
+        $count = count($ret['events']);
+        $ret['count'] = $count;
+        
+        // Ok, lets return this stuff!!
+        return $ret;
+    }
+    
+    /**
      * Returns a record set for use with a calendar view.
      * @param integer $aid The Arena ID that we are retrieving
      * @param mixed[] $params An array of the optional parameters below.
@@ -1955,5 +2053,220 @@ class Event extends RinkfinderActiveRecord
          }
          
          return $ret;
+    }
+    
+    /**
+     * Returns true if the deletes were successful and false otherwise.
+     * @param uid[] $uid The user id to restrict to.
+     * @param interger[][] $events The event ids and their associated arena ids.
+     * @return boolean True if the records were deleted.
+     * @throws CDbException
+     */
+    public static function deleteByArray($uid, $events)
+    {
+        $count = count($events);
+        
+        if($count <= 0) {
+            return false;
+        }
+        
+        if($count == 1 && !is_array($events)) {
+            // we need both an id and an aid so return false.
+            return false;
+        }
+        
+        $sql = "DELETE FROM event "
+                . "WHERE arena_id IN (SELECT aua.arena_id "
+                . "             FROM arena_user_assignment aua "
+                . "             INNER JOIN arena a "
+                . "             ON aua.arena_id = a.id "
+                . "             INNER JOIN user u "
+                . "             ON aua.user_id = u.id AND u.id = :uid) "
+                . "AND (id, arena_id) IN ( ";
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $sql .= '(:id' . $i . ', :aid' . $i . ')) ';
+            } else {
+                $sql .= '(:id' . $i . ', :aid' . $i . '), ';
+            }
+        }
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':id' . $i, (integer)$events[$i]['id'], PDO::PARAM_INT);
+                $command->bindValue(':aid' . $i, (integer)$events[$i]['aid'], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->execute();
+        
+            if($ret != $count) {
+                // Something bad happened so we will roll back the transaction
+                $transaction->rollback();
+                return false;
+            }
+            
+            $transaction->commit();
+            return true;
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
+    }
+    
+    /**
+     * Returns the selected events or else an empty array!
+     * @param uid[] $uid The user id to restrict to.
+     * @param interger[][] $events The event ids and their associated arena ids.
+     * @return mixed[] The exported events.
+     * @throws CDbException
+     */
+    public static function exportByArray($uid, $events)
+    {
+        $count = count($events);
+        
+        if($count <= 0) {
+            return array();
+        }
+        
+        if($count == 1 && !is_array($events)) {
+            // we need both an id and an aid so return false.
+            return array();
+        }
+        
+        $sql = 'SELECT e.id, '
+                . 'e.external_id, '
+                . 'e.arena_id, '
+                . 'a.name AS arena_name, '
+                . 'e.location_id, '
+                . 'l.name AS location_name, '
+                . 'e.name, '
+                . 'e.description, '
+                . 'e.notes, '
+                . 'e.tags, '
+                . 'e.all_day, '
+                . 'DATE_FORMAT(e.start_date, "%c/%e/%Y") AS start_date, '
+                . 'DATE_FORMAT(e.start_time, "%l:%i %p") AS start_time, '
+                . 'e.duration, '
+                . 'DATE_FORMAT(e.end_date, "%c/%e/%Y") AS end_date, '
+                . 'DATE_FORMAT(e.end_time, "%l:%i %p") AS end_time, '
+                . 'e.price, '
+                . 'e.status_id, '
+                . 's.display_name AS status, '
+                . 'e.type_id, '
+                . 't.display_name AS type '
+                . 'FROM event e '
+                . 'INNER JOIN arena a '
+                . 'ON e.arena_id = a.id '
+                . 'INNER JOIN arena_user_assignment aua '
+                . 'ON a.id = aua.arena_id AND aua.user_id = :uid '
+                . 'INNER JOIN event_status s '
+                . 'ON e.status_id = s.id '
+                . 'INNER JOIN event_type t '
+                . 'ON e.type_id = t.id '
+                . 'LEFT OUTER JOIN location l '
+                . 'ON e.location_id = l.id '
+                . 'WHERE (e.id, e.arena_id) IN ( ';
+
+        $exportSql = "UPDATE event "
+                . "SET external_id = id "
+                . "WHERE arena_id IN (SELECT aua.arena_id "
+                . "             FROM arena_user_assignment aua "
+                . "             INNER JOIN arena a "
+                . "             ON aua.arena_id = a.id "
+                . "             INNER JOIN user u "
+                . "             ON aua.user_id = u.id AND u.id = :uid) "
+                . "AND (id, arena_id) IN ( ";
+        
+        $where = '';
+        
+        for($i = 0; $i < $count; $i++) {
+            if($i + 1 == $count) {
+                $where .= '(:id' . $i . ', :aid' . $i . ')) ';
+            } else {
+                $where .= '(:id' . $i . ', :aid' . $i . '), ';
+            }
+        }
+        
+        $sql .= $where;
+        $exportSql .= $where;
+        
+        // We always do this in a transaction!
+        $transaction = Yii::app()->db->beginTransaction();
+        
+        try
+        {
+            // We have to update the external_id first and then 
+            $command = Yii::app()->db->createCommand($exportSql);
+        
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':id' . $i, (integer)$events[$i]['id'], PDO::PARAM_INT);
+                $command->bindValue(':aid' . $i, (integer)$events[$i]['aid'], PDO::PARAM_INT);
+            }
+        
+            $command->execute();
+            
+            // We don't check the return of the update as it is possible that
+            // event was previously exported. Also, an exception would have been
+            // thrown if there was an issue.
+            $transaction->commit();
+            
+            // Ok, now we can select our data
+            $command = Yii::app()->db->createCommand($sql);
+        
+            $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        
+            for($i = 0; $i < $count; $i++) {
+                $command->bindValue(':id' . $i, (integer)$events[$i]['id'], PDO::PARAM_INT);
+                $command->bindValue(':aid' . $i, (integer)$events[$i]['aid'], PDO::PARAM_INT);
+            }
+        
+            $ret = $command->queryAll(true);
+            
+            return $ret ? $ret : array();
+        }
+        catch (Exception $e)
+        {
+            if($transaction->active == true) {
+                $transaction->rollback();
+            }
+
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
     }
 }

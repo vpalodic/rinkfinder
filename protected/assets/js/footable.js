@@ -599,18 +599,24 @@
                 .find('> thead > tr:last-child > th')
                 .each(function () {
                     var data = ft.columns[$(this).index()], selector = '', first = true;
-                    $.each(data.matches, function (m, match) {
-                        if (!first) {
-                            selector += ', ';
-                        }
-                        var count = match + 1;
-                        selector += '> tbody > tr:not(.' + cls.detail + ') > td:nth-child(' + count + ')';
-                        selector += ', > tfoot > tr:not(.' + cls.detail + ') > td:nth-child(' + count + ')';
-                        selector += ', > colgroup > col:nth-child(' + count + ')';
-                        first = false;
-                    });
+                    if(data && data.matches)
+                    {
+                        $.each(data.matches, function (m, match) {
+                            if (!first) {
+                                selector += ', ';
+                            }
+                            var count = match + 1;
+                            selector += '> tbody > tr:not(.' + cls.detail + ') > td:nth-child(' + count + ')';
+                            selector += ', > tfoot > tr:not(.' + cls.detail + ') > td:nth-child(' + count + ')';
+                            selector += ', > colgroup > col:nth-child(' + count + ')';
+                            first = false;
+                        });
+                    }
 
-                    selector += ', > thead > tr[data-group-row="true"] > th[data-group="' + data.group + '"]';
+                    if(data && data.group)
+                    {
+                        selector += ', > thead > tr[data-group-row="true"] > th[data-group="' + data.group + '"]';
+                    }
                     var $column = $table.find(selector).add(this);
                     if (breakpointName !== '') {
                       if (data.hide[breakpointName] === false) $column.addClass('footable-visible').show();
@@ -618,16 +624,20 @@
                     }
 
                     if ($table.find('> thead > tr.footable-group-row').length === 1) {
-                        var $groupcols = $table.find('> thead > tr:last-child > th[data-group="' + data.group + '"]:visible, > thead > tr:last-child > th[data-group="' + data.group + '"]:visible'),
-                            $group = $table.find('> thead > tr.footable-group-row > th[data-group="' + data.group + '"], > thead > tr.footable-group-row > td[data-group="' + data.group + '"]'),
-                            groupspan = 0;
+                        if(data && data.matches)
+                        {
+                        
+                            var $groupcols = $table.find('> thead > tr:last-child > th[data-group="' + data.group + '"]:visible, > thead > tr:last-child > th[data-group="' + data.group + '"]:visible'),
+                                $group = $table.find('> thead > tr.footable-group-row > th[data-group="' + data.group + '"], > thead > tr.footable-group-row > td[data-group="' + data.group + '"]'),
+                                groupspan = 0;
 
-                        $.each($groupcols, function () {
-                            groupspan += parseInt($(this).attr('colspan') || 1, 10);
-                        });
+                            $.each($groupcols, function () {
+                                groupspan += parseInt($(this).attr('colspan') || 1, 10);
+                            });
 
-                        if (groupspan > 0) $group.attr('colspan', groupspan).show();
-                        else $group.hide();
+                            if (groupspan > 0) $group.attr('colspan', groupspan).show();
+                            else $group.hide();
+                        }
                     }
                 })
                 .end()

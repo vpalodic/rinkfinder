@@ -15,24 +15,30 @@
     $eventsStatuses = Event::getStatusesList();
     $eventsTypes = Event::getTypesList();
     $arenas = User::getArenasList(Yii::app()->user->id);
-    $locations = Arena::getLocationsList($model->arena_id);
+    if(!$newRecord) {
+        $locations = Arena::getLocationsList($model->arena_id);
+    } else {
+        $locations = array();
+    }
 ?>
 <div id="eventManagementView" class="panel panel-primary">
     <div class="panel-heading">
         <h3>
-            <?php echo $model->arena_name; ?> - Events
+            <?php echo (!$newRecord ? $model->arena_name . ' - Events' : 'New Event'); ?>
         </h3>
     </div>
     <div class="panel-body">
         <div class="row-fluid">
             <div class="span12">
-                <strong>Select a event to edit</strong><br />
+                <strong>Select an event to edit</strong><br />
                 <select id="eventsSelect"
                         class="span12">
                     <option value="none"></option>
+                    <?php if(!$newRecord) : ?>
                     <option value="<?php echo $model->id; ?>" selected="selected">
                                 <?php echo $model->eventName . ' - ' . $model->etype . ' (' . $model->estatus . ')'; ?>
                     </option>
+                    <?php endif; ?>
                 </select>
             </div>
         </div>
@@ -105,18 +111,19 @@
             . 'eventManagementView.endpoints.event.viewRecord = "' . $params['endpoints']['event']['view'] . '";'
             . 'eventManagementView.endpoints.event.deleteRecord = "' . $params['endpoints']['event']['delete'] . '";'
             . 'eventManagementView.params = ' . json_encode($params['data']) . ';'
-            . 'eventManagementView.event = ' . json_encode($model->attributes) . ';'
-            . 'eventManagementView.event.arena_name = "' . $model->arena_name . '";'
-            . 'eventManagementView.event.location_name = "' . $model->location_name . '";'
-            . 'eventManagementView.event.eventName = "' . $model->eventName . '";'
-            . 'eventManagementView.event.startDate = "' . $model->startDate . '";'
-            . 'eventManagementView.event.startTime = "' . $model->startTime . '";'
-            . 'eventManagementView.event.type = "' . $model->etype . '";'
-            . 'eventManagementView.event.status = "' . $model->estatus . '";'
+            . 'eventManagementView.event = ' . (!$newRecord ? json_encode($model->attributes) : '{}') . ';'
+            . 'eventManagementView.event.arena_name = "' . (!$newRecord ? $model->arena_name : '') . '";'
+            . 'eventManagementView.event.location_name = "' . (!$newRecord ? $model->location_name : '') . '";'
+            . 'eventManagementView.event.eventName = "' . (!$newRecord ? $model->eventName : '') . '";'
+            . 'eventManagementView.event.startDate = "' . (!$newRecord ? $model->startDate : '') . '";'
+            . 'eventManagementView.event.startTime = "' . (!$newRecord ? $model->startTime : '') . '";'
+            . 'eventManagementView.event.type = "' . (!$newRecord ? $model->etype : '') . '";'
+            . 'eventManagementView.event.status = "' . (!$newRecord ? $model->estatus : '') . '";'
             . 'eventManagementView.arenas = ' . json_encode($arenas) . ';'
             . 'eventManagementView.locations = ' . json_encode($locations) . ';'
             . 'eventManagementView.eventTypes = ' . json_encode($eventsTypes) . ';'
             . 'eventManagementView.eventStatuses = ' . json_encode($eventsStatuses) . ';'
+            . 'eventManagementView.newRecord = ' . $newRecord . ';'
             . 'eventManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
             . 'eventManagementView.Id = ' . (integer)Yii::app()->user->id . ';'
             . 'eventManagementView.Name = "' . Yii::app()->user->fullName . '";'
@@ -167,18 +174,19 @@ $(document).ready(function() {
                 eventManagementView.endpoints.event.viewRecord = "<?php echo $params['endpoints']['event']['view']; ?>";
                 eventManagementView.endpoints.event.deleteRecord = "<?php echo $params['endpoints']['event']['delete']; ?>";
                 eventManagementView.params = <?php echo json_encode($params['data']); ?>;
-                eventManagementView.event = <?php echo json_encode($model->attributes); ?>;
-                eventManagementView.event.arena_name = "<?php echo $model->arena_name; ?>";
-                eventManagementView.event.location_name = "<?php echo $model->location_name; ?>";
-                eventManagementView.event.eventName = "<?php echo $model->eventName; ?>";
-                eventManagementView.event.startDate = "<?php echo $model->startDate; ?>";
-                eventManagementView.event.startTime = "<?php echo $model->startTime; ?>";
-                eventManagementView.event.type = "<?php echo $model->etype; ?>";
-                eventManagementView.event.status = "<?php echo $model->estatus; ?>";
+                eventManagementView.event = <?php echo (!$newRecord ? json_encode($model->attributes) : '{}'); ?>;
+                eventManagementView.event.arena_name = "<?php echo (!$newRecord ? $model->arena_name : ''); ?>";
+                eventManagementView.event.location_name = "<?php echo (!$newRecord ? $model->location_name : ''); ?>";
+                eventManagementView.event.eventName = "<?php echo (!$newRecord ? $model->eventName : ''); ?>";
+                eventManagementView.event.startDate = "<?php echo (!$newRecord ? $model->startDate : ''); ?>";
+                eventManagementView.event.startTime = "<?php echo (!$newRecord ? $model->startTime : ''); ?>";
+                eventManagementView.event.type = "<?php echo (!$newRecord ? $model->etype : ''); ?>";
+                eventManagementView.event.status = "<?php echo (!$newRecord ? $model->estatus : ''); ?>";
                 eventManagementView.arenas = <?php echo json_encode($arenas); ?>;
                 eventManagementView.locations = <?php echo json_encode($locations); ?>;
                 eventManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
                 eventManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
+                eventManagementView.newRecord = <?php echo $newRecord; ?>;
                 eventManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
                 eventManagementView.Id = <?php echo Yii::app()->user->id; ?>;
                 eventManagementView.Name = "<?php echo Yii::app()->user->fullName; ?>";
@@ -195,18 +203,19 @@ $(document).ready(function() {
         eventManagementView.endpoints.event.viewRecord = "<?php echo $params['endpoints']['event']['view']; ?>";
         eventManagementView.endpoints.event.deleteRecord = "<?php echo $params['endpoints']['event']['delete']; ?>";
         eventManagementView.params = <?php echo json_encode($params['data']); ?>;
-        eventManagementView.event = <?php echo json_encode($model->attributes); ?>;
-        eventManagementView.event.arena_name = "<?php echo $model->arena_name; ?>";
-        eventManagementView.event.location_name = "<?php echo $model->location_name; ?>";
-        eventManagementView.event.eventName = "<?php echo $model->eventName; ?>";
-        eventManagementView.event.startDate = "<?php echo $model->startDate; ?>";
-        eventManagementView.event.startTime = "<?php echo $model->startTime; ?>";
-        eventManagementView.event.type = "<?php echo $model->etype; ?>";
-        eventManagementView.event.status = "<?php echo $model->estatus; ?>";
+        eventManagementView.event = <?php echo (!$newRecord ? json_encode($model->attributes) : '{}'); ?>;
+        eventManagementView.event.arena_name = "<?php echo (!$newRecord ? $model->arena_name : ''); ?>";
+        eventManagementView.event.location_name = "<?php echo (!$newRecord ? $model->location_name : ''); ?>";
+        eventManagementView.event.eventName = "<?php echo (!$newRecord ? $model->eventName : ''); ?>";
+        eventManagementView.event.startDate = "<?php echo (!$newRecord ? $model->startDate : ''); ?>";
+        eventManagementView.event.startTime = "<?php echo (!$newRecord ? $model->startTime : ''); ?>";
+        eventManagementView.event.type = "<?php echo (!$newRecord ? $model->etype : ''); ?>";
+        eventManagementView.event.status = "<?php echo (!$newRecord ? $model->estatus : ''); ?>";
         eventManagementView.arenas = <?php echo json_encode($arenas); ?>;
         eventManagementView.locations = <?php echo json_encode($locations); ?>;
         eventManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
         eventManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
+        eventManagementView.newRecord = <?php echo $newRecord; ?>;
         eventManagementView.isArenaManager = <?php echo (Yii::app()->user->isArenaManager()) ? 1 : 0; ?>;
         eventManagementView.Id = <?php echo Yii::app()->user->id; ?>;
         eventManagementView.Name = "<?php echo Yii::app()->user->fullName; ?>";

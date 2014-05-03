@@ -44,7 +44,7 @@
                     $<?php echo $record['price']; ?>
                 </span>
                 <?php if((integer)$record['price'] <= 0) : ?>
-                <span class="required">*</span> <small>Please contact the arena regarding the price of this event</small>
+                <span class="required">*</span> <small>Please contact the facility regarding the price of this event</small>
                 <?php endif; ?>
                 <br />
                 <?php if((integer)$record['description'] != '') : ?>
