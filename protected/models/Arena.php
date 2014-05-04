@@ -1710,8 +1710,9 @@ class Arena extends RinkfinderActiveRecord
 
         $sql .= $where;
             
-        $sql .= "ORDER BY arena_name ASC, contact_type ASC, contact_name ASC, "
-                . "lt.display_order ASC, location_name ASC ";
+        $sql .= "ORDER BY arena_name ASC, city_state_zip ASC, a.id ASC, "
+                . "contact_type ASC, contact_name ASC, contact_id ASC, "
+                . "lt.display_order ASC, location_name ASC, location_id ASC ";
         
         if($limit > 0) {
             $sql .= "LIMIT :offset, :limit";

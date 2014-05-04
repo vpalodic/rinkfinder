@@ -55,6 +55,12 @@ class User extends RinkfinderActiveRecord
     public $passwordRepeat;
     
     /**
+     * Holds the assigned role of the user
+     * @var string
+     */
+    public $role;
+    
+    /**
      * Holds the captcha code!
      * @var string
      */
@@ -420,6 +426,46 @@ class User extends RinkfinderActiveRecord
         } else {
             return isset($_items[$type]) ? $_items[$type] : false;
         }
+    }
+
+    /**
+     * Retrieve an indexed list of user status values
+     * @return mixed[]
+     */
+    public static function getStatusesList()
+    {
+        $ret = array(
+            array(
+                'value' => self::STATUS_NOTACTIVATED,
+                'text' => 'Not Activated'
+            ),
+            array(
+                'value' => self::STATUS_ACTIVE,
+                'text' => 'Active'
+            ),
+            array(
+                'value' => self::STATUS_LOCKED,
+                'text' => 'Locked'
+            ),
+            array(
+                'value' => self::STATUS_RESET,
+                'text' => 'Reset'
+            ),
+            array(
+                'value' => self::STATUS_INACTIVE,
+                'text' => 'Inactive'
+            ),
+            array(
+                'value' => self::STATUS_DELETED,
+                'text' => 'Deleted'
+            ),
+            array(
+                'value' => self::STATUS_BANNED,
+                'text' => 'Banned'
+            ),
+        );
+        
+        return $ret;
     }
 
     /**
@@ -1277,7 +1323,7 @@ class User extends RinkfinderActiveRecord
                     $dashData['events'] = Event::getAssignedCounts($uid, null, $from, $to);
                     break;
                 case 'requests':
-                    $dashData['requests'] = EventRequest::getAssignedCounts($uid, null, $from, $to);
+                    $dashData['requests'] = EventRequest::getAssignedCounts($uid, null, null, null);
                     break;
                 case 'reservations':
                     $dashData['reservations'] = Reservation::getAssignedCounts($uid, null, $from, $to);

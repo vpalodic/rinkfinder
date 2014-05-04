@@ -17,6 +17,9 @@
     userAccountProfile.profile = {};
     userAccountProfile.params = {};
     userAccountProfile.isArenaManager = false;
+    userAccountProfile.isApplicationAdministrator = false;
+    userAccountProfile.isSystemAdministrator = false;
+    userAccountProfile.roleList = [];
     userAccountProfile.statusList = [];
     userAccountProfile.stateList = [];
     
@@ -294,6 +297,19 @@
     };
     
     userAccountProfile.setupStatus = function () {
+        if(userAccountProfile.isArenaManager !== 1)
+        {
+            return;
+        }
+        
+        $('#status_id').editable({
+            params: userAccountProfile.params,
+            showbuttons: false,
+            source: userAccountProfile.statusList
+        });
+    };
+    
+    userAccountProfile.setupRole = function () {
         if(userAccountProfile.isArenaManager !== 1)
         {
             return;

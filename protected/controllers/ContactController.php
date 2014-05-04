@@ -32,10 +32,10 @@ class ContactController extends Controller
                 'actions' => array('view', 'updateAttribute', 'createContact', 'deleteContact'),
                 'users' => array('@'),
             ),
-            array('allow',
+/*            array('allow',
                 'actions' => array('create', 'update', 'index', 'admin', 'delete'),
                 'roles' => array('ApplicationAdministrator'),
-            ),
+            ),*/
             array('deny',
                 'users' => array('*'),
             ),

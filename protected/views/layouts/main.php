@@ -55,6 +55,7 @@
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/combodate.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.js', CClientScript::POS_END);
             if(Yii::app()->user->isRestrictedArenaManager()) {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.js', CClientScript::POS_END);
@@ -80,6 +81,7 @@
 //            Yii::app()->clientScript->registerScriptFile($path . '/js/combodate.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/bootstrap-editable/js/bootstrap-editable.min.js', CClientScript::POS_END);
             if(Yii::app()->user->isRestrictedArenaManager()) {
+                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.min.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/advanced.min.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/wysihtml5/wysihtml5-0.3.0.min.js', CClientScript::POS_END);
                 Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-wysihtml5.min.js', CClientScript::POS_END);

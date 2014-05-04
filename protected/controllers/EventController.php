@@ -68,7 +68,7 @@ class EventController extends Controller
                     '@'
                 ),
             ),
-            array(
+/*            array(
                 'allow', // allow admin user to perform 'admin' and 'delete' actions
                 'actions' => array(
                     'create',
@@ -79,7 +79,7 @@ class EventController extends Controller
                 'roles' => array(
                     'ApplicationAdministrator'
                 ),
-            ),
+            ),*/
             array(
                 'deny',  // deny all users
                 'users' => array(
@@ -2336,26 +2336,7 @@ class EventController extends Controller
                     )
             );
         } else {
-            if(defined('YII_DEBUG')) {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            } else {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/event/uploadEvents.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            }
-            
+            $this->registerManagementScripts();
             $this->includeCss = true;
         
             $this->render(

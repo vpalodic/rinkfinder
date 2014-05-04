@@ -27,10 +27,10 @@ class ProfileController extends Controller
     public function accessRules()
     {
         return array(
-            array('allow',
+/*            array('allow',
                 'actions' => array('admin', 'delete'),
                 'roles' => array('SiteAdministrator'),
-            ),
+            ),*/
             array('deny',
                 'users' => array('*'),
             ),

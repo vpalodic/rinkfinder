@@ -35,13 +35,13 @@ class EventRequestController extends Controller
             ),
             array(
                 'allow',
-                'actions' => array('create', 'update', 'deleteEventRequest'),
+                'actions' => array('update', 'deleteEventRequest'),
                 'users' => array('@'),
             ),
-            array('allow',
-                'actions' => array('admin', 'delete'),
+/*            array('allow',
+                'actions' => array('create', 'admin', 'delete'),
                 'users' => array('@'),
-            ),
+            ),*/
             array('deny',
                 'users'=>array('*'),
             ),

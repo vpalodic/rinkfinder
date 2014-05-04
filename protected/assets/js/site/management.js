@@ -14,6 +14,7 @@
         operations: "/server/endpoint"
     };
     
+    management.intervalId = false;
     management.dialogBox = "";
     management.editDialogBox = "";
     management.mainContainer = "";
@@ -245,7 +246,7 @@
         }
     };
     
-    management.getEvents = function () {
+    management.getAll = function () {
         if (this.isLoading)
         {
             return;
@@ -254,7 +255,7 @@
         this.isLoading = true;
         var that = this;
         
-        var $spinner = $("#reportrangeRefreshButton i");
+        var $spinner = $("i.fa-refresh");
         $spinner.toggleClass('fa-spin');
 
         $.ajax({                        
@@ -263,7 +264,7 @@
             dataType: "json",
             data: {
                 //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
-                model: ["events"],
+                model: ["events", "requests", "arenas", "contacts"],
                 from: management.fromDate.format('YYYY-MM-DD'),
                 to: management.toDate.format('YYYY-MM-DD')
             },
@@ -307,7 +308,7 @@
         return true;
     };
     
-    management.getRequests = function () {
+    management.getEvents = function () {
         if (this.isLoading)
         {
             return;
@@ -318,6 +319,93 @@
         
         var $spinner = $("#reportrangeRefreshButton i");
         $spinner.toggleClass('fa-spin');
+        
+        if (management.intervalId !== false)
+        {
+            window.clearInterval(management.intervalId);
+            management.intervalId = false;
+        }
+
+        $.ajax({                        
+            url: that.endpoints.counts,
+            type: "GET",
+            dataType: "json",
+            data: {
+                //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                model: ["events"],
+                from: management.fromDate.format('YYYY-MM-DD'),
+                to: management.toDate.format('YYYY-MM-DD')
+            },
+            success: function(result, status, xhr) {
+                if (result.success === false)
+                {
+                    $spinner.toggleClass('fa-spin');
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        'Login Required'
+                    );
+                    return;
+                }
+
+                that.processCounts(result, status, xhr);
+                
+                window.setTimeout(function () {
+                    $spinner.toggleClass('fa-spin');
+                    that.isLoading = false;
+                    
+                    if (management.intervalId === false)
+                    {
+                        management.intervalId = window.setInterval(function () {
+                            management.getAll();
+                        }, 900000);
+                    }
+                }, 1000
+                );
+        
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        errorThrown
+                        );
+                $spinner.toggleClass('fa-spin');
+                that.isLoading = false;
+                
+                if (management.intervalId === false)
+                {
+                    management.intervalId = window.setInterval(function () {
+                        management.getAll();
+                    }, 900000);
+                }
+            }
+        });
+
+        return true;
+    };
+    
+    management.getRequests = function () {
+        if (this.isLoading)
+        {
+            return;
+        }
+        
+        this.isLoading = true;
+        var that = this;
+        
+        var $spinner = $("#refreshRequestsButton i");
+        $spinner.toggleClass('fa-spin');
+
+        if (management.intervalId !== false)
+        {
+            window.clearInterval(management.intervalId);
+            management.intervalId = false;
+        }
 
         $.ajax({                        
             url: that.endpoints.counts,
@@ -348,6 +436,13 @@
                 window.setTimeout(function () {
                     $spinner.toggleClass('fa-spin');
                     that.isLoading = false;
+                    
+                    if (management.intervalId === false)
+                    {
+                        management.intervalId = window.setInterval(function () {
+                            management.getAll();
+                        }, 900000);
+                    }
                 },
                 1000
                 );
@@ -363,6 +458,13 @@
                         );
                 $spinner.toggleClass('fa-spin');
                 that.isLoading = false;
+                
+                if (management.intervalId === false)
+                {
+                    management.intervalId = window.setInterval(function () {
+                        management.getAll();
+                    }, 900000);
+                }
             }
         });
 
@@ -378,8 +480,14 @@
         this.isLoading = true;
         var that = this;
         
-        var $spinner = $("#reportrangeRefreshButton i");
+        var $spinner = $("#refreshArenasButton i");
         $spinner.toggleClass('fa-spin');
+
+        if (management.intervalId !== false)
+        {
+            window.clearInterval(management.intervalId);
+            management.intervalId = false;
+        }
 
         $.ajax({                        
             url: that.endpoints.counts,
@@ -408,6 +516,13 @@
                 window.setTimeout(function () {
                     $spinner.toggleClass('fa-spin');
                     that.isLoading = false;
+                    
+                    if (management.intervalId === false)
+                    {
+                        management.intervalId = window.setInterval(function () {
+                            management.getAll();
+                        }, 900000);
+                    }
                 },
                 1000
                 );
@@ -423,6 +538,93 @@
                         );
                 $spinner.toggleClass('fa-spin');
                 that.isLoading = false;
+                
+                if (management.intervalId === false)
+                {
+                    management.intervalId = window.setInterval(function () {
+                        management.getAll();
+                    }, 900000);
+                }
+            }
+        });
+
+        return true;
+    };
+    
+    management.getContacts = function () {
+        if (this.isLoading)
+        {
+            return;
+        }
+        
+        this.isLoading = true;
+        var that = this;
+        
+        var $spinner = $("#refreshContactsButton i");
+        $spinner.toggleClass('fa-spin');
+
+        if (management.intervalId !== false)
+        {
+            window.clearInterval(management.intervalId);
+            management.intervalId = false;
+        }
+
+        $.ajax({                        
+            url: that.endpoints.counts,
+            type: "GET",
+            dataType: "json",
+            data: {
+                //model: ["arenas", "contacts", "locations", "events", "requests", "reservations"],
+                model: ["contacts"]
+            },
+            success: function(result, status, xhr) {
+                if (result.success === false)
+                {
+                    $spinner.toggleClass('fa-spin');
+                    utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        'Login Required'
+                    );
+                    return;
+                }
+
+                that.processCounts(result, status, xhr);
+                
+                window.setTimeout(function () {
+                    $spinner.toggleClass('fa-spin');
+                    that.isLoading = false;
+                    
+                    if (management.intervalId === false)
+                    {
+                        management.intervalId = window.setInterval(function () {
+                            management.getAll();
+                        }, 900000);
+                    }
+                },
+                1000
+                );
+        
+            },
+            error: function(xhr, status, errorThrown) {
+                utilities.ajaxError.show(
+                        "Management Dashboard",
+                        "Failed to retrieve dashboard counts",
+                        xhr,
+                        status,
+                        errorThrown
+                        );
+                $spinner.toggleClass('fa-spin');
+                that.isLoading = false;
+                
+                if (management.intervalId === false)
+                {
+                    management.intervalId = window.setInterval(function () {
+                        management.getAll();
+                    }, 900000);
+                }
             }
         });
 
@@ -531,8 +733,8 @@
         function(start, end, label) {
             if (start && end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-                utilities.loadingScreen.parentId = "countsContainer";
-                utilities.loadingScreen.containerId = "countsAccordionHeader";
+                utilities.loadingScreen.parentId = "eventsContainer";
+                utilities.loadingScreen.containerId = "eventsAccordionHeader";
                 utilities.loadingScreen.image.enabled = true;
                 utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
                 management.fromDate = start;
@@ -543,20 +745,40 @@
         );
 
         $("#reportrangeRefreshButton").on('click', function (e) {
-            utilities.loadingScreen.parentId = "countsContainer";
-            utilities.loadingScreen.containerId = "countsAccordionHeader";
+            utilities.loadingScreen.parentId = "eventsContainer";
+            utilities.loadingScreen.containerId = "eventsAccordionHeader";
             utilities.loadingScreen.image.enabled = true;
             utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
             management.getEvents();
         });
         
-        window.setTimeout(function () {
-            management.getArenas();
-        }, 3000);
-        
-        window.setTimeout(function () {
+        $("#refreshRequestsButton").on('click', function (e) {
+            utilities.loadingScreen.parentId = "requestsContainer";
+            utilities.loadingScreen.containerId = "requestsAccordionHeader";
+            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
             management.getRequests();
-        }, 10000);
+        });
+        
+        $("#refreshArenasButton").on('click', function (e) {
+            utilities.loadingScreen.parentId = "arenasContainer";
+            utilities.loadingScreen.containerId = "arenasAccordionHeader";
+            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
+            management.getArenas();
+        });
+        
+        $("#refreshContactsButton").on('click', function (e) {
+            utilities.loadingScreen.parentId = "contactsContainer";
+            utilities.loadingScreen.containerId = "contactsAccordionHeader";
+            utilities.loadingScreen.image.enabled = true;
+            utilities.loadingScreen.image.src = "/images/spinners/ajax-loader-roller-bg_red-fg_blue.gif";
+            management.getContacts();
+        });
+        
+        management.intervalId = window.setInterval(function () {
+            management.getAll();
+        }, 900000);
     };
     
 }( window.management = window.management || {}, jQuery ));

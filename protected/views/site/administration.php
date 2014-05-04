@@ -1,6 +1,7 @@
 <?php
     /* @var $this SiteController */
-    /* @var $managers User[] */
+    /* @var $endpoints array[] */
+    /* @var $path string */
 
     $this->pageTitle = Yii::app()->name . ' - Administration';
     $this->breadcrumbs = array(
@@ -8,48 +9,78 @@
     );
 ?>
 
-<h2 class="sectionHeader">Administration</h2>
-<?php
-
-                        array(
-                            'label'=> 'Site Administration',
-                            //'url' => array('/user/admin'),
-                            //'visible'=>Yii::app()->getModule('user')->isAdmin(),
-                            'items' => array(
-                                array('label' => 'User Options'),
-                                array(
-                                    'label' => 'Create New User',
-                                    'url' => array('/user/create'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'List Users',
-                                    'url' => array('/user'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'Manage Users',
-                                    'url' => array('/user/admin'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                TbHtml::menuDivider(),
-                                array('label' => 'Profile Field Options'),
-                                array(
-                                    'label' => 'Create New Profile Field',
-                                    'url' => array('/profileField/create'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                array(
-                                    'label' => 'Manage Profile Fields',
-                                    'url' => array('/profileField/admin'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                                TbHtml::menuDivider(),
-                                array(
-                                    'label' => 'Authorization & Access Control',
-                                    'url' => array('/rbam'),
-                                    'visible'=> !Yii::app()->user->isGuest,
-                                ),
-                            )
-                        );
-?>
+<h2 class="sectionHeader">Administration Dashboard</h2>
+<div id="AdministrationContainer">
+    <div class="row-fluid">
+        <div class="span6">
+            <div id="arenasContainer" class="row-fluid accordion">
+                <div id="arenasAccordionHeader" class="accordion-heading">
+                    <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
+                       data-parent="arenasContainer" href="#arenasCollapse"
+                       style="display: inline-block;">
+                        <h5 id="arenasHeader">Facility Actions</h5>
+                    </a>
+                </div>
+                <div id="arenasCollapse" class="accordion-body collapse in">
+                    <div class="accordion-inner">
+                        <div id="arenasWell" class="well well-small">
+                            <a href="<?php echo $this->createUrl('/arena/create'); ?>">
+                                Create New
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/arena/uploadArenas'); ?>">
+                                Import
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/arena/admin'); ?>">
+                                Administer Existing
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <div id="usersContainer" class="row-fluid accordion">
+                <div id="usersAccordionHeader" class="accordion-heading">
+                    <a class="no-ajaxy accordion-toggle" data-toggle="collapse"
+                       data-parent="usersContainer" href="#usersCollapse"
+                       style="display: inline-block;">
+                        <h5 id="usersHeader">User Actions</h5>
+                    </a>
+                </div>
+                <div id="usersCollapse" class="accordion-body collapse in">
+                    <div class="accordion-inner">
+                        <div id="usersWell" class="well well-small">
+                            <?php if(Yii::app()->user->isSiteAdministrator()) : ?>
+                            <a href="<?php echo $this->createUrl('/rbam/rbam'); ?>">
+                                Manage Roles
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/user/create', array('role' => 'Administrator')); ?>">
+                                Create New Site Administrator
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/user/create', array('role' => 'ApplicationAdministrator')); ?>">
+                                Create New Application Administrator
+                            </a>
+                            <br />
+                            <?php endif; ?>
+                            <a href="<?php echo $this->createUrl('/user/create', array('role' => 'Manager')); ?>">
+                                Create New Facility Manager
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/user/create', array('role' => 'RestrictedManager')); ?>">
+                                Create New Restricted Facility Manager
+                            </a>
+                            <br />
+                            <a href="<?php echo $this->createUrl('/user/admin'); ?>">
+                                Administer Existing
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

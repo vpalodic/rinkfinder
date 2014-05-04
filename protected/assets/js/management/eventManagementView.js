@@ -1,5 +1,5 @@
 /* 
- * This is the jQuery plugin for the user view / update / create actions
+ * This is the jQuery plugin for the event view / update / create actions
  * @author Vincent J Palodichuk <vj.palodichuk@gmail.com>
  * @copyright Copyright &copy; MIAMA 2014
  * @package app.assets.js

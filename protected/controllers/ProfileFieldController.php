@@ -29,10 +29,10 @@ class ProfileFieldController extends Controller
     public function accessRules()
     {
         return array(
-            array('allow', // allow admin user to perform 'admin' and 'delete' actions
+/*            array('allow', // allow admin user to perform 'admin' and 'delete' actions
                 'actions'=>array('create','update','view','admin','delete'),
                 'roles'=>array('SiteAdministrator'),
-            ),
+            ),*/
             array('deny',  // deny all users
                 'users'=>array('*'),
             ),

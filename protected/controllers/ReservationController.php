@@ -27,10 +27,10 @@ class ReservationController extends Controller
     public function accessRules()
     {
         return array(
-            array('allow',
+/*            array('allow',
                 'actions' => array('index', 'view', 'create', 'update', 'admin', 'delete'),
                 'roles' => array('ApplicationAdministrator'),
-            ),
+            ),*/
             array('deny',
                 'users' => array('*'),
             ),

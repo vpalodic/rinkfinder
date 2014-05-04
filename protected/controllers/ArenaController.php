@@ -487,6 +487,24 @@ class ArenaController extends Controller
      */
     public function actionCreate()
     {
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Ensure that the user has permission to create it!
+        if(!Yii::app()->user->isApplicationAdministrator()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
         $model = new Arena;
 
         // Uncomment the following line if AJAX validation is needed
@@ -494,7 +512,9 @@ class ArenaController extends Controller
 
         if (isset($_POST['Arena'])) {
             $model->attributes = $_POST['Arena'];
+            $model->autoTag();
             if ($model->save()) {
+                $model->assignUsers($uid, User::getAllAdminIds());
                 $this->redirect(array('view','id'=>$model->id));
             }
         }
@@ -686,13 +706,31 @@ class ArenaController extends Controller
     {
         $model = $this->loadModel($id);
 
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Ensure that the user has permission to create it!
+        if(!Yii::app()->user->isApplicationAdministrator() || !$model->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
         // Uncomment the following line if AJAX validation is needed
         // $this->performAjaxValidation($model);
 
         if (isset($_POST['Arena'])) {
             $model->attributes = $_POST['Arena'];
             if ($model->save()) {
-                $this->redirect(array('view','id'=>$model->id));
+                $this->redirect(array('view','id' => $model->id));
             }
         }
 
@@ -1222,6 +1260,24 @@ class ArenaController extends Controller
      */
     public function actionDelete($id)
     {
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Ensure that the user has permission to create it!
+        if(!Yii::app()->user->isApplicationAdministrator()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
         if (Yii::app()->request->isPostRequest) {
             // we only allow deletion via POST request
             $this->loadModel($id)->delete();
@@ -1370,21 +1426,40 @@ class ArenaController extends Controller
         }
     }
 
-	/**
-	 * Manages all models.
-	 */
-	public function actionAdmin()
-	{
-		$model=new Arena('search');
-		$model->unsetAttributes();  // clear any default values
-		if (isset($_GET['Arena'])) {
-			$model->attributes=$_GET['Arena'];
-		}
-
-		$this->render('admin',array(
-			'model'=>$model,
-		));
-	}
+    /**
+     * Manages all models.
+     */
+    public function actionAdmin()
+    {
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+        
+        // Ensure that the user has permission to create it!
+        if(!Yii::app()->user->isApplicationAdministrator()) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        $model = new Arena('search');
+        $model->unsetAttributes();  // clear any default values
+        
+        if(isset($_GET['Arena'])) {
+            $model->attributes = $_GET['Arena'];
+        }
+        
+        $this->render('admin', array(
+            'model' => $model,
+        ));
+    }
 
     /**
      * Main page to upload many areans through a data file
@@ -1422,25 +1497,7 @@ class ArenaController extends Controller
                     )
             );
         } else {
-            if(defined('YII_DEBUG')) {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            } else {
-                Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.fineuploader-3.2.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-switch.min.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modalmanager.js', CClientScript::POS_END);
-                Yii::app()->clientScript->registerScriptFile($path . '/js/bootstrap-modal.js', CClientScript::POS_END);
-            }
+            $this->registerAdministrationScripts();
             
             $this->includeCss = true;
 

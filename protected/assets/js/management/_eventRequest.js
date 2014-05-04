@@ -533,7 +533,7 @@
                     $("#acknowledger_id").off('click');
                     $("#acknowledger_id").parent().remove();
                     $("#accepter_id").off('click');
-                    $("#accepter_id").remove();
+                    $("#accepter_id").parent().remove();
                     $(".rejected_reason").off('save');
                     $(".rejected_reason").off('hidden');
                     $(".rejected_reason").remove();
@@ -745,6 +745,10 @@
             e.preventDefault();
             e.stopPropagation();
 
+            window.alert("This feature is coming in a future relase.");
+            
+            return ;
+            
             var newParms = {
                 action: 'create',
                 output: 'html',
