@@ -824,11 +824,101 @@
         </div>
     </div>
 
+    <?php
+    // We are going to grab two lists of managers for the list views
+    // We only need the manager name and id, we don't need anything else
+    $availableManagers = User::getAvailableManagers(Yii::app()->user->id, $model->id);
+    $assignedManagers = User::getAssignedManagers(Yii::app()->user->id, $model->id);
+    ?>
 <?php if(Yii::app()->user->isArenaManager()) : ?>
-    <div id="managersTabPane" class="tab-pane active in">
-        
+    <div id="managersTabPane" class="tab-pane fade">
+        <div id="managerManagementView" class="panel panel-primary">
+            <div class="panel-heading">
+                <h3>
+                    Managers
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row-fluid">
+                    <div class="span6">
+                        <strong>Available Managers</strong><br />
+                        <select id="availableManagersMSelect"
+                                multiple
+                                class="span12">
+                            <?php foreach($availableManagers as $aavc) : ?>
+                            <option value="<?php echo $aavc['id']; ?>">
+                                <?php echo $aavc['last_name'] . ', ' . $aavc['first_name'] . ' - ' . $aavc['email']; ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="span6">
+                        <strong>Assigned Managers</strong><br />
+                        <select id="assignedManagersMSelect"
+                                multiple
+                                class="span12">
+                            <?php foreach($assignedManagers as $aac) : ?>
+                            <option value="<?php echo $aac['id']; ?>">
+                                <?php echo $aac['last_name'] . ', ' . $aac['first_name'] . ' - ' . $aac['email']; ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Assignment Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span3 offset3">
+                                    <button class="btn btn-block btn-success"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Assign manager to this facility"
+                                            id="assignManagerButton">
+                                        <i class="fa fa-lg fa-fw fa-chevron-right"></i> <br />
+                                        <span>Assign</span>
+                                    </button>
+                                </div>
+                                <div class="span3">
+                                    <button class="btn btn-block btn-warning"
+                                            type="button"
+                                            data-toggle="tooltip"
+                                            data-original-title="Unassign manager from this facility"
+                                            id="unassignManagerButton">
+                                        <i class="fa fa-lg fa-fw fa-chevron-left"></i> <br />
+                                        <span>Unassign</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <strong>Manager Actions</strong><br />
+                        <div class="well">
+                            <div class="row-fluid">
+                                <div class="span2 offset5">
+                                    <a class="btn btn-block btn-warning"
+                                       href="<?php echo $params['endpoints']['manager']['new']; ?>"
+                                       target="_blank"
+                                       data-toggle="tooltip"
+                                       data-original-title="New Manager (Opens in a new window)"
+                                       id="newManagerButton">
+                                        <i class="fa fa-lg fa-fw fa-plus-square"></i> <br />
+                                        <span>New Manager</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                    
+            </div>
+        </div>
     </div>
 <?php endif; ?>
+        
 </div>
 
 <?php if($doReady) : ?>
@@ -855,6 +945,10 @@
             . 'arenaManagementView.endpoints.event.searchRecord = "' . $params['endpoints']['event']['search'] . '";'
             . 'arenaManagementView.endpoints.event.exportRecord = "' . $params['endpoints']['event']['export'] . '";'
             . 'arenaManagementView.endpoints.event.deleteAllRecord = "' . $params['endpoints']['event']['deleteAll'] . '";'
+            . 'arenaManagementView.endpoints.manager.newRecord = "' . $params['endpoints']['manager']['new'] . '";'
+            . 'arenaManagementView.endpoints.manager.updateRecord = "' . $params['endpoints']['manager']['update'] . '";'
+            . 'arenaManagementView.endpoints.manager.viewRecord = "' . $params['endpoints']['manager']['view'] . '";'
+            . 'arenaManagementView.endpoints.manager.deleteRecord = "' . $params['endpoints']['manager']['delete'] . '";'
             . 'arenaManagementView.params = ' . json_encode($params['data']) . ';'
             . 'arenaManagementView.arena = ' . json_encode($model->attributes) . ';'
             . 'arenaManagementView.locations = ' . json_encode($locations) . ';'
@@ -864,7 +958,7 @@
             //. 'arenaManagementView.events = ' . json_encode($model->events) . ';'
             . 'arenaManagementView.eventTypes = ' . json_encode($eventsTypes) . ';'
             . 'arenaManagementView.eventStatuses = ' . json_encode($eventsStatuses) . ';'
-            //. 'arenaManagementView.managers = ' . json_encode($model->managers) . ';'
+            . 'arenaManagementView.managers = ' . json_encode($assignedManagers) . ';'
             . 'arenaManagementView.isArenaManager = ' . (Yii::app()->user->isArenaManager() ? 1 : 0) . ';'
             . 'arenaManagementView.statusList = ' . json_encode(Arena::getActiveStatusList()) . ';'
             . 'arenaManagementView.stateList = ' . json_encode(UnitedStatesNames::$states) . ';'
@@ -929,11 +1023,15 @@ $(document).ready(function() {
                 arenaManagementView.endpoints.event.searchRecord = "<?php echo $params['endpoints']['event']['search']; ?>";
                 arenaManagementView.endpoints.event.exportRecord = "<?php echo $params['endpoints']['event']['export']; ?>";
                 arenaManagementView.endpoints.event.deleteAllRecord = "<?php echo $params['endpoints']['event']['deleteAll']; ?>";
+                arenaManagementView.endpoints.manager.newRecord = "<?php echo $params['endpoints']['manager']['new']; ?>";
+                arenaManagementView.endpoints.manager.updateRecord = "<?php echo $params['endpoints']['manager']['update']; ?>";
+                arenaManagementView.endpoints.manager.viewRecord = "<?php echo $params['endpoints']['manager']['view']; ?>";
+                arenaManagementView.endpoints.manager.deleteRecord = "<?php echo $params['endpoints']['manager']['delete']; ?>";
                 arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
                 arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
                 arenaManagementView.locations = <?php echo json_encode($locations); ?>;
                 arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
-                arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
+                arenaManagementView.locationStatuses = <?php echo json_encode($locationsStatuses); ?>;
                 arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
                 arenaManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
                 arenaManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;
@@ -967,11 +1065,15 @@ $(document).ready(function() {
         arenaManagementView.endpoints.event.searchRecord = "<?php echo $params['endpoints']['event']['search']; ?>";
         arenaManagementView.endpoints.event.exportRecord = "<?php echo $params['endpoints']['event']['export']; ?>";
         arenaManagementView.endpoints.event.deleteAllRecord = "<?php echo $params['endpoints']['event']['deleteAll']; ?>";
+        arenaManagementView.endpoints.manager.newRecord = "<?php echo $params['endpoints']['manager']['new']; ?>";
+        arenaManagementView.endpoints.manager.updateRecord = "<?php echo $params['endpoints']['manager']['update']; ?>";
+        arenaManagementView.endpoints.manager.viewRecord = "<?php echo $params['endpoints']['manager']['view']; ?>";
+        arenaManagementView.endpoints.manager.deleteRecord = "<?php echo $params['endpoints']['manager']['delete']; ?>";
         arenaManagementView.params = <?php echo json_encode($params['data']); ?>;
         arenaManagementView.arena = <?php echo json_encode($model->attributes); ?>;
         arenaManagementView.locations = <?php echo json_encode($locations); ?>;
         arenaManagementView.locationTypes = <?php echo json_encode($locationsTypes); ?>;
-        arenaManagementView.locationsStatuses = <?php echo json_encode($locationsStatuses); ?>;
+        arenaManagementView.locationStatuses = <?php echo json_encode($locationsStatuses); ?>;
         arenaManagementView.contacts = <?php echo json_encode($assignedContacts); ?>;
         arenaManagementView.eventTypes = <?php echo json_encode($eventsTypes); ?>;
         arenaManagementView.eventStatuses = <?php echo json_encode($eventsStatuses); ?>;

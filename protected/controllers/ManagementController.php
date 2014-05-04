@@ -556,8 +556,8 @@ class ManagementController extends Controller
                     'delete' => Yii::app()->createUrl('/reservation/deleteReservation')
                 ),
                 'manager' => array(
-                    'new' => Yii::app()->createUrl('/user/createUser'),
-                    'update' => Yii::app()->createUrl('/user/updateAttribute'),
+                    'new' => Yii::app()->createUrl('/user/create', array('arenaId' => $model->id, 'role' => 'RestrictedManager')),
+                    'update' => Yii::app()->createUrl('/arena/assignManager'),
                     'view' => Yii::app()->createUrl('/user/view'),
                     'delete' => Yii::app()->createUrl('/user/deleteUser')
                 )

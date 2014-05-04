@@ -15,8 +15,8 @@ class ArenaController extends Controller
     {
         return array(
             'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-            'ajaxOnly + uploadArenasFileDelete uploadArenasProcessCSV', // we only delete and process files via ajax!
+            'postOnly + delete assignManager updateAttribute deleteArena createArena',
+            'ajaxOnly + uploadArenasFileDelete uploadArenasProcessCSV assignManager updateAttribute deleteArena createArena',
         );
     }
 
@@ -44,6 +44,7 @@ class ArenaController extends Controller
                 'actions' => array(
                     'update',
                     'updateAttribute',
+                    'assignManager'
                 ),
                 'users' => array(
                     '@'
@@ -700,6 +701,10 @@ class ArenaController extends Controller
         ));
     }
 
+    /**
+     * Updates a particular model.
+     * If update is successful there is no output
+     */
     public function actionUpdateAttribute()
     {
         Yii::trace("In actionUpdateAttribute.", "application.controllers.ArenaController");
@@ -707,9 +712,7 @@ class ArenaController extends Controller
         // Default to HTML output!
         $outputFormat = "html";
         
-        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
-            $outputFormat = $_GET['output'];
-        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
             $outputFormat = $_POST['output'];
         }
         
@@ -927,6 +930,165 @@ class ArenaController extends Controller
     }
 
     /**
+     * Assigns or unassigns managers from a Facility
+     * If update is successful there is no output.
+     */
+    public function actionAssignManager()
+    {
+        Yii::trace("In actionAssignManager.", "application.controllers.ArenaController");
+        
+        // Default to HTML output!
+        $outputFormat = "html";
+        
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+            $outputFormat = $_POST['output'];
+        }
+        
+        // We only update via a POST and AJAX request!
+        $aid = isset($_POST['aid']) && is_numeric($_POST['aid']) && $_POST['aid'] > 0 ? (integer)$_POST['aid'] : 0;
+        
+        // Verify we have a valid ID!
+        if($aid <= 0) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+                
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+        
+        // Parameters look good so now verify that the arena model exists!
+        $model = $this->loadModel($aid, $outputFormat);
+        
+        // Always grab the currently logged in user's ID.
+        $uid = Yii::app()->user->id;
+
+        
+        // And that the user has permission to update it!
+        if(!Yii::app()->user->isArenaManager() || !$model->isUserAssigned($uid)) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(403, 'Permission denied. You are not authorized to perform this action.');
+            }
+            
+            $this->sendResponseHeaders(403, 'json');
+            echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Permission denied. You are not authorized to perform this action.'
+                )
+            );
+            Yii::app()->end();
+        }
+        
+        // We need to grab and validate the rest of our parameters from the request body
+        // We will update one attribute at a time!
+            
+        // Grab the remaining parameters!
+        $name = isset($_POST['name']) ? $_POST['name'] : null;
+        $value = isset($_POST['value']) ? $_POST['value'] : null;
+
+        // Validate our remaining parameters!
+        if($name === null) {
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(400, 'Invalid parameters');
+            }
+
+            $this->sendResponseHeaders(400, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => 'Invalid parameters',
+                    )
+            );
+            Yii::app()->end();
+        }
+            
+        try {
+            $success = false;
+            
+            if($name == 'assign') {
+                $success = $model->assignUsers($uid, $value);
+            } elseif($name == 'unassign') {
+                $success = $model->unassignUsers($uid, $value);
+            }
+
+            if(!$success) {
+                $output = 'Unknown action or the requested action was unauthorized.';
+
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(400, $output);
+                }
+
+                $this->sendResponseHeaders(400, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => json_encode($output),
+                        )
+                );
+                Yii::app()->end();
+            }
+        } catch (Exception $ex) {
+            if($ex instanceof CHttpException) {
+                throw $ex;
+            }
+            if($outputFormat == "html" || $outputFormat == "xml") {
+                throw new CHttpException(500, $ex->getMessage());
+            }
+
+            $errorInfo = null;
+
+            if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                $errorParms = array();
+
+                if(isset($ex->errorInfo[0])) {
+                    $errorParms['sqlState'] = $ex->errorInfo[0];
+                } else {
+                    $errorParms['sqlState'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[1])) {
+                    $errorParms['mysqlError'] = $ex->errorInfo[1];
+                } else {
+                    $errorParms['mysqlError'] = "Unknown";
+                }
+
+                if(isset($ex->errorInfo[2])) {
+                    $errorParms['message'] = $ex->errorInfo[2];
+                } else {
+                    $errorParms['message'] = "Unknown";
+                }
+
+                $errorInfo = array($errorParms);
+            }
+
+            $this->sendResponseHeaders(500, 'json');
+
+            echo json_encode(
+                    array(
+                        'success' => false,
+                        'error' => $ex->getMessage(),
+                        'exception' => true,
+                        'errorCode' => $ex->getCode(),
+                        'errorFile' => $ex->getFile(),
+                        'errorLine' => $ex->getLine(),
+                        'errorInfo' => $errorInfo,
+                    )
+            );
+
+            Yii::app()->end();
+        }
+    }
+
+    /**
      * Deletes a particular model.
      * If delete is successful, there is no output, otherwise we output an error.
      */
@@ -937,9 +1099,7 @@ class ArenaController extends Controller
         // Default to HTML output!
         $outputFormat = "html";
         
-        if(isset($_GET['output']) && ($_GET['output'] == 'xml' || $_GET['output'] == 'json')) {
-            $outputFormat = $_GET['output'];
-        } elseif(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
+        if(isset($_POST['output']) && ($_POST['output'] == 'xml' || $_POST['output'] == 'json')) {
             $outputFormat = $_POST['output'];
         }
         

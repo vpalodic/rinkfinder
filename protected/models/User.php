@@ -1393,5 +1393,75 @@ class User extends RinkfinderActiveRecord
         $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
         
         return $command->queryAll(true);
-    }    
+    }
+
+    /**
+     * Returns an array of managers not assigned to the passed in arena
+     * @return array[] the array of contacts
+     * @throws CDbException
+     */
+    public static function getAvailableManagers($uid, $aid)
+    {
+        $sql = 'SELECT u.*, p.* '
+                . 'FROM user u '
+                . 'INNER JOIN profile p '
+                . 'ON p.user_id = u.id '
+                . 'INNER JOIN auth_assignment aa '
+                . 'ON aa.userid = u.id AND aa.itemname IN ("Manager", "RestrictedManager") '
+                . 'WHERE u.id NOT IN (SELECT DISTINCT aua.user_id '
+                . '                 FROM arena_user_assignment aua '
+                . '                 WHERE aua.arena_id IN (SELECT DISTINCT aua1.arena_id '
+                . '                         FROM arena_user_assignment aua1 '
+                . '                         WHERE aua1.arena_id = :aid AND aua1.user_id = :uid)) '
+                . 'AND u.id IN (SELECT DISTINCT aua.user_id '
+                . '             FROM arena_user_assignment aua '
+                . '             WHERE aua.arena_id IN (SELECT DISTINCT aua1.arena_id '
+                . '                         FROM arena_user_assignment aua1 '
+                . '                         WHERE aua1.user_id = :uid) '
+                . '             UNION '
+                . '             SELECT u.id FROM user where created_by_id = :uid) ';
+        
+        $sql .= 'ORDER BY p.last_name ASC, p.first_name ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
+    /**
+     * Returns an array of contact statuses
+     * @return array[] the array of contact statuses
+     * @throws CDbException
+     */
+    public static function getAssignedManagers($uid, $aid)
+    {
+        $sql = 'SELECT u.*, p.* '
+                . 'FROM user u '
+                . 'INNER JOIN profile p '
+                . 'ON p.user_id = u.id '
+                . 'INNER JOIN auth_assignment aa '
+                . 'ON aa.userid = u.id AND aa.itemname IN ("Manager", "RestrictedManager") '
+                . 'WHERE u.id IN (SELECT DISTINCT aua.user_id '
+                . '                 FROM arena_user_assignment aua '
+                . '                 WHERE aua.arena_id IN (SELECT DISTINCT aua1.arena_id '
+                . '                         FROM arena_user_assignment aua1 '
+                . '                         WHERE aua1.arena_id = :aid AND aua1.user_id = :uid)) ';
+        
+        $sql .= 'ORDER BY p.last_name ASC, p.first_name ASC';
+        
+        $command = Yii::app()->db->createCommand($sql);
+        
+        $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
+        $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        
+        $ret = $command->queryAll(true);
+        
+        return $ret;
+    }
+    
 }

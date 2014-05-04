@@ -226,6 +226,7 @@ class UserController extends Controller
                         $model->passwordRepeat = '';
                         $profile->first_name = '';
                         $profile->last_name = '';
+                        $model->setIsNewRecord(true);
                     }
                 } else {
                     $profile->validate();
@@ -741,26 +742,32 @@ class UserController extends Controller
             case 'create':
                 if($arena !== null) {
                     $this->breadcrumbs = array(
-                        'Arena Management' => array(
-                            'arenaManagement/index'
+                        'Management' => array(
+                            '/site/management'
+                        ),
+                        'Facilities' => array(
+                            '/management/index',
+                            'model' => 'Arena'
                         ),
                         CHtml::encode($arena->name) => array(
-                            'arenaManagement/arenas/view',
-                            'aid' => $arena->id,
+                            '/management/view',
+                            'model' => 'arena',
+                            'id' => $arena->id,
                         ),
                         'Managers' => array(
-                            'arenaManagement/managers/index',
-                            'aid' => $arena->id,
+                            '/management/view',
+                            'model' => 'arena',
+                            'id' => $arena->id,
                         ),
                         'Create '. $displayRole,
                     );
                 } else {
                     $this->breadcrumbs = array(
                         'Administration' => array(
-                            '/admin',
+                            '/site/administration',
                         ),
                         'Users' => array(
-                            '/admin/users',
+                            '/site/users',
                         ),
                         'Create '. $displayRole,
                     );

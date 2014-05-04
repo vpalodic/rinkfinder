@@ -58,7 +58,7 @@
     <div class="row-fluid">
         <div class="span12">
             <h3 class="text-center">
-                <?php echo $data['count']; ?> Events Found
+                The next <?php echo $data['count']; ?> events
             </h3>
         </div>
     </div>

@@ -57,10 +57,12 @@
                     <small>Notes: <?php echo $record['notes'];?></small>
                 </p>
                 <?php endif; ?>
+                <?php if($record['type_class'] == 'for_sale') : ?>
                 <a class="btn btn-success purchase-request" href="<?php echo $record['pUrl']; ?>">
                     <i class="fa fa-fw fa-ticket"></i><br />
                     <span>Request Reservation</span>
                 </a><span> </span>
+                <?php endif; ?>
                 <a class="btn btn-primary information-request" href="<?php echo $record['iUrl']; ?>">
                     <i class="fa fa-fw fa-info"></i><br />
                     <span>Request Information</span>

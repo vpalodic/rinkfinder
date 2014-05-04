@@ -94,6 +94,11 @@
         arenaManagementView.setupInitialLocationView();
         arenaManagementView.setupInitialEventView();
         
+        if (arenaManagementView.isArenaManager)
+        {
+            arenaManagementView.setupInitialManagerView();
+        }
+        
         $('[data-toggle="tooltip"]').tooltip();
     };
     
@@ -2806,114 +2811,6 @@
         $exportBtn.parent().find('#loading').remove();
     };
 
-    arenaManagementView.oldExportEvents = function () {
-        // Grab all of the event and arena IDs that we should export!
-        var $table = $('#eventFootable');
-        var $tbody = $('#eventFootable').find('#eventFootableBody');
-        var $rows = $tbody.find('tr').not('.footable-row-detail').not('.footable-filtered');
-        
-        if ($rows.length <= 0)
-        {
-            return;
-        }
-
-        var $searchBtn = $('#retrieveEventButton');
-        var $exportBtn = $('#exportEventButton');
-        var $deleteBtn = $('#deleteEventButton');
-
-        $searchBtn.prop("disabled", true);
-        $exportBtn.prop("disabled", true);
-        $deleteBtn.prop("disabled", true);
-        
-        // We must disable everything and put up our spinner...
-        var spinner = '<div id="loading"' +
-                '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
-                'alt="Loading..." /></div>';
-
-        // Show we are busy by appending the spinner to the assign button
-        $exportBtn.parent().prepend(spinner);
-
-        var ids = [];
-
-        $rows.each(function () {
-            var event_id = $(this).data('event_id');
-            var arena_id = $(this).data('arena_id');
-
-            ids.push({id: event_id, aid: arena_id});
-        });
-            
-        // Grab our footable object as we will need it later!!
-        var footable = $table.data('footable');
-            
-        // Now let's export the events!!!
-        var myParams = {
-            events: ids
-        };
-        
-        var url = arenaManagementView.endpoints.event.exportRecord;
-        
-        $.ajax({
-            url: url,
-            data: myParams,
-            type: 'POST',
-            dataType: 'html',
-            success: function(result, status, xhr) {
-                // Its possible we will get a session timeout so check for it!
-                var myjsonObj = false;
-                try
-                {
-                    myjsonObj = JSON.parse(result);
-                }
-                catch (err)
-                {
-                    myjsonObj = false;
-                }
-
-                if (myjsonObj !== false)
-                {
-                    $searchBtn.prop("disabled", false);
-                    $exportBtn.prop("disabled", false);
-                    $deleteBtn.prop("disabled", false);
-                    $exportBtn.parent().find('#loading').remove();
-                    utilities.ajaxError.show(
-                            "Error",
-                            "Failed to delete the events",
-                            xhr,
-                            "error",
-                            "Login Required"
-                    );
-                    return;
-                }
-
-                var alertSuccess = '<div class="alert alert-success"><button ' + 
-                        'type="button" class="close" data-dismiss="alert">' + 
-                        '&times;</button><strong>Success!</strong> Exported ' +
-                        $rows.length + ' events.</div>';
-                
-                $table.parent().prepend(alertSuccess);
-
-                $searchBtn.prop("disabled", false);
-                $exportBtn.prop("disabled", false);
-                $deleteBtn.prop("disabled", false);
-                $exportBtn.parent().find('#loading').remove();
-            },
-            error: function(xhr, status, errorThrown) {
-                $searchBtn.prop("disabled", false);
-                $exportBtn.prop("disabled", false);
-                $deleteBtn.prop("disabled", false);
-                $exportBtn.parent().find('#loading').remove();
-                
-                utilities.ajaxError.show(
-                        "Error",
-                        "Failed to export the events",
-                        xhr,
-                        status,
-                        errorThrown
-                );
-            }
-        });
-    };
-    
     arenaManagementView.deleteEventsTable = function () {
         // Grab all of the event and arena IDs that we should delete!
         var $table = $('#eventFootable');
@@ -3185,6 +3082,276 @@
                 'fa fa-fw fa-lg fa-times"></i> No</button>';
 
         return utilities.modal.add('Confirm Action', modalBody, modalFooter, false, false);
+    };
+
+    arenaManagementView.setupInitialManagerView = function () {
+        // Disable all buttons except the New button 
+        // and hide the save / cancel buttons
+        var $assignBtn = $('#assignManagerButton');
+        var $unassignBtn = $('#unassignManagerButton');
+        var $availableMS = $('#availableManagersMSelect');
+        var $assignedMS = $('#assignedManagersMSelect');
+        
+        $assignBtn.attr("disabled", "disabled");
+        $unassignBtn.attr("disabled", "disabled");
+        
+        // Setup the select change handlers!
+        $availableMS.on('change', function (e) {
+            // Get the selected options from the available select list
+            var $selected = $availableMS.find('option:selected');
+            
+            if($selected.length > 0)
+            {
+                // we have at least one selection so enable the button
+                $assignBtn.removeAttr("disabled");
+            }
+            else
+            {
+                // Nothing selected so disable the button
+                $assignBtn.attr("disabled", "disabled");
+            }
+        });
+        
+        $assignedMS.on('change', function (e) {
+            // Get the selected options from the available select list
+            var $selected = $assignedMS.find('option:selected');
+            
+            if($selected.length > 0)
+            {
+                // we have at least one selection so enable the button
+                $unassignBtn.removeAttr("disabled");
+            }
+            else
+            {
+                // Nothing selected so disable the button
+                $unassignBtn.attr("disabled", "disabled");
+            }
+        });
+        
+        // Setup the button click handlers!
+        $assignBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Get the selected options from the available select list
+            var $selected = $availableMS.find('option:selected');
+            
+            var values = [];
+            
+            $selected.each(function () {
+                values.push($(this).val());
+            });
+            
+            if(values.length <= 0)
+            {
+                return;
+            }
+            
+            // Prepare to assign the contacts by disabling the assignment
+            // buttons and select lists!
+            $assignBtn.attr("disabled", "disabled");
+            $unassignBtn.attr("disabled", "disabled");
+            $availableMS.attr("disabled", "disabled");
+            $assignedMS.attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $assignBtn.parent().prepend(spinner);
+            
+            // Now let's assign the contacts!!!
+            var myParams = {
+                name: 'assign',
+                value: values,
+                aid: arenaManagementView.params.id,
+                output: 'html'
+            };
+            
+            $.ajax({
+                url: arenaManagementView.endpoints.manager.updateRecord,
+                data: myParams,
+                type: 'POST',
+                dataType: 'html',
+                success: function(result, status, xhr) {
+                    // Its possible we will get a session timeout so check for it!
+                    var myjsonObj = false;
+                    try
+                    {
+                        myjsonObj = JSON.parse(result);
+                    }
+                    catch (err)
+                    {
+                        myjsonObj = false;
+                    }
+
+                    if (myjsonObj !== false)
+                    {
+                        window.setTimeout(function () {
+                            $availableMS.removeAttr("disabled");
+                            $assignedMS.removeAttr("disabled");
+                            $assignBtn.removeAttr("disabled");
+
+                            $assignBtn.parent().find('#loading').remove();
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to assign the managers",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                            );
+                        }, 1000);
+
+                        return;
+                    }
+                    
+                    // Move the contacts to the assigned list
+                    $selected.each(function () {
+                        $assignedMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
+                        $(this).remove();
+                    });
+                    
+                    // Clear any selections
+                    $availableMS.val('');
+                    $assignedMS.val('');
+                    
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $assignBtn.parent().find('#loading').remove();
+                },
+                error: function(xhr, status, errorThrown) {
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $assignBtn.removeAttr("disabled");
+                    
+                    $assignBtn.parent().find('#loading').remove();
+                    
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to assign the managers",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });            
+        });
+        
+        $unassignBtn.on('click', function (e) {
+            e.preventDefault();
+            
+            var spinner = '<div id="loading"' +
+                    '><img src="' + utilities.urls.base + '/images/spinners/ajax-loader.gif" ' +
+                    'alt="Loading..." /></div>';
+            
+            // Get the selected options from the available select list
+            var $selected = $assignedMS.find('option:selected');
+            
+            var values = [];
+            
+            $selected.each(function () {
+                values.push($(this).val());
+            });
+            
+            if(values.length <= 0)
+            {
+                return;
+            }
+            
+            // Prepare to unassign the contacts by disabling the assignment
+            // buttons and select lists!
+            $assignBtn.attr("disabled", "disabled");
+            $unassignBtn.attr("disabled", "disabled");
+            $availableMS.attr("disabled", "disabled");
+            $assignedMS.attr("disabled", "disabled");
+            
+            // Show we are busy by appending the spinner to the assign button
+            $unassignBtn.parent().prepend(spinner);
+            
+            // Now let's assign the contacts!!!
+            var myParams = {
+                name: 'unassign',
+                value: values,
+                aid: arenaManagementView.params.id,
+                id: 1,
+                pk: 1,
+                output: 'html'
+            };
+            
+            $.ajax({
+                url: arenaManagementView.endpoints.manager.updateRecord,
+                data: myParams,
+                type: 'POST',
+                dataType: 'html',
+                success: function(result, status, xhr) {
+                    // Its possible we will get a session timeout so check for it!
+                    var myjsonObj = false;
+                    try
+                    {
+                        myjsonObj = JSON.parse(result);
+                    }
+                    catch (err)
+                    {
+                        myjsonObj = false;
+                    }
+
+                    if (myjsonObj !== false)
+                    {
+                        window.setTimeout(function () {
+                            $availableMS.removeAttr("disabled");
+                            $assignedMS.removeAttr("disabled");
+                            $unassignBtn.removeAttr("disabled");
+
+                            $unassignBtn.parent().find('#loading').remove();
+                            utilities.ajaxError.show(
+                                    "Error",
+                                    "Failed to unassign the managers",
+                                    xhr,
+                                    "error",
+                                    "Login Required"
+                            );
+                        }, 1000);
+
+                        return;
+                    }
+                    
+                    // Move the contacts to the available list
+                    $selected.each(function () {
+                        $availableMS.append('<option value="' + $(this).val() + '">' + $(this).text() + '</option>');
+                        $(this).remove();
+                    });
+                    
+                    // Clear any selections
+                    $availableMS.val('');
+                    $assignedMS.val('');
+                    
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $unassignBtn.parent().find('#loading').remove();
+                },
+                error: function(xhr, status, errorThrown) {
+                    $availableMS.removeAttr("disabled");
+                    $assignedMS.removeAttr("disabled");
+                    $unassignBtn.removeAttr("disabled");
+                    
+                    $unassignBtn.parent().find('#loading').remove();
+                    
+                    utilities.ajaxError.show(
+                        "Error",
+                        "Failed to unassign the managers",
+                        xhr,
+                        status,
+                        errorThrown
+                    );
+                }
+            });            
+        });
+    };
+    
+    arenaManagementView.resetManagerView = function (){
+        var $newBtn = $('#newManagerButton');
+        
+        $newBtn.prop("disabled", false);
     };
     
 }( window.arenaManagementView = window.arenaManagementView || {}, jQuery ));
