@@ -58,7 +58,11 @@
     <div class="row-fluid">
         <div class="span12">
             <h3 class="text-center">
+                <?php if($data['count'] == 1) : ?>
+                The next <?php echo $data['count']; ?> event
+                <?php elseif($data['count'] > 1) : ?>
                 The next <?php echo $data['count']; ?> events
+                <?php endif; ?>
             </h3>
         </div>
     </div>
