@@ -205,6 +205,10 @@ class UserController extends Controller
                     
                         $message = '<h4>New User Created Successfully!</h4>';
                         
+                        if($role == 'Administrator' || $role == 'ApplicationAdministrator') {
+                            $model->assignAllAdminsToAllArenas(Yii::app()->user->id);
+                        }
+                        
                         if($emailSent === true) {
                             $message .= 'The new user has been e-mailed instructions on how to login to their account. ';
                         } else {

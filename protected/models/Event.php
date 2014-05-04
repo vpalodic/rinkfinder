@@ -2193,7 +2193,7 @@ class Event extends RinkfinderActiveRecord
 
         $exportSql = "UPDATE event "
                 . "SET external_id = id "
-                . "WHERE arena_id IN (SELECT aua.arena_id "
+                . "WHERE external_id IS NULL AND arena_id IN (SELECT aua.arena_id "
                 . "             FROM arena_user_assignment aua "
                 . "             INNER JOIN arena a "
                 . "             ON aua.arena_id = a.id "
