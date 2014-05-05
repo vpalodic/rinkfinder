@@ -713,7 +713,7 @@ class TableImporter extends CComponent
                 $csvV = trim($csvR[$mapping['headerName']]);
 
                 if($mapping['fieldType'] == 'string' || $mapping['fieldType'] == 'text') {
-                    if(strlen($csvV) > $mapping['fieldSize']) {
+                    if(strlen($csvV) > $mapping['fieldSize'] && $mapping['fieldSize'] > 0) {
                         $csvV = substr($csvV, 0, $mapping['fieldSize']);
                     }
                 } elseif($mapping['fieldType'] == 'float' && !empty($csvV)) {

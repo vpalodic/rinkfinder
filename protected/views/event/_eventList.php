@@ -47,12 +47,12 @@
                 <span class="required">*</span> <small>Please contact the facility regarding the price of this event</small>
                 <?php endif; ?>
                 <br />
-                <?php if((integer)$record['description'] != '') : ?>
+                <?php if($record['description'] != '') : ?>
                 <p>
                     <?php echo $record['description'];?>
                 </p>
                 <?php endif; ?>
-                <?php if((integer)$record['notes'] != '') : ?>
+                <?php if($record['notes'] != '') : ?>
                 <p>
                     <small>Notes: <?php echo $record['notes'];?></small>
                 </p>
