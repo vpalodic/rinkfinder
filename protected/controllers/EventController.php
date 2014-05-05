@@ -22,7 +22,7 @@ class EventController extends Controller
         return array(
             'accessControl',
             'postOnly + delete deleteEvent deleteEvents updateAttribute createEvent exportEvents',
-            'arenaContext + create admin uploadEvents',
+            'arenaContext + create admin uploadEvents delete',
             'ajaxOnly + retrieveEvents viewEvent deleteEvent updateAttribute createEvent uploadEventsFileDelete uploadEventsProcessCSV type status',
         );
     }
@@ -2304,7 +2304,7 @@ class EventController extends Controller
      */
     public function actionUploadEvents()
     {
-        if(!Yii::app()->user->checkAccess('uploadEvent')) {
+        if(!Yii::app()->user->isRestrictedArenaManager() || !$this->arena->isUserAssigned(Yii::app()->user->id)) {
             throw new CHttpException(
                     403,
                     'Permission denied. You are not authorized to perform this action.'
@@ -2356,7 +2356,7 @@ class EventController extends Controller
 
     public function actionUploadEventsFile()
     {
-        if(!Yii::app()->user->checkAccess('uploadEvent')) {
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
             $this->sendResponseHeaders(403);
             echo json_encode(array(
                     'success' => false,
@@ -2382,7 +2382,7 @@ class EventController extends Controller
 
         $this->arena = Arena::model()->findByPk($arenaId);
 	
-        if($this->arena === null) {
+        if($this->arena === null || !$this->arena->isUserAssigned(Yii::app()->user->id)) {
             $this->sendResponseHeaders(400);
             echo json_encode(
                     array(
@@ -2506,7 +2506,7 @@ class EventController extends Controller
     
     public function actionUploadEventsFileDelete()
     {
-        if(!Yii::app()->user->checkAccess('uploadEvent')) {
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
             $this->sendResponseHeaders(403);
             echo json_encode(array(
                     'success' => false,
@@ -2564,7 +2564,7 @@ class EventController extends Controller
     
     public function actionUploadEventsProcessCSV()
     {
-        if(!Yii::app()->user->checkAccess('uploadEvent')) {
+        if(!Yii::app()->user->isRestrictedArenaManager()) {
             $this->sendResponseHeaders(403);
             echo json_encode(array(
                     'success' => false,
