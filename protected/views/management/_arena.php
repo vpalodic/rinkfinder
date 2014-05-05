@@ -827,7 +827,12 @@
     <?php
     // We are going to grab two lists of managers for the list views
     // We only need the manager name and id, we don't need anything else
-    $availableManagers = User::getAvailableManagers(Yii::app()->user->id, $model->id);
+    if(Yii::app()->user->isApplicationAdministrator()) {
+        $availableManagers = User::getAvailableManagersForAdmins(Yii::app()->user->id, $model->id);
+    } else {
+        $availableManagers = User::getAvailableManagers(Yii::app()->user->id, $model->id);
+    }
+    
     $assignedManagers = User::getAssignedManagers(Yii::app()->user->id, $model->id);
     ?>
 <?php if(Yii::app()->user->isArenaManager()) : ?>

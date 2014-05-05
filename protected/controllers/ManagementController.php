@@ -248,10 +248,10 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'event' => array(
-                    'new' => Yii::app()->createUrl('/event/createEvent'),
-                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/event/viewEvent'),
-                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                    'new' => $this->createUrl('/event/createEvent'),
+                    'update' => $this->createUrl('/event/updateAttribute'),
+                    'view' => $this->createUrl('/event/viewEvent'),
+                    'delete' => $this->createUrl('/event/deleteEvent')
                 )
             ),
             'data' => array(
@@ -516,50 +516,50 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'arena' => array(
-                    'new' => Yii::app()->createUrl('/arena/createArena'),
-                    'update' => Yii::app()->createUrl('/arena/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/arena/viewArena'),
-                    'delete' => Yii::app()->createUrl('/arena/deleteArena')
+                    'new' => $this->createUrl('/arena/createArena'),
+                    'update' => $this->createUrl('/arena/updateAttribute'),
+                    'view' => $this->createUrl('/arena/viewArena'),
+                    'delete' => $this->createUrl('/arena/deleteArena')
                 ),
                 'contact' => array(
-                    'new' => Yii::app()->createUrl('/contact/createContact'),
-                    'update' => Yii::app()->createUrl('/contact/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/contact/view'),
-                    'delete' => Yii::app()->createUrl('/contact/deleteContact')
+                    'new' => $this->createUrl('/contact/createContact'),
+                    'update' => $this->createUrl('/contact/updateAttribute'),
+                    'view' => $this->createUrl('/contact/view'),
+                    'delete' => $this->createUrl('/contact/deleteContact')
                 ),
                 'location' => array(
-                    'new' => Yii::app()->createUrl('/location/createLocation'),
-                    'update' => Yii::app()->createUrl('/location/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/location/view'),
-                    'delete' => Yii::app()->createUrl('/location/deleteLocation')
+                    'new' => $this->createUrl('/location/createLocation'),
+                    'update' => $this->createUrl('/location/updateAttribute'),
+                    'view' => $this->createUrl('/location/view'),
+                    'delete' => $this->createUrl('/location/deleteLocation')
                 ),
                 'event' => array(
-                    'new' => Yii::app()->createUrl('/management/create', array('model' => 'event')),
-                    'update' => Yii::app()->createUrl('/management/index', array('model' => 'event', 'aid' => $model->id)),
-                    'view' => Yii::app()->createUrl('/event/viewEvent'),
-                    'delete' => Yii::app()->createUrl('/event/deleteEvent'),
-                    'search' => Yii::app()->createUrl('/event/retrieveEvents'),
-                    'import' => Yii::app()->createUrl('/event/uploadEvents', array('aid' => $model->id)),
-                    'export' => Yii::app()->createUrl('/event/exportEvents'),
-                    'deleteAll' => Yii::app()->createUrl('/event/deleteEvents')
+                    'new' => $this->createUrl('/management/create', array('model' => 'event')),
+                    'update' => $this->createUrl('/management/index', array('model' => 'event', 'aid' => $model->id)),
+                    'view' => $this->createUrl('/event/viewEvent'),
+                    'delete' => $this->createUrl('/event/deleteEvent'),
+                    'search' => $this->createUrl('/event/retrieveEvents'),
+                    'import' => $this->createUrl('/event/uploadEvents', array('aid' => $model->id)),
+                    'export' => $this->createUrl('/event/exportEvents'),
+                    'deleteAll' => $this->createUrl('/event/deleteEvents')
                 ),
                 'eventRequest' => array(
-                    'new' => Yii::app()->createUrl('/eventRequest/createEventRequest'),
-                    'update' => Yii::app()->createUrl('/eventRequest/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/eventRequest/view'),
-                    'delete' => Yii::app()->createUrl('/eventRequest/deleteEventRequest')
+                    'new' => $this->createUrl('/eventRequest/createEventRequest'),
+                    'update' => $this->createUrl('/eventRequest/updateAttribute'),
+                    'view' => $this->createUrl('/eventRequest/view'),
+                    'delete' => $this->createUrl('/eventRequest/deleteEventRequest')
                 ),
                 'reservation' => array(
-                    'new' => Yii::app()->createUrl('/reservation/createReservation'),
-                    'update' => Yii::app()->createUrl('/reservation/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/reservation/view'),
-                    'delete' => Yii::app()->createUrl('/reservation/deleteReservation')
+                    'new' => $this->createUrl('/reservation/createReservation'),
+                    'update' => $this->createUrl('/reservation/updateAttribute'),
+                    'view' => $this->createUrl('/reservation/view'),
+                    'delete' => $this->createUrl('/reservation/deleteReservation')
                 ),
                 'manager' => array(
-                    'new' => Yii::app()->createUrl('/user/create', array('arenaId' => $model->id, 'role' => 'RestrictedManager')),
-                    'update' => Yii::app()->createUrl('/arena/assignManager'),
-                    'view' => Yii::app()->createUrl('/user/view'),
-                    'delete' => Yii::app()->createUrl('/user/deleteUser')
+                    'new' => $this->createUrl('/user/create', array('arenaId' => $model->id, 'role' => 'RestrictedManager')),
+                    'update' => $this->createUrl('/arena/assignManager'),
+                    'view' => $this->createUrl('/user/view'),
+                    'delete' => $this->createUrl('/user/deleteUser')
                 )
             ),
             'data' => array(
@@ -740,10 +740,10 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'contact' => array(
-                    'new' => Yii::app()->createUrl('/contact/createContact'),
-                    'update' => Yii::app()->createUrl('/contact/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/contact/view'),
-                    'delete' => Yii::app()->createUrl('/contact/deleteContact')
+                    'new' => $this->createUrl('/contact/createContact'),
+                    'update' => $this->createUrl('/contact/updateAttribute'),
+                    'view' => $this->createUrl('/contact/view'),
+                    'delete' => $this->createUrl('/contact/deleteContact')
                 )
             ),
             'data' => array(
@@ -957,10 +957,10 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'location' => array(
-                    'new' => Yii::app()->createUrl('/location/createLocation'),
-                    'update' => Yii::app()->createUrl('/location/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/location/view'),
-                    'delete' => Yii::app()->createUrl('/location/deleteLocation')
+                    'new' => $this->createUrl('/location/createLocation'),
+                    'update' => $this->createUrl('/location/updateAttribute'),
+                    'view' => $this->createUrl('/location/view'),
+                    'delete' => $this->createUrl('/location/deleteLocation')
                 )
             ),
             'data' => array(
@@ -1184,10 +1184,10 @@ class ManagementController extends Controller
         $params = array(
             'endpoints' => array(
                 'event' => array(
-                    'new' => Yii::app()->createUrl('/event/createEvent'),
-                    'update' => Yii::app()->createUrl('/event/updateAttribute'),
-                    'view' => Yii::app()->createUrl('/event/viewEvent'),
-                    'delete' => Yii::app()->createUrl('/event/deleteEvent')
+                    'new' => $this->createUrl('/event/createEvent'),
+                    'update' => $this->createUrl('/event/updateAttribute'),
+                    'view' => $this->createUrl('/event/viewEvent'),
+                    'delete' => $this->createUrl('/event/deleteEvent')
                 )
             ),
             'data' => array(

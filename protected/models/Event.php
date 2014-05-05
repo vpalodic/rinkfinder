@@ -1227,10 +1227,10 @@ class Event extends RinkfinderActiveRecord
         $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
         
         // Let's start by building up our query
-        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
-        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase', array(), 'https');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info', array(), 'https');
+        $arenaUrl = Yii::app()->createUrl('/arena/view');
+        $eventUrl = Yii::app()->createUrl('/event/view');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array('aid' => $aid);
         
@@ -1439,10 +1439,10 @@ class Event extends RinkfinderActiveRecord
         $lid = (isset($params['lid']) && is_numeric($params['lid']) && $params['lid'] > 0) ? (integer)$params['lid'] : null;
         
         // Let's start by building up our query
-        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
-        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase', array(), 'https');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info', array(), 'https');
+        $arenaUrl = Yii::app()->createUrl('/arena/view');
+        $eventUrl = Yii::app()->createUrl('/event/view');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array('aid' => $aid);
         
@@ -1535,10 +1535,10 @@ class Event extends RinkfinderActiveRecord
         $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
         
         // Let's start by building up our query
-        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
-        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase', array(), 'https');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info', array(), 'https');
+        $arenaUrl = Yii::app()->createUrl('/arena/view');
+        $eventUrl = Yii::app()->createUrl('/event/view');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array();
         
@@ -1773,10 +1773,10 @@ class Event extends RinkfinderActiveRecord
         $types = (isset($params['types']) && is_array($params['types'])) ? $params['types'] : array();
         
         // Let's start by building up our query
-        $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
-        $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase', array(), 'https');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info', array(), 'https');
+        $arenaUrl = Yii::app()->createUrl('/arena/view');
+        $eventUrl = Yii::app()->createUrl('/event/view');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array('aids' => $aids);
         

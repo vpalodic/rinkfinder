@@ -100,8 +100,8 @@ class UserController extends Controller
         
         $params = array(
             'endpoints' => array(
-                'new' => Yii::app()->createUrl('user/create'),
-                'update' => Yii::app()->createUrl('user/updateAttribute')
+                'new' => $this->createUrl('user/create'),
+                'update' => $this->createUrl('user/updateAttribute')
             ),
             'data' => array(
                 'id' => $model->id,
@@ -154,6 +154,7 @@ class UserController extends Controller
 
             $model = new User;
             $profile = new Profile;
+            $profile->birth_day = null;
             
             // Uncomment the following line if AJAX validation is needed
             $this->performAjaxValidation($model, $profile);
@@ -230,6 +231,7 @@ class UserController extends Controller
                         $model->passwordRepeat = '';
                         $profile->first_name = '';
                         $profile->last_name = '';
+                        $profile->birth_day = null;
                         $model->setIsNewRecord(true);
                     }
                 } else {
