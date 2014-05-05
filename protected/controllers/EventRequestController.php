@@ -90,6 +90,12 @@ class EventRequestController extends Controller
     {
         Yii::trace("In actionPurchase.", "application.controllers.EventRequestController");
         
+        // Send some headers that will allow cross-domain requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET POST');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type');
+        
         // Default to JSON output!
         $outputFormat = "json";
         $data = array();
@@ -229,6 +235,12 @@ class EventRequestController extends Controller
     public function actionInfo()
     {
         Yii::trace("In actionInfo.", "application.controllers.EventRequestController");
+        
+        // Send some headers that will allow cross-domain requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET POST');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type');
         
         // Default to JSON output!
         $outputFormat = "json";
