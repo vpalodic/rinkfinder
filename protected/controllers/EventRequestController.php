@@ -92,7 +92,7 @@ class EventRequestController extends Controller
         
         // Send some headers that will allow cross-domain requests
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET POST');
+        header('Access-Control-Allow-Methods: GET, POST');
         header('Access-Control-Max-Age: 1000');
         header('Access-Control-Allow-Headers: Content-Type');
         
@@ -229,7 +229,7 @@ class EventRequestController extends Controller
     }
 
     /**
-     * Creates a "Purchase" request and sends e-mails to arena managers and
+     * Creates a "Information" request and sends e-mails to arena managers and
      * the requester
      */
     public function actionInfo()
@@ -238,7 +238,7 @@ class EventRequestController extends Controller
         
         // Send some headers that will allow cross-domain requests
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET POST');
+        header('Access-Control-Allow-Methods: GET, POST');
         header('Access-Control-Max-Age: 1000');
         header('Access-Control-Allow-Headers: Content-Type');
         
