@@ -380,14 +380,14 @@ class Contact extends RinkfinderActiveRecord
                 . 'WHERE c.active = 0 '
                 . 'AND '
                 . 'c.id IN (SELECT DISTINCT(aca.contact_id) '
-                . '    FROM arena_contact_assignment aca '
-                . '        INNER JOIN arena a '
-                . '        ON a.id = aca.arena_id '
-                . '        INNER JOIN arena_user_assignment aua '
-                . '        ON a.id = aua.arena_id '
-                . '        INNER JOIN user u '
-                . '        ON u.id = aua.user_id '
-                . '    WHERE u.id = :uid ';
+                . '         FROM arena_contact_assignment aca '
+                . '         INNER JOIN arena a '
+                . '         ON a.id = aca.arena_id '
+                . '         INNER JOIN arena_user_assignment aua '
+                . '         ON a.id = aua.arena_id '
+                . '         INNER JOIN user u '
+                . '         ON u.id = aua.user_id '
+                . '         WHERE u.id = :uid ';
         
         $sql2 = 'SELECT 1 AS id, '
                 . '"ACTIVE" AS name, '
@@ -399,14 +399,14 @@ class Contact extends RinkfinderActiveRecord
                 . 'WHERE c.active = 1 '
                 . 'AND '
                 . 'c.id IN (SELECT DISTINCT(aca.contact_id) '
-                . '    FROM arena_contact_assignment aca '
-                . '        INNER JOIN arena a '
-                . '        ON a.id = aca.arena_id '
-                . '        INNER JOIN arena_user_assignment aua '
-                . '        ON a.id = aua.arena_id '
-                . '        INNER JOIN user u '
-                . '        ON u.id = aua.user_id '
-                . '    WHERE u.id = :uid ';
+                . '         FROM arena_contact_assignment aca '
+                . '         INNER JOIN arena a '
+                . '         ON a.id = aca.arena_id '
+                . '         INNER JOIN arena_user_assignment aua '
+                . '         ON a.id = aua.arena_id '
+                . '         INNER JOIN user u '
+                . '         ON u.id = aua.user_id '
+                . '         WHERE u.id = :uid ';
 
 
         if($aid !== null) {

@@ -513,6 +513,10 @@ class ArenaController extends Controller
         if (isset($_POST['Arena'])) {
             $model->attributes = $_POST['Arena'];
             $model->autoTag();
+            if(isset($model->external_id) && $model->external_id == '') {
+                $model->external_id = null;
+            }
+            
             if ($model->save()) {
                 $model->assignUsers($uid, User::getAllAdminIds());
                 $this->redirect(array('view','id'=>$model->id));

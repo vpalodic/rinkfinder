@@ -1438,7 +1438,12 @@ class User extends RinkfinderActiveRecord
         $command = Yii::app()->db->createCommand($sql);
         $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
         
-        return $command->queryAll(true);
+        $ret = array(array(
+            'value' => null,
+            'text' => ''
+        ));
+        
+        return array_merge($ret, $command->queryAll(true));
     }
 
     /**

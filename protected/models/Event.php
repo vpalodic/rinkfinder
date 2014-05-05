@@ -1229,8 +1229,8 @@ class Event extends RinkfinderActiveRecord
         // Let's start by building up our query
         $arenaUrl = Yii::app()->createAbsoluteUrl('arena/view');
         $eventUrl = Yii::app()->createAbsoluteUrl('event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array('aid' => $aid);
         
@@ -1537,8 +1537,8 @@ class Event extends RinkfinderActiveRecord
         // Let's start by building up our query
         $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
         $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array();
         
@@ -1775,8 +1775,8 @@ class Event extends RinkfinderActiveRecord
         // Let's start by building up our query
         $arenaUrl = Yii::app()->createAbsoluteUrl('/arena/view');
         $eventUrl = Yii::app()->createAbsoluteUrl('/event/view');
-        $purchaseUrl = Yii::app()->createAbsoluteUrl('/eventRequest/purchase');
-        $infoUrl = Yii::app()->createAbsoluteUrl('/eventRequest/info');
+        $purchaseUrl = Yii::app()->createUrl('/eventRequest/purchase');
+        $infoUrl = Yii::app()->createUrl('/eventRequest/info');
 
         $eventsUrlParams = array('aids' => $aids);
         

@@ -2594,7 +2594,11 @@ class Arena extends RinkfinderActiveRecord
         
         $command = Yii::app()->db->createCommand($sql);
         $command->bindValue(':aid', (integer)$aid, PDO::PARAM_INT);
+        $ret = array(array(
+            'value' => null,
+            'text' => ''
+        ));
         
-        return $command->queryAll(true);
+        return array_merge($ret, $command->queryAll(true));
     }    
 }
