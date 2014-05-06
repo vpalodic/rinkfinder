@@ -681,18 +681,58 @@ class Event extends RinkfinderActiveRecord
         $dtCurrentTime = new DateTime();
         $dtEventStartDateTime = new DateTime($this->start_date . ' ' . $this->start_time);
         
-        if(!isset($this->end_date) || !isset($this->end_time)) {
-            $dtEventEndDateTime = $dtEventStartDateTime;
-        } else {
-            $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
-        }
-        
         $bAllDay = $this->all_day;
         
-        $this->duration = !empty($this->duration) ? abs($this->duration) : 60;
+        $this->duration = isset($this->duration) && !empty($this->duration) ? abs($this->duration) : 60;
         
         $intvalDuration = new DateInterval('PT' . $this->duration . 'M');
         
+        if((!isset($this->end_date) || is_null($this->end_date)) && (!isset($this->end_time) || is_null($this->end_time))) {
+            // Both end_date and end_time were not provided so we will set the end
+            // date and time to the start date and time and correct it using the
+            // duration
+            $dtEventEndDateTime = $dtEventStartDateTime;
+        } elseif(!isset($this->end_date) || is_null($this->end_date)) {
+            // Since they are not both bad, we will check them seperately
+            // In this case, we will use the start_date to create the date.
+            // If the result is less than the start date and time, we will simply add
+            // one day to it. This will account for instances where midnight or
+            // the early AM of the following day is specified as the end_time
+            // For example, the event starts at 11:30 PM and ends at 1:00 AM
+            // the following day, this logic will account for that.
+            $dtEventEndDateTime = new DateTime($this->start_date . ' ' . $this->end_time);
+            
+            if($dtEventEndDateTime < $dtEventStartDateTime) {
+                $dtEventEndDateTime->add(new DateInterval('P1D'));
+            }
+            
+            // We update the end_date and end_time here
+            $this->end_date = $dtEventEndDateTime->format('Y-m-d');
+            $this->end_time = $dtEventEndDateTime->format('H:i:s');
+        } elseif(!isset($this->end_time) || is_null($this->end_time)) {
+            // Just the end time is not set.
+            // One thing to note about this is that if it is an all day event, 
+            // we will assume that the end_time will be 23:59:59 on the provided
+            // end_date. Otherwise, we will simply use the start_time 
+            if($bAllDay) {
+                $dtEventEndDateTime = new DateTime($this->end_date . ' 23:59:59');
+            } else {
+                // We assume that the duration should be used in which case we
+                // may end up changing the end_date.
+                $dtEventEndDateTime = DateTime($this->end_date . ' ' . $this->start_time);
+            }
+            
+            // We update the end_date and end_time here
+            $this->end_date = $dtEventEndDateTime->format('Y-m-d');
+            $this->end_time = $dtEventEndDateTime->format('H:i:s');
+        }
+        else {
+            // The end_date and end_time were provided. Validity check will happen
+            // later.
+            $dtEventEndDateTime = new DateTime($this->end_date . ' ' . $this->end_time);
+        }
+        
+        // Run some validations on the calculated dates.
         if($dtEventEndDateTime == $dtEventStartDateTime ||
                 $dtEventEndDateTime < $dtEventStartDateTime) {
             // End date and time isn't set correctly so we calculate it
