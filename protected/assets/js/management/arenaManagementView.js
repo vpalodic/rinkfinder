@@ -3046,7 +3046,15 @@
                     events[i].arena_id + '">';
             
             row += '<td data-value="' + events[i].id + '">' + events[i].eventName + '</td>';
-            row += '<td data-value="' + events[i].location_name.replace(' ', '_') + '">' + events[i].location_name.replace(' ', '_') + '</td>';
+            if(events[i].location_name)
+            {
+                row += '<td data-value="' + events[i].location_name.replace(' ', '_') + '">' + events[i].location_name.replace(' ', '_') + '</td>';
+            }
+            else
+            {
+                row += '<td data-value=""></td>';
+            }
+            
             row += '<td data-value="' + events[i].etype + '">' + events[i].etype + '</td>';
             row += '<td data-value="' + events[i].estatus + '">' + events[i].estatus + '</td>';
             

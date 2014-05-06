@@ -20,6 +20,7 @@ class ExpireEventsCommand extends CConsoleCommand
         // Once this command is run, there is no going back!
         $sql = "UPDATE event "
                 . "SET status_id = (SELECT s.id FROM event_status s WHERE s.name = 'EXPIRED'), "
+                . "tags = '', "
                 . "updated_by_id = 1, "
                 . "updated_on = NOW() "
                 . "WHERE status_id = (SELECT s.id FROM event_status s WHERE s.name = 'OPEN') "
@@ -29,6 +30,18 @@ class ExpireEventsCommand extends CConsoleCommand
         
         try {
             $transaction = Yii::app()->db->beginTransaction();
+            
+            $eventsSql = "SELECT id, arena_id, tags FROM event "
+                . "WHERE status_id IN (SELECT s.id FROM event_status s WHERE s.name != 'EXPIRED') "
+                . "AND TO_SECONDS(CONCAT(start_date, ' ', start_time)) < TO_SECONDS(NOW()) ";
+            
+            $models = Event::model()->findAllBySql($eventsSql);
+            
+            foreach($models as $model) {
+                if(isset($model->tags) && !is_null($model->tags) && $model->tags != '') {
+                    Tag::model()->updateFrequency($model->tags, '');
+                }
+            }
             
             $command = Yii::app()->db->createCommand($sql);
         

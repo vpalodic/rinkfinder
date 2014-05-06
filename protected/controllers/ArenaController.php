@@ -1185,8 +1185,35 @@ class ArenaController extends Controller
             Yii::app()->end();
         }
         
+        $transaction = null;
+        
         try {
             $model = $this->loadModel($id, $outputFormat);
+            
+//            $model->tags = "";
+            
+            $transaction = Yii::app()->db->beginTransaction();
+            
+            // Before we go and delete the facility, we need to iterate through
+            // each venue and their events so that the tags can be updated!
+            foreach($model->locations as $location) {
+//                $location->tags = "";
+//                Tag::model()->updateFrequency($location->oldTags, $location->tags);
+                
+                foreach($location->events as $event) {
+//                    $event->tags = "";
+//                    Tag::model()->updateFrequency($event->oldTags, $event->tags);
+                    $event->delete();
+                }
+                $location->delete();
+            }
+            
+            // Now that the locations are deleted, check for any dangling events!
+            foreach($model->events as $event) {
+//                $event->tags = "";
+//                Tag::model()->updateFrequency($event->oldTags, $event->tags);
+                $event->delete();
+            }
             
             if(!$model->delete()) {
                 $output = 'Failed to delete the record as the update was either unauthorized or because too many rows would be updated.';
@@ -1205,7 +1232,13 @@ class ArenaController extends Controller
                 );
                 Yii::app()->end();
             }
+            
+//            Tag::model()->updateFrequency($model->oldTags, $model->tags);
+            $transaction->commit();
         } catch (Exception $ex) {
+            if($transaction && $transaction->active) {
+                $transaction->rollback();
+            }
             if($ex instanceof CHttpException) {
                 throw $ex;
             }
@@ -1284,11 +1317,97 @@ class ArenaController extends Controller
         
         if (Yii::app()->request->isPostRequest) {
             // we only allow deletion via POST request
-            $this->loadModel($id)->delete();
+            $transaction = null;
+            
+            try
+            {
+                $model = $this->loadModel($id);
+            
+//                $model->tags = "";
+            
+                $transaction = Yii::app()->db->beginTransaction();
+                
+                // Before we go and delete the facility, we need to iterate through
+                // each venue and their events so that the tags can be updated!
+                foreach($model->locations as $location) {
+//                    $location->tags = "";
+//                    Tag::model()->updateFrequency($location->oldTags, $location->tags);
+                
+                    foreach($location->events as $event) {
+//                        $event->tags = "";
+//                        Tag::model()->updateFrequency($event->oldTags, $event->tags);
+                        $event->delete();
+                    }
+                    $location->delete();
+                }
+            
+                // Now that the locations are deleted, check for any dangling events!
+                foreach($model->events as $event) {
+//                    $event->tags = "";
+//                    Tag::model()->updateFrequency($event->oldTags, $event->tags);
+                    $event->delete();
+                }
+            
+                $model->delete();
 
-            // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
-            if (!isset($_GET['ajax'])) {
-                $this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
+//                Tag::model()->updateFrequency($model->oldTags, $model->tags);
+                $transaction->commit();
+                // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
+                if (!isset($_GET['ajax'])) {
+                    $this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
+                }
+            } catch (Exception $ex) {
+                if($transaction && $transaction->active) {
+                    $transaction->rollback();
+                }
+                if($ex instanceof CHttpException) {
+                    throw $ex;
+                }
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(500, $ex->getMessage());
+                }
+
+                $errorInfo = null;
+
+                if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                    $errorParms = array();
+
+                    if(isset($ex->errorInfo[0])) {
+                        $errorParms['sqlState'] = $ex->errorInfo[0];
+                    } else {
+                        $errorParms['sqlState'] = "Unknown";
+                    }
+
+                    if(isset($ex->errorInfo[1])) {
+                        $errorParms['mysqlError'] = $ex->errorInfo[1];
+                    } else {
+                        $errorParms['mysqlError'] = "Unknown";
+                    }
+
+                    if(isset($ex->errorInfo[2])) {
+                        $errorParms['message'] = $ex->errorInfo[2];
+                    } else {
+                        $errorParms['message'] = "Unknown";
+                    }
+
+                    $errorInfo = array($errorParms);
+                }
+
+                $this->sendResponseHeaders(500, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => $ex->getMessage(),
+                            'exception' => true,
+                            'errorCode' => $ex->getCode(),
+                            'errorFile' => $ex->getFile(),
+                            'errorLine' => $ex->getLine(),
+                            'errorInfo' => $errorInfo,
+                        )
+                );
+
+                Yii::app()->end();
             }
         } else {
             throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');

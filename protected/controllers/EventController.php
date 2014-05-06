@@ -2185,7 +2185,15 @@ class EventController extends Controller
             Yii::app()->end();
         }
         
+        $transaction = null;
+        
         try {
+            $model = $this->loadModel($id);
+            
+//            $model->tags = "";
+            
+            $transaction = Yii::app()->db->beginTransaction();
+            
             if(!$model->delete()) {
                 $output = 'Failed to delete the record as the update was either unauthorized or because too many rows would be updated.';
 
@@ -2203,7 +2211,13 @@ class EventController extends Controller
                 );
                 Yii::app()->end();
             }
+            
+//            Tag::model()->updateFrequency($model->oldTags, $model->tags);
+            $transaction->commit();
         } catch (Exception $ex) {
+            if($transaction && $transaction->active) {
+                $transaction->rollback();
+            }
             if($ex instanceof CHttpException) {
                 throw $ex;
             }
@@ -2255,25 +2269,92 @@ class EventController extends Controller
         }
     }
 
-	/**
-	 * Deletes a particular model.
-	 * If deletion is successful, the browser will be redirected to the 'admin' page.
-	 * @param integer $id the ID of the model to be deleted
-	 */
-	public function actionDelete($id)
-	{
-		if (Yii::app()->request->isPostRequest) {
-			// we only allow deletion via POST request
-			$this->loadModel($id)->delete();
+    /**
+     * Deletes a particular model.
+     * If deletion is successful, the browser will be redirected to the 'admin' page.
+     * @param integer $id the ID of the model to be deleted
+     */
+    public function actionDelete($id)
+    {
+        if(Yii::app()->request->isPostRequest) {
+            // we only allow deletion via POST request
+            $transaction = null;
+            
+            try
+            {
+                $model = $this->loadModel($id);
+            
+//                $model->tags = "";
+            
+                $transaction = Yii::app()->db->beginTransaction();
+            
+                $model->delete();
 
-			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
-			if (!isset($_GET['ajax'])) {
-				$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
-			}
-		} else {
-			throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
-		}
-	}
+//                Tag::model()->updateFrequency($model->oldTags, $model->tags);
+            
+                $transaction->commit();
+                
+                // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
+                if (!isset($_GET['ajax'])) {
+                    $this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
+                }
+            } catch (Exception $ex) {
+                if($transaction && $transaction->active) {
+                    $transaction->rollback();
+                }
+                if($ex instanceof CHttpException) {
+                    throw $ex;
+                }
+                if($outputFormat == "html" || $outputFormat == "xml") {
+                    throw new CHttpException(500, $ex->getMessage());
+                }
+
+                $errorInfo = null;
+
+                if(isset($ex->errorInfo) && !empty($ex->errorInfo)) {
+                    $errorParms = array();
+
+                    if(isset($ex->errorInfo[0])) {
+                        $errorParms['sqlState'] = $ex->errorInfo[0];
+                    } else {
+                        $errorParms['sqlState'] = "Unknown";
+                    }
+
+                    if(isset($ex->errorInfo[1])) {
+                        $errorParms['mysqlError'] = $ex->errorInfo[1];
+                    } else {
+                        $errorParms['mysqlError'] = "Unknown";
+                    }
+
+                    if(isset($ex->errorInfo[2])) {
+                        $errorParms['message'] = $ex->errorInfo[2];
+                    } else {
+                        $errorParms['message'] = "Unknown";
+                    }
+
+                    $errorInfo = array($errorParms);
+                }
+
+                $this->sendResponseHeaders(500, 'json');
+
+                echo json_encode(
+                        array(
+                            'success' => false,
+                            'error' => $ex->getMessage(),
+                            'exception' => true,
+                            'errorCode' => $ex->getCode(),
+                            'errorFile' => $ex->getFile(),
+                            'errorLine' => $ex->getLine(),
+                            'errorInfo' => $errorInfo,
+                        )
+                );
+
+                Yii::app()->end();
+            }
+        } else {
+            throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
+        }
+    }
 
 	/**
 	 * Lists all models.

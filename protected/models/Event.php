@@ -2124,19 +2124,50 @@ class Event extends RinkfinderActiveRecord
                 . "             ON aua.user_id = u.id AND u.id = :uid) "
                 . "AND (id, arena_id) IN ( ";
         
+        $sqlEvent = "SELECT id, arena_id, tags FROM event "
+                . "WHERE arena_id IN (SELECT aua.arena_id "
+                . "             FROM arena_user_assignment aua "
+                . "             INNER JOIN arena a "
+                . "             ON aua.arena_id = a.id "
+                . "             INNER JOIN user u "
+                . "             ON aua.user_id = u.id AND u.id = :uid) "
+                . "AND (id, arena_id) IN ( ";
+        
+        $where = "";
+        
         for($i = 0; $i < $count; $i++) {
             if($i + 1 == $count) {
-                $sql .= '(:id' . $i . ', :aid' . $i . ')) ';
+                $where .= '(:id' . $i . ', :aid' . $i . ')) ';
             } else {
-                $sql .= '(:id' . $i . ', :aid' . $i . '), ';
+                $where .= '(:id' . $i . ', :aid' . $i . '), ';
             }
         }
         
-        // We always do this in a transaction!
-        $transaction = Yii::app()->db->beginTransaction();
+        $sql .= $where;
+        $sqlEvent .= $where;
+        
+        $sqlParms = array(':uid' => $uid);
+        // We must update the tags!!!
+        for($i = 0; $i < $count; $i++)
+        {
+            $sqlParms[':id' . $i] = (integer)$events[$i]['id'];
+            $sqlParms[':aid' . $i] = (integer)$events[$i]['aid'];
+        }
+        
+        $transaction = null;
         
         try
         {
+            // We always do this in a transaction!
+            $transaction = Yii::app()->db->beginTransaction();
+            
+            $models = Event::model()->findAllBySql($sqlEvent, $sqlParms);
+        
+            foreach($models as $model) {
+                $model->tags = "";
+                Tag::model()->updateFrequency($model->oldTags, $model->tags);
+            }
+        
             $command = Yii::app()->db->createCommand($sql);
         
             $command->bindValue(':uid', (integer)$uid, PDO::PARAM_INT);
@@ -2159,7 +2190,7 @@ class Event extends RinkfinderActiveRecord
         }
         catch (Exception $e)
         {
-            if($transaction->active == true) {
+            if($transaction && $transaction->active == true) {
                 $transaction->rollback();
             }
 
