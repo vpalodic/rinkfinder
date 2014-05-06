@@ -1366,7 +1366,7 @@
         
         eventView += '<tr><td style="width:33%">Tags</td><td>' +
                 '<a href="#" id="Event_tags" data-name="tags" ' +
-                'data-type="text" data-tpl="<input type=\'password\'>" "data-mode="inline" data-url="' + 
+                'data-type="text" "data-mode="inline" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
                 'title="Event Tags" class="event-editable">' +
                 '</a></td></tr>';

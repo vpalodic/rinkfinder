@@ -17,8 +17,6 @@ class ExpireEventsCommand extends CConsoleCommand
      */
     public function actionIndex()
     {
-        $now = new DateTime('now');
-        $now = $now->format("m/d/Y H:i:s");
         // Once this command is run, there is no going back!
         $sql = "UPDATE event "
                 . "SET status_id = (SELECT s.id FROM event_status s WHERE s.name = 'EXPIRED'), "
@@ -27,10 +25,65 @@ class ExpireEventsCommand extends CConsoleCommand
                 . "WHERE status_id = (SELECT s.id FROM event_status s WHERE s.name = 'OPEN') "
                 . "AND TO_SECONDS(CONCAT(start_date, ' ', start_time)) < TO_SECONDS(NOW()) ";
         
-        $command = Yii::app()->db->createCommand($sql);
+        $transaction = null;
         
-        $ret = $command->execute();
+        try {
+            $transaction = Yii::app()->db->beginTransaction();
+            
+            $command = Yii::app()->db->createCommand($sql);
         
-        echo 'Auto expire events was ran at: ' . $now . "\nExpired " . $ret . " events";
+            $ret = $command->execute();
+            
+            $now = new DateTime('now');
+            $nowstr = $now->format("m/d/Y H:i:s");
+            
+            // job succeeded so add a record of it!
+            $command->insert('cron_job_log', array(
+                'name' => 'ExpireEvents',
+                'succeeded' => 1,
+                'output' => 'Expire events was ran at: ' . $nowstr . "\n\r\n\rExpired " . $ret . " events\n\r\n\r",
+                'created_by_id' => 1,
+                'created_on' => $now->format("Y-m-d H:i:s"),
+                'updated_by_id' => 1,
+                'updated_on' => $now->format("Y-m-d H:i:s"),
+            ));
+            
+            $transaction->commit();
+            
+            echo 'Auto expire events was ran at: ' . $nowstr . "\n\r\n\rExpired " . $ret . " events\n\r\n\r";
+        } catch (Exception $ex) {
+            if(isset($transaction) && $transaction != null && $transaction->active) {
+                $transaction->rollback();
+            }
+            
+            if($e instanceof CDbException) {
+                throw $e;
+            }
+                
+            $errorInfo = $e instanceof PDOException ? $e->errorInfo : null;
+            $message = $e->getMessage();
+            
+            // Well, it wasn't a database issue that caused the job to fail,
+            // so let's log it in the database!
+            $now = new DateTime('now');
+            $nowstr = $now->format("m/d/Y H:i:s");
+            
+            // job failed so add a record of it!
+            $command->insert('cron_job_log', array(
+                'name' => 'ExpireEvents',
+                'succeeded' => 0,
+                'output' => 'Failed to execute at '. $nowstr . "\n\r\n\rThe SQL Update was not run: " . $message . "\n\r\n\r" . "Error Code: " . (int)$e->getCode(),
+                'created_by_id' => 1,
+                'created_on' => $now->format("Y-m-d H:i:s"),
+                'updated_by_id' => 1,
+                'updated_on' => $now->format("Y-m-d H:i:s"),
+            ));                
+            
+            throw new CDbException(
+                    'Failed to execute the SQL statement: ' . $message,
+                    (int)$e->getCode(),
+                    $errorInfo
+            );
+        }
     }
 }
