@@ -54,6 +54,21 @@
     </div>
     <?php else: ?>
     <?php $this->renderPartial('/event/_eventList', array('data' => $data)); ?>
+    <div class="row-fluid">
+        <div class="span12">
+            <ul class="pager">
+                <?php if($data['month'] . $data['year'] == date("F", time()) . date("Y", time())) : ?>
+                <?php else : ?>
+                <li class="previous">
+                    <a class="previous-link" href="<?php echo $previousUrl; ?>">&larr; Previous</a>
+                </li>
+                <?php endif; ?>
+                <li class="next">
+                    <a class="next-link" href="<?php echo $nextUrl; ?>">Next &rarr;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
     <?php endif; ?>
 </div>
 
