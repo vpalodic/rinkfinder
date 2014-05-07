@@ -378,7 +378,6 @@
                                            data-pk="<?php echo $model->id; ?>"
                                            data-url="<?php echo $params['endpoints']['arena']['update']; ?>"
                                            data-mode="inline"
-                                           data-value="<?php echo $model->description; ?>"
                                            data-title="Description of the facility"
                                            title="Description of the facility"
                                            class="arena-editable">
@@ -402,7 +401,6 @@
                                            data-pk="<?php echo $model->id; ?>"
                                            data-url="<?php echo $params['endpoints']['arena']['update']; ?>"
                                            data-mode="inline"
-                                           data-value="<?php echo $model->notes; ?>"
                                            data-title="Additional notes"
                                            title="Additional notes"
                                            class="arena-editable">

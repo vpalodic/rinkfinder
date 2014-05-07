@@ -650,7 +650,7 @@
                 '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.description ? location.description : '') + '" ' +
+                'data-pk="' + location.id + '" ' +
                 'title="Venue Description" class="location-editable">' +
                 (location.description ? location.description : '') + '</div></td></tr>';
         
@@ -659,7 +659,7 @@
                 '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 locationManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.notes ? location.notes : '') + '" ' +
+                'data-pk="' + location.id + '" ' +
                 'title="Venue Notes" class="location-editable">' +
                 (location.notes ? location.notes : '') + '</div></td></tr>';
         

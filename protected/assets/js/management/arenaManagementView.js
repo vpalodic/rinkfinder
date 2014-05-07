@@ -2370,7 +2370,7 @@
                 '<span>[edit]</span></a></td><td><div id="Location_description" data-name="description" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.description ? location.description : '') + '" ' +
+                'data-pk="' + location.id + '" ' +
                 'title="Venue Description" class="location-editable">' +
                 (location.description ? location.description : '') + '</div></td></tr>';
         
@@ -2379,7 +2379,7 @@
                 '<span>[edit]</span></a></td><td><div id="Location_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 arenaManagementView.endpoints.location.updateRecord + '" ' +
-                'data-pk="' + location.id + '" data-value="' + (location.notes ? location.notes : '') + '" ' +
+                'data-pk="' + location.id + '" ' +
                 'title="Venue Notes" class="location-editable">' +
                 (location.notes ? location.notes : '') + '</div></td></tr>';
         
@@ -2715,8 +2715,13 @@
         
         $("#eventFootable").footable().on('footable_filtering', function (e) {
             var selected = $('#tableEventVenueFilter').find(':selected').text();
-            var selected2 = $('#tableEventTypeFilter').find(':selected').text();
-            var selected3 = $('#tableEventStatusFilter').find(':selected').text();
+            var selected2 = utilities.replaceAll(' ', '_', $('#tableEventTypeFilter').find(':selected').text());
+            var selected3 = '__' + $('#tableEventStatusFilter').find(':selected').text() + '__';
+            
+            if (selected3 === '____')
+            {
+                selected3 = '';
+            }
             
             if (selected && selected.length > 0) {
                 e.filter += (e.filter && e.filter.length > 0) ? ' ' + selected : selected;
@@ -3048,15 +3053,15 @@
             row += '<td data-value="' + events[i].id + '">' + events[i].eventName + '</td>';
             if(events[i].location_name)
             {
-                row += '<td data-value="' + events[i].location_name.replace(' ', '_') + '">' + events[i].location_name.replace(' ', '_') + '</td>';
+                row += '<td data-value="' + utilities.replaceAll(' ', '_', events[i].location_name) + '">' + utilities.replaceAll(' ', '_', events[i].location_name) + '</td>';
             }
             else
             {
                 row += '<td data-value=""></td>';
             }
             
-            row += '<td data-value="' + events[i].etype + '">' + events[i].etype + '</td>';
-            row += '<td data-value="' + events[i].estatus + '">' + events[i].estatus + '</td>';
+            row += '<td data-value="' + utilities.replaceAll(' ', '_', events[i].etype) + '">' + utilities.replaceAll(' ', '_', events[i].etype) + '</td>';
+            row += '<td data-value="__' + events[i].estatus + '__">__' + events[i].estatus + '__</td>';
             
             row += '</tr>';
             

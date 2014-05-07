@@ -347,5 +347,12 @@
             }
         }
     };
+    
+    utilities.escapeRegExp = function (string) {
+        return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    };
 
+    utilities.replaceAll = function (find, replace, str) {
+        return str.replace(new RegExp(utilities.escapeRegExp(find), 'g'), replace);
+    };
 }( window.utilities = window.utilities || {}, jQuery ));

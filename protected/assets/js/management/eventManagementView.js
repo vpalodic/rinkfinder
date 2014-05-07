@@ -1274,7 +1274,7 @@
                 '<span>[edit]</span></a></td><td><div id="Event_description" data-name="description" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.description ? event.description : '') + '" ' +
+                'data-pk="' + event.id + '" ' +
                 'title="Event Description" class="event-editable">' +
                 (event.description ? event.description : '') + '</div></td></tr>';
         
@@ -1283,7 +1283,7 @@
                 '<span>[edit]</span></a></td><td><div id="Event_notes" data-name="notes" ' +
                 'data-type="wysihtml5" data-mode="inline" data-toggle="manual" data-url="' + 
                 eventManagementView.endpoints.event.updateRecord + '" ' +
-                'data-pk="' + event.id + '" data-value="' + (event.notes ? event.notes : '') + '" ' +
+                'data-pk="' + event.id + '" ' +
                 'title="Event Notes" class="event-editable">' +
                 (event.notes ? event.notes : '') + '</div></td></tr>';
         
