@@ -34,6 +34,18 @@
                     $mycalendar.fadeOut(333, function () {
                         $mycalendar.remove();
                         $parent.append($data);
+                        
+                        if ($(window).width() > 767)
+                        {
+                            $parent.ScrollTo({
+                                offsetTop: 60
+                            });
+                        }
+                        else
+                        {
+                            $parent.ScrollTo();
+                        }
+
                         $data.fadeIn(666, function() {
                             $mycalendar = $data;
                         });
