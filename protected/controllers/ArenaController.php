@@ -733,7 +733,10 @@ class ArenaController extends Controller
 
         if (isset($_POST['Arena'])) {
             $model->attributes = $_POST['Arena'];
-            if ($model->save()) {
+            if(isset($model->external_id) && $model->external_id == '') {
+                $model->external_id = new CDbExpression('NULL');
+            }
+            if($model->save()) {
                 $this->redirect(array('view','id' => $model->id));
             }
         }
@@ -813,6 +816,10 @@ class ArenaController extends Controller
         $name = isset($_POST['name']) ? $_POST['name'] : null;
         $value = isset($_POST['value']) ? $_POST['value'] : null;
 
+        if($value == '') {
+            $value = null;
+        }
+        
         // Validate our remaining parameters!
         if($name === null) {
             if($outputFormat == "html" || $outputFormat == "xml") {

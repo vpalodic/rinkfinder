@@ -167,10 +167,6 @@
                                 <i class="fa fa-lg fa-envelope fa-fw"></i> Contact
                             </a>
                         </li>
-                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'page') echo ' class="active"'; ?>>
-                            <a tabindex="-1" href="<?php echo $this->createUrl('/site/page?view=about'); ?>">
-                                <i class="fa fa-lg fa-info fa-fw"></i> About</a>
-                        </li>
                     </ul>
                     <?php if(Yii::app()->user->isGuest) : ?>
                     <ul class="pull-right nav" id="navInner2" role="menu">
@@ -268,7 +264,10 @@
                     Copyright &copy; <?php echo date('Y'); ?> <?php echo CHtml::encode(Yii::app()->name); ?>
                     All Rights Reserved.<br/>
                     <?php echo CHtml::link('Terms of Use', array('site/page', 'view' => 'terms_of_use')); ?> | 
-                    <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?>
+                    <?php echo CHtml::link('Privacy Policy', array('site/page', 'view' => 'privacy_policy')); ?> |
+                    <a tabindex="-1" href="<?php echo $this->createUrl('/site/page?view=about'); ?>">
+                        <i class="fa fa-lg fa-info fa-fw"></i> About
+                    </a>
                     <br />
                 </footer><!-- footer -->
             </div>
