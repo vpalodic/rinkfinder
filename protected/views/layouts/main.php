@@ -175,11 +175,11 @@
                                 <i class="fa fa-lg fa-user fa-fw"></i> Login
                             </a>
                         </li>
-                        <li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'register') echo ' class="active"'; ?>>
+                        <!--<li role="menuitem"<?php if(Yii::app()->controller->uniqueId === 'site' && Yii::app()->controller->action->id === 'register') echo ' class="active"'; ?>>
                             <a tabindex="-1" href="<?php echo $this->createUrl('/site/register'); ?>">
                                 <i class="fa fa-lg fa-users fa-fw"></i> Register
                             </a>
-                        </li>
+                        </li>-->
                     </ul>
                     <?php else : ?>
                     <ul class="pull-right nav" id="navInner3" role="menu">

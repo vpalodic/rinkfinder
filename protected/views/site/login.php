@@ -60,8 +60,8 @@
         ?>
 	<div class="control-group">
             <div class="controls">
-		<?php echo TbHtml::link("Register", array("site/register")); ?>
-                    | 
+		<!--<?php echo TbHtml::link("Register", array("site/register")); ?>
+                    | -->
                 <?php echo TbHtml::link("Activate Account", array("site/activateAccount")); ?>
                     |
                 <?php echo TbHtml::link("Lost Password?", array("site/resetAccount")); ?>
