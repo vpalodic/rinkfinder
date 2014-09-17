@@ -601,6 +601,7 @@ class Arena extends RinkfinderActiveRecord
                 'display' => 'ID',
                 'type' => 'numeric',
                 'link' => 'endpoint',
+                'linkText' => 'Select'
             ),
             'external_id' => array(
                 'name' => 'external_id',

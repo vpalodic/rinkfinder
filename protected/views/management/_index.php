@@ -126,8 +126,14 @@
             
             if(isset($header['link']) && isset($item[$header['link']]) && 
                     isset($item[$field]) && (!isset($header['linkArray']) || $header['linkArray'] == false)) {
-                $td .= '<a target="_blank" href="' . $item[$header['link']] . '">'
-                        . $item[$field] . '</a></td>';
+                $td .= '<a target="_blank" href="' . $item[$header['link']] . '">';
+                if(isset($header['linkText'])) {
+                    $td .= $header['linkText'];
+                } else {
+                    $td .= $item[$field];
+                }
+                
+                $td .= '</a></td>';
             } elseif(isset($header['link']) && isset($item[$header['link']]) && 
                     isset($item[$field]) && (isset($header['linkArray']) && $header['linkArray'] == true && is_array($item[$field]))) {
                 $temp = $item[$field];
