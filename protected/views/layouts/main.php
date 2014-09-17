@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
-        if(defined('YII_DEBUG') && $this->includeCss && Yii::app()->user->isRestrictedArenaManager()) {
+        if(YII_DEBUG && $this->includeCss && Yii::app()->user->isRestrictedArenaManager()) {
             Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.css');
         } elseif ($this->includeCss && Yii::app()->user->isRestrictedArenaManager()) {
             Yii::app()->clientScript->registerCssFile($path . '/css/fineuploader.min.css');
@@ -16,7 +16,7 @@
     <title><?php echo CHtml::encode($this->pageTitle); ?></title>
     <?php Yii::app()->bootstrap->register(); ?>
     <?php  // Publish and register our jQuery and Bootstrap plugin CSS files
-        if(defined('YII_DEBUG') && $this->includeCss) {
+        if(YII_DEBUG && $this->includeCss) {
             Yii::app()->clientScript->registerCssFile($path . '/font-awesome-4.0.3/css/font-awesome.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.css');
@@ -27,7 +27,7 @@
             Yii::app()->clientScript->registerCssFile($path . '/bootstrap-editable/css/bootstrap-editable.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/footable.core.css');
         } elseif ($this->includeCss) {
-            Yii::app()->clientScript->registerCssFile($path . '/css/font-awesome.min.css');
+            Yii::app()->clientScript->registerCssFile($path . '/font-awesome-4.0.3/css/font-awesome.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/daterangepicker.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-modal.min.css');
             Yii::app()->clientScript->registerCssFile($path . '/css/bootstrap-switch.min.css');
@@ -42,7 +42,7 @@
         Yii::app()->clientScript->registerScriptFile("//maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&" . 
                 "key=" . Yii::app()->params['googleApi']['key'], CClientScript::POS_HEAD);
         
-        if(defined('YII_DEBUG')) {
+        if(YII_DEBUG) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/jquery.history.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/jquery-scrollto/lib/jquery-scrollto.js', CClientScript::POS_HEAD);
             Yii::app()->clientScript->registerScriptFile($path . '/js/moment.js', CClientScript::POS_BEGIN);
@@ -91,7 +91,7 @@
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.filter.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/footable.sort.min.js', CClientScript::POS_END);
-            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.min.paginate.js', CClientScript::POS_END);
+            Yii::app()->clientScript->registerScriptFile($path . '/js/footable.paginate.min.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/utilities.min.js', CClientScript::POS_BEGIN);
             Yii::app()->clientScript->registerScriptFile($path . '/js/event/calendar.min.js', CClientScript::POS_BEGIN);
         }

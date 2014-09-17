@@ -557,7 +557,7 @@ class SiteController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets.js'));
         
-        if(defined('YII_DEBUG')) {
+        if(YII_DEBUG) {
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/site/administration.min.js', CClientScript::POS_END);
@@ -615,7 +615,7 @@ class SiteController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG')) {
+        if(YII_DEBUG) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/eventSearch.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/eventSearch.min.js', CClientScript::POS_END);
@@ -657,7 +657,7 @@ class SiteController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG')) {
+        if(YII_DEBUG) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/locationSearch.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/locationSearch.min.js', CClientScript::POS_END);

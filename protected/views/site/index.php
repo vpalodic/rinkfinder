@@ -10,21 +10,19 @@
     $this->widget('bootstrap.widgets.TbAlert', array('htmlOptions' => array('class' => 'fade-message')));
 ?>
 
-<h3 class="sectionSubHeader" style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h3>
-<!--
-<div class="mycalendar pull-right">
-    <span class="month"><?php echo date('M'); ?></span>
-    <span class="day"><?php echo date('j'); ?></span>
-</div>
-<br />
-<time class="mycalendar-large" datetime="<?php echo date('Y-m-d'); ?>">
-    <?php echo date('j'); ?> <em><?php echo date('F'); ?></em>
-</time>
-<br />
-<time class="mycalendar-small pull-right" datetime="<?php echo date('Y-m-d'); ?>">
-    <?php echo date('j'); ?> <em><?php echo date('M'); ?></em>
-</time>
-<br />-->
+<h3 class="sectionSubHeader" style="text-align: center;"><span>Welcome to the new Rinkfinder.com</span></h3>
+<h5 style="text-align: center;"><span>A Service of the Minnesota Ice Arena Manager's Association</span></h5>
+<p class="sectionSubHeaderContent">We hope this improved layout will better assist you in quickly finding facilities in your community and their events or directions on a desktop or mobile device.
+    <br />
+    <br />
+    To get started click on <a tabindex="-1" href="<?php echo $this->createUrl('/site/locationSearch'); ?>"> <i class="fa fa-search fa-lg"></i> Find</a> to quickly locate the closet facility to your current location or from a location you specify. The first time you search, the site will ask permission to use your current location; additional filters for your search are available as well.
+    <br />
+    <br />
+    If you are looking for open program schedules or ice for sale, click on <a tabindex="-1" href="<?php echo $this->createUrl('/site/eventSearch'); ?>"> <i class="fa fa-ticket fa-lg"></i> Events</a>.
+    <br />
+    <br />
+    Looking for a specific facility or any facility in a specific city? Click on <a tabindex="-1" href="<?php echo $this->createUrl('/arena/index'); ?>"> <i class="fa fa-th-list fa-lg fa-fw"></i> Facilities</a> and start typing!
+
 <p class="sectionSubHeaderContent">
     Rinkfinder.com will help you find over 160 member arenas throughout Minnesota
     (and other states), including directions, facility details, related vendors

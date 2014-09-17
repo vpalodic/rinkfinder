@@ -66,7 +66,7 @@ class UserController extends Controller
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG')) {
+        if(YII_DEBUG) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/user/userAccountProfile.js', CClientScript::POS_END);
         } else {
             Yii::app()->clientScript->registerScriptFile($path . '/js/user/userAccountProfile.min.js', CClientScript::POS_END);

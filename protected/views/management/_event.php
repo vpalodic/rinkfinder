@@ -105,7 +105,7 @@
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
-            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . 'utilities.debug = ' . (YII_DEBUG ? 'true' : 'false') . ';'
             . 'eventManagementView.endpoints.event.newRecord = "' . $params['endpoints']['event']['new'] . '";'
             . 'eventManagementView.endpoints.event.updateRecord = "' . $params['endpoints']['event']['update'] . '";'
             . 'eventManagementView.endpoints.event.viewRecord = "' . $params['endpoints']['event']['view'] . '";'
@@ -142,7 +142,7 @@ $(document).ready(function() {
     utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
     utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
     utilities.urls.assets = "<?php echo $path; ?>";
-    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    utilities.debug = <?php echo (YII_DEBUG ? 'true' : 'false'); ?>;
     
     if(typeof eventManagementView === "undefined")
     {

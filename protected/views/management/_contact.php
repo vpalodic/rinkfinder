@@ -164,7 +164,7 @@ if(!isset($newRecord) || !$newRecord) {
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
-            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . 'utilities.debug = ' . (YII_DEBUG ? 'true' : 'false') . ';'
             . 'contactManagementView.endpoints.contact.newRecord = "' . $params['endpoints']['contact']['new'] . '";'
             . 'contactManagementView.endpoints.contact.updateRecord = "' . $params['endpoints']['contact']['update'] . '";'
             . 'contactManagementView.endpoints.contact.viewRecord = "' . $params['endpoints']['contact']['view'] . '";'
@@ -192,7 +192,7 @@ $(document).ready(function() {
     utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
     utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
     utilities.urls.assets = "<?php echo $path; ?>";
-    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    utilities.debug = <?php echo (YII_DEBUG ? 'true' : 'false'); ?>;
     
     if(typeof contactManagementView === "undefined")
     {

@@ -459,7 +459,7 @@ $(document).ready(function() {
     utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
     utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
     utilities.urls.assets = "<?php echo $path; ?>";
-    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    utilities.debug = <?php echo (YII_DEBUG ? 'true' : 'false'); ?>;
     _eventRequest.data = <?php echo json_encode($data); ?>;
     _eventRequest.endpoints.updateRecord = "<?php echo $data['endpoint']['update']; ?>";
     _eventRequest.endpoints.acknowledgeRecord = "<?php echo $data['endpoint']['update']; ?>";

@@ -105,7 +105,7 @@
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
-            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . 'utilities.debug = ' . (YII_DEBUG ? 'true' : 'false') . ';'
             . 'managerManagementView.endpoints.manager.newRecord = "' . $params['endpoints']['manager']['new'] . '";'
             . 'managerManagementView.endpoints.manager.updateRecord = "' . $params['endpoints']['manager']['update'] . '";'
             . 'managerManagementView.endpoints.manager.viewRecord = "' . $params['endpoints']['manager']['view'] . '";'
@@ -142,7 +142,7 @@ $(document).ready(function() {
     utilities.urls.logout = "<?php echo $this->createUrl('site/logout'); ?>";
     utilities.urls.base = "<?php echo Yii::app()->request->baseUrl; ?>";
     utilities.urls.assets = "<?php echo $path; ?>";
-    utilities.debug = <?php echo (defined('YII_DEBUG') ? 'true' : 'false'); ?>;
+    utilities.debug = <?php echo (YII_DEBUG ? 'true' : 'false'); ?>;
     
     if(typeof managerManagementView === "undefined")
     {

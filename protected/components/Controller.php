@@ -42,7 +42,7 @@ class Controller extends CController
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG') && Yii::app()->user->isRestrictedArenaManager()) {
+        if(YII_DEBUG && Yii::app()->user->isRestrictedArenaManager()) {
             Yii::app()->clientScript->registerScriptFile($path . '/js/site/management.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/_index.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/management/arenaManagementView.js', CClientScript::POS_END);
@@ -73,7 +73,7 @@ class Controller extends CController
         // Publish and register our jQuery plugin
         $path = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.assets'));
         
-        if(defined('YII_DEBUG') && Yii::app()->user->isRestrictedArenaManager()) {
+        if(YII_DEBUG && Yii::app()->user->isRestrictedArenaManager()) {
             //Yii::app()->clientScript->registerScriptFile($path . '/js/site/administration.js', CClientScript::POS_END);
             Yii::app()->clientScript->registerScriptFile($path . '/js/arena/uploadArenas.js', CClientScript::POS_END);
         } elseif(Yii::app()->user->isRestrictedArenaManager()) {

@@ -128,7 +128,7 @@
             . 'utilities.urls.logout = "' . $this->createUrl('site/logout') . '";'
             . 'utilities.urls.base = "' . Yii::app()->request->baseUrl . '";'
             . 'utilities.urls.assets = "' . $path . '";'
-            . 'utilities.debug = ' . (defined('YII_DEBUG') ? 'true' : 'false') . ';'
+            . 'utilities.debug = ' . (YII_DEBUG ? 'true' : 'false') . ';'
             . 'utilities.ajaxError.dialogBox = "managementModal";'
             . 'utilities.loadingScreen.parentId = "countsContainer";'
             . 'utilities.loadingScreen.containerId = "countsAccordionHeader";'
