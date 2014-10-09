@@ -83,6 +83,7 @@
                                 <tr>
                                     <td style="width:33%">
                                         <?php echo $attributeLabels['url']; ?>
+                                        (Must prefix with http://)
                                     </td>
                                     <td>
                                         <a href="#"

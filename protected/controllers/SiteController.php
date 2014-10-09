@@ -702,7 +702,7 @@ class SiteController extends Controller
             'name' => $model->name,
             'email' => $model->email,
         );
-        $to = array(Yii::app()->params['adminEmail']['email'] => Yii::app()->params['adminEmail']['name']);
+        $to = array(Yii::app()->params['infoEmail']['email'] => Yii::app()->params['infoEmail']['name']);
         $model->subject = CHtml::encode(Yii::app()->name) . ' contact request: ' . CHtml::encode($model->subject);
         $model->body = nl2br(CHtml::encode($model->body));
         
