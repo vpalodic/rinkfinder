@@ -5,7 +5,7 @@
                 <p>From:</p>
             </td>
             <td style="text-align:left;padding:15px 20px;padding-top: 5px;font-size: 1.5em;font-weight: normal;color: #000000;background: #ffffff;">
-            	<?php if(isset($requester)) echo $requester['name'];  ?>
+            	<?php if(isset($requester)) echo $requester['name'];  ?> &#60;<?php if(isset($requester)) echo $requester['email'];  ?>&#62;
             </td>
         </tr>
         <tr>
