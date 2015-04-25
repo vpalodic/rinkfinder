@@ -28,7 +28,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="searchFilterDiv" style="display: none;">
+                <!--<div id="searchFilterDiv" style="display: none;">-->
+                <div id="searchFilterDiv">
                     <div class="controls controls-row">
                         <label for="radiusSelect">Within</label>
                         <select name="radius" style="margin-bottom: 15px;" class="span6" id="radiusSelect">

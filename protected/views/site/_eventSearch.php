@@ -45,7 +45,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="searchFilterDiv" style="display: none;">
+                <!--<div id="searchFilterDiv" style="display: none;">-->
+                <div id="searchFilterDiv">
                     <div class="controls controls-row">
                         <label for="limitSelect">The First</label>
                         <select name="limit" style="margin-bottom: 15px;" class="span6" id="limitSelect">
